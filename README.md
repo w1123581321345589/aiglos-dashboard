@@ -530,4 +530,4 @@ The 2025 M&A wave (Palo Alto acquiring Protect AI, Check Point acquiring Lakera,
 
 ## License
 
-Proprietary. Contact [will@aiglos.io](mailto:will@aiglos.io) for licensing.
+Proprietary. Contact [will@aiglos.dev](mailto:will@aiglos.dev) for licensing.
