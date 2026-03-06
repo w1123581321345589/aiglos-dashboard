@@ -1,93 +1,85 @@
 # Aiglos
 
-**The Only Full-Stack Autonomous AI Agent Security Runtime**
+**Autonomous AI Agent Security Runtime — T1 through T33**
 
-Aiglos is the only security platform that covers the complete AI agent lifecycle: real-time proxy enforcement, continuous autonomous threat hunting, supply chain integrity, adversarial self-testing, and DoD compliance mapping. It operates without human intervention, evolves its detection policy from live threat intelligence, and produces cryptographically signed audit records at every tool call.
+Aiglos is a full-stack security runtime for AI agents and multi-agent systems. It covers every layer of the modern agent attack surface: real-time MCP proxy interception, autonomous threat hunting, compliance reporting, public registry monitoring, RAG/memory poison detection, skill composition analysis, and cryptographic identity across multi-vendor pipelines.
 
-No other product covers the full session lifecycle. Existing tools are point solutions: pre-deployment scanners, inference-time guardrails, or observability dashboards. Aiglos is the runtime.
-
------
-
-## The Problem Has Gotten Harder
-
-The original attack surface was three classes of threat no existing tool caught:
-
-1. **Goal hijacking** — An adversary embeds instructions in a document the agent reads. The agent's subsequent tool calls are syntactically valid but semantically wrong.
-1. **MCP server compromise** — A supply chain attacker modifies a server's tool definitions behind familiar names. The agent's calls look normal; the execution is not.
-1. **Credential exfiltration** — An agent with file system access reads `.env` or `.ssh/id_rsa` and passes the contents as arguments to an outbound HTTP call.
-
-The 2025-2026 threat landscape added five more that no shipping product addresses:
-
-1. **MCP Sampling Attacks (Unit 42, Dec 2025)** — The `sampling/createMessage` channel allows a compromised server to inject persistent instructions, invoke hidden file and network operations, or drain compute quotas. No defensive product monitors this channel.
-1. **OAuth Confused Deputy (CVE-2025-6514, CVSS 9.6)** — `mcp-remote` versions 0.0.5-0.1.15 allow OS command injection via a protocol-level flaw: static client ID plus dynamic registration plus absent per-client consent. Installed in 10,000+ developer environments.
-1. **MCP Supply Chain Poisoning** — A malicious NPM package impersonating Postmark's MCP server BCC'd all email to an attacker. 82% of 2,614 MCP implementations analyzed by Endor Labs have path traversal exposure. Three CVEs in Anthropic's own reference implementation (Jan 2026).
-1. **No adversarial self-testing capability exists** — CISOs require red team coverage of their AI deployments. No product offers it at the tool/MCP layer.
-1. **NDAA FY2026 Section 1513** — DoD is mandating an AI/ML security framework across all 220,000+ defense contractors. The framework status report is due Congress on June 16, 2026. No tooling exists because the framework is not yet finalized.
-
-Aiglos covers all eight.
+528 tests passing. Zero external runtime dependencies for core detection.
 
 -----
 
-## How It Works
+## The Problem
+
+AI agents have no security layer. They accept tool calls from any server, execute instructions from any document they read, and have no mechanism to verify they are still pursuing their authorized objective. Traditional security tools operate at the network or identity layer — they are blind to what an agent actually does.
+
+**Five classes of attack no existing tool catches:**
+
+1. **Goal hijacking** — An adversary embeds instructions in a document the agent reads. The agent’s subsequent tool calls are syntactically valid but semantically wrong. The agent is now doing the attacker’s work.
+1. **MCP server compromise** — An attacker modifies a legitimate MCP server’s tool definitions to include malicious implementations behind familiar names. The agent’s calls look normal; the execution is not.
+1. **Credential exfiltration via agent** — An agent with file system access reads a `.env` or `.ssh/id_rsa` and passes the contents as arguments to an outbound HTTP call. Standard DLP tools never see it because it’s application-layer JSON, not a file transfer.
+1. **A2A orchestrator impersonation** — In multi-agent pipelines using Google A2A, AutoGen, CrewAI, or LangGraph, a malicious agent forges an Agent Card and issues instructions to subagents that bypass the MCP proxy entirely. No existing tool covers this.
+1. **RAG/memory poisoning** — A malicious document sits in a shared knowledge base and injects instructions into every agent session that retrieves it, invisibly, permanently, across all users. The attack happens at write time; it executes at every retrieval. No prompt injection scanner catches it.
+
+-----
+
+## Architecture: Seven Security Layers
 
 ```
-[AI Agent / IDE]
-       |
-       | WebSocket
-       v
-+---------------------------+
-|    AIGLOS PROXY LAYER     |   Real-time enforcement (sub-ms latency)
-|  Credential Scanner       |
-|  Policy Engine            |
-|  Goal Integrity Engine    |
-|  MCP Trust Registry       |
-|  OAuth Confused Deputy    |   T25: CVE-2025-6514 detection
-|  Agent Identity Attest.   |
-|  CMMC / §1513 Mapper      |   T28: NDAA FY2026 compliance
-+---------------------------+
-       |
-       | WebSocket
-       v
-[MCP Server]
-
-       +
-       |
-       v
-+---------------------------+
-|  AUTONOMOUS RUNTIME       |   Continuous, no human in loop
-|  ThreatHunter             |   6 hunt modules, every 5 min
-|    Module 1: Exposure     |
-|    Module 2: Credentials  |
-|    Module 3: Injection    |
-|    Module 4: Behavior     |
-|    Module 5: Policy Trend |
-|    Module 6: Sampling     |   T24: Unit 42 PoC vector
-|  ThreatIntelligence       |   NVD + community feeds
-|  Supply Chain Scanner     |   T26: SCA on every refresh
-|  AutonomousEngine         |   Self-healing detection policy
-+---------------------------+
-
-       +
-       |
-       v
-+---------------------------+
-|  RED TEAM PROBE           |   T27: Adversarial self-testing
-|  tool_injection probe     |
-|  path_traversal probe     |
-|  cmd_injection probe      |
-|  oauth_escalation probe   |
-|  tool_redefinition probe  |
-+---------------------------+
+LAYER 1  Real-Time Proxy        T1, T2, T5, T7, T8, T15, T25, T33
+LAYER 2  Compliance             T18, T19, T28
+LAYER 3  Autonomous Hunt        T21  (8 modules: T24, T26, T29, T32 + 4 behavioral)
+LAYER 4  Threat Intelligence    T22, T30
+LAYER 5  Knowledge Base Guard   T31
+LAYER 6  Red Team               T27
+LAYER 7  Cross-Vendor Identity  T33
 ```
 
-Every layer writes to a single tamper-evident SQLite audit log. Every security event maps to NIST SP 800-171 Rev 2 and NDAA §1513 controls automatically.
+### Data Flow
+
+```
+MCP Client --> [T1 Proxy] --> [T2 Trust] --> [T5 Policy] --> MCP Server
+                  |               |               |
+                  v               v               v
+              [T3 Audit]    [T7 Attest]      BLOCK/ALLOW
+                  |
+        +---------+------------------------+
+        v         v                        v
+   [T25 OAuth] [T33 AIT]            [T15 Alerts]
+                  |
+           (cross-vendor)
+                  |
+        +---------+---------+
+        v                   v
+   [T8 TrustFabric]   [T29 A2A Monitor]
+   (Aiglos agents)    (Google A2A / AutoGen / CrewAI)
+
+Background (daemon / cron):
+[T22 Intel] ---> [T30 Registry] ---> blocklist update
+     |
+     +---> [T21 ThreatHunter]
+     |          |
+     |     Module 1: Credential Scan
+     |     Module 2: Injection Hunt
+     |     Module 3: Behavioral Trend
+     |     Module 4: Trust Decay
+     |     Module 5: [T26 SCA]
+     |     Module 6: [T24 Sampling]
+     |     Module 7: [T29 A2A]
+     |     Module 8: [T32 Composition]
+     |
+     +---> [T31 RAG Detector] ---> knowledge base scan
+
+Session start (static analysis):
+[T32 Composer] ---> composition analysis ---> BLOCK / WARN / ALLOW
+[T33 Bridge]   ---> AIT issued ---> travels with agent downstream
+```
 
 -----
 
 ## Installation
 
 ```bash
-pip install aiglos
+pip install -e .
 ```
 
 Requires Python 3.11+.
@@ -97,54 +89,344 @@ Requires Python 3.11+.
 ## Quickstart
 
 ```bash
-# Initialize config and policy files
-aiglos init
+# Check all 22 modules
+python aiglos.py modules
 
-# Start the proxy (forwards to localhost:18789 by default)
-aiglos proxy
+# Full autonomous scan (all 8 hunt modules)
+python aiglos.py scan
 
-# Point your MCP client to localhost:8765 instead of :18789
+# Red team adversarial probe
+python aiglos.py probe
 
-# Start the autonomous runtime (runs continuously in background)
-aiglos daemon start
+# CMMC Level 2 + NDAA §1513 compliance report
+python aiglos.py compliance
 
-# Adversarial self-test your deployment
-aiglos probe
+# Refresh threat intelligence (NVD + registry)
+python aiglos.py intel
 
-# Monitor in real time
-aiglos tail
-aiglos sessions
+# Scan RAG/memory stores for poison
+python aiglos.py rag --paths ./knowledge_base ./memory
 
-# Generate compliance reports
-aiglos report --level 2 --output report.json
-aiglos s1513
+# Start continuous monitoring daemon
+python aiglos.py daemon --interval 300
+
+# Runtime status
+python aiglos.py status
+```
+
+### Programmatic use
+
+```python
+from aiglos import Aiglos
+
+aiglos = Aiglos()
+
+# Full threat hunt
+result = await aiglos.scan()
+
+# Static composition analysis at session start
+result = await aiglos.analyze_session(
+    session_id="sess-abc",
+    registered_tools=my_tool_list,
+    authorized_goal="Summarize the weekly sales report",
+)
+if result.risk_level == "critical":
+    raise SecurityError(result.summary())
+
+# Issue cross-vendor identity token
+token = await aiglos.issue_identity_token(
+    session_id="sess-abc",
+    model_id="claude-opus-4-6",
+    authorized_capabilities={"read_fs", "web_search"},
+)
+
+# Map to OpenID for Agents / Okta machine identity format
+from aiglos_core.proxy.identity_bridge import AgentIdentityBridge
+bridge = AgentIdentityBridge()
+okta_claims = bridge.to_openid_agents_claims(token)
 ```
 
 -----
 
-## Docker
+## Module Reference
+
+### Layer 1 — Real-Time Proxy
+
+Every tool call passes through this pipeline before reaching the MCP server.
+
+**T1 — MCP Proxy** `aiglos_core/proxy/__init__.py`
+WebSocket proxy. Intercepts all tool calls before execution. Real-time hooks: trust scoring, policy check, attestation, alert dispatch. Blocks or allows each call within the same request/response cycle.
+CMMC: 3.14.2, 3.13.1, 3.1.1
+
+**T2 — Trust Scorer** `aiglos_core/proxy/trust.py`
+Per-session behavioral trust scoring (0.0–1.0). Signals: velocity, scope creep, anomaly delta, known-bad patterns. Score drives policy thresholds in T5.
+CMMC: 3.14.2
+
+**T5 — Policy Engine** `aiglos_core/policy/engine.py`
+OPA-compatible YAML policy engine. ALLOW/DENY/REQUIRE_APPROVAL rules match on tool name, session ID, trust score, time of day, capabilities. Hot-reload without restart.
+CMMC: 3.1.1, 3.1.2
+
+**T7 — Attestation Engine** `aiglos_core/proxy/__init__.py`
+RSA-2048 session attestation. Signs each session at start. Produces audit log entries verifiable offline: model identity, system prompt hash, tool permissions, per-event SHA-256 manifest.
+CMMC: 3.5.1, 3.13.8
+
+**T8 — Trust Fabric** `aiglos_core/proxy/trust_fabric.py`
+Multi-agent attestation chain. Extends T7 across orchestrator and subagent sessions within Aiglos-managed pipelines.
+CMMC: 3.5.1, 3.5.3, 3.13.8
+
+**T15 — Alert Dispatcher** `aiglos_core/proxy/__init__.py`
+Fan-out to Slack, Splunk HEC, Syslog CEF (QRadar/ArcSight/Sentinel), webhook (PagerDuty/Opsgenie), Microsoft Teams, and file JSONL sink. Rate-limited per destination.
+CMMC: 3.14.6
+
+**T25 — OAuth Confused Deputy Detector** `aiglos_core/proxy/oauth.py`
+Real-time hook blocks: token reuse across identities, broad scopes (`files:*`, `db:*`, `admin:*`), scope escalation. Autonomous scan detects CVE-2025-6514 (mcp-remote 0.0.5–0.1.15), static client IDs, OAuth tokens appearing in tool call arguments.
+CMMC: 3.5.1, 3.5.2, 3.13.10
+
+**T33 — Cross-Vendor Agent Identity Bridge** `aiglos_core/proxy/identity_bridge.py`
+Issues signed Aiglos Identity Tokens (AIT) that travel with agents across multi-vendor pipelines (Claude / GPT-4 / Gemini / Llama). Cryptographic delegation chains enforce strict capability subsetting — child agents can never exceed parent scope. `to_openid_agents_claims()` maps AIT fields to the OpenID for Agents / OAuth 2.0 spec, the direct integration surface for Okta machine identity.
+
+```python
+# Issue at session start
+token = await bridge.issue_token("sess-abc", "claude-opus-4-6", {"read_fs", "web_search"})
+
+# Delegate to subagent (strict subsetting — cannot escalate)
+child = await bridge.delegate(token, "gpt-4o-sub", {"web_search"})
+
+# Verify incoming token from external model
+verdict = await bridge.verify_token(token_str=incoming_ait)
+# trust_level: "aiglos-signed" | "unattested" | "invalid"
+
+# Map to OpenID for Agents / Okta format
+claims = bridge.to_openid_agents_claims(token)
+```
+
+CMMC: 3.5.1, 3.5.3, 3.13.8
+
+-----
+
+### Layer 2 — Compliance
+
+**T18 — CMMC Compliance Mapper** `aiglos_core/compliance/__init__.py`
+Maps audit DB events to all 110 CMMC Level 2 controls. Control-by-control readiness scores.
+
+**T19 — PDF Report Generator** `aiglos_core/compliance/report_pdf.py`
+Produces audit-ready CMMC compliance report with evidence table, control scores, and remediation roadmap.
+
+**T28 — NDAA §1513 Compliance Mapper** `aiglos_core/compliance/s1513.py`
+18 controls across 6 domains: Model Integrity, Runtime Monitoring, Access Control, Audit Trail, Anomaly Detection, Incident Response. Generates sidecar JSON (`.s1513.json`) alongside the CMMC PDF. DoD status report due June 16, 2026.
 
 ```bash
-docker run -p 8765:8765 \
-  -e UPSTREAM_HOST=your-mcp-server \
-  -e UPSTREAM_PORT=18789 \
-  aiglos/aiglos:latest
+python aiglos.py compliance --org "Acme Defense" --pdf report.pdf --json
+```
+
+-----
+
+### Layer 3 — Autonomous Threat Hunting
+
+**T21 — ThreatHunter** `aiglos_core/autonomous/hunter.py`
+Orchestrates all 8 hunt modules. Runs on daemon cycle or on demand.
+
+```python
+result = await ThreatHunter(audit_db_path="aiglos_audit.db").run_full_scan()
+```
+
+|Module|Description                                                                        |T-Number|
+|------|-----------------------------------------------------------------------------------|--------|
+|1     |Credential patterns in tool call arguments (API keys, tokens, AWS keys)            |built-in|
+|2     |Prompt injection patterns in historical tool call results                          |built-in|
+|3     |Cross-session behavioral anomaly detection                                         |built-in|
+|4     |Sessions with gradual trust score decay (privilege creep)                          |built-in|
+|5     |Supply chain: typosquat, malicious packages, vulnerable CVE versions               |T26     |
+|6     |MCP sampling channel: instruction injection, covert tool invocation, resource theft|T24     |
+|7     |A2A protocol: orchestrator impersonation, artifact injection, capability escalation|T29     |
+|8     |Skill composition: dangerous tool combinations before session runs                 |T32     |
+
+**T24 — Sampling Monitor** `aiglos_core/autonomous/sampler.py`
+Detects the three-vector MCP sampling channel attack documented by Unit 42 (December 2025): persistent instruction injection, covert tool invocation (subprocess/file/network patterns), resource theft (anomalous token consumption >5x baseline).
+CMMC: 3.14.2, 3.13.1, 3.1.1
+
+**T26 — Supply Chain Scanner** `aiglos_core/autonomous/sca.py`
+Package manifest analysis: known-malicious packages (postmark-mcp-server, mcp-postmark), typosquat detection (Levenshtein ≤2), vulnerable versions (CVE-2025-6514, CVE-2025-68143, CVE-2026-22807, CVE-2026-23947), inline credentials, broad tool permissions. Auto-updates `aiglos_trust.yaml` blocked_packages.
+CMMC: 3.14.2, 3.14.1
+
+**T29 — A2A Protocol Monitor** `aiglos_core/autonomous/a2a.py`
+First security tooling for Google’s A2A protocol (published April 2025). Three detection vectors:
+
+- **Orchestrator impersonation** — Agent Card fingerprint registry. If an orchestrator’s Card changes between calls, the session is blocked as a possible impersonation.
+- **Artifact injection** — Scans all A2A task payloads for indirect prompt injection patterns before forwarding to subagents.
+- **Capability escalation** — Blocks subagent task dispatches that request high-risk capabilities without an explicit delegation token.
+
+```python
+monitor = A2AMonitor(audit_db="aiglos_audit.db")
+monitor.register_agent("orch-001", trusted_agent_card, allowed_capabilities={"read_fs"})
+
+verdict = await monitor.evaluate(A2AEvent(
+    orchestrator_id="orch-001",
+    target_agent_id="sub-001",
+    task_type="research",
+    payload=task_dict,
+    agent_card=card_dict,
+))
+```
+
+CMMC: 3.5.1, 3.5.3, 3.13.8, 3.14.2
+
+**T32 — Skill Composition Analyzer** `aiglos_core/autonomous/composer.py`
+Static analysis of registered tool combinations at session start — before any tool executes. Individual tools can each be benign while their combination creates a dangerous capability. The analyzer catches it pre-execution.
+
+10 composition rules:
+
+|Rule  |Combination                           |Threat                      |
+|------|--------------------------------------|----------------------------|
+|CR-001|`read_fs` + `network_egress`          |Filesystem Exfiltration     |
+|CR-002|`read_fs` + `email_send`              |Email Exfiltration          |
+|CR-003|`execute_code` + `network_egress`     |RCE with C2                 |
+|CR-004|`memory_read` + `write_fs`            |Cross-Session Memory Harvest|
+|CR-005|`git_write` + `network_egress`        |Source Code Exfiltration    |
+|CR-006|`credential_access` + `network_egress`|Credential Exfiltration     |
+|CR-007|`spawn_agent` + `credential_access`   |Agentic Escalation Chain    |
+|CR-008|`database_read` + `network_egress`    |Database Exfiltration       |
+|CR-009|`clipboard` + `network_egress`        |PII Harvesting              |
+|CR-010|`browser` + `memory_write`            |Browser Session Hijacking   |
+
+Goal-context suppression reduces false positives for legitimate combinations.
+
+```python
+result = await SkillComposer().analyze_session(
+    session_id="sess-123",
+    registered_tools=tool_list,
+    authorized_goal="Email the quarterly report to the finance team",
+)
+# CR-002 suppressed because goal explicitly mentions email
+```
+
+CMMC: 3.1.1, 3.13.1, 3.14.2
+
+-----
+
+### Layer 4 — Threat Intelligence
+
+**T22 — Threat Intelligence** `aiglos_core/autonomous/intel.py`
+Refresh cycle pulls from NVD API, curated community MCP threat patterns, local SCA scan (T26), and live registry scan (T30). Updates the pattern DB used by all detection layers.
+
+**T30 — Registry Monitor** `aiglos_core/autonomous/registry.py`
+Continuous monitoring of npm, Smithery, mcp.so, and PyPI for newly published malicious MCP packages. Scores each package against: known-malicious name list, typosquat detection (Levenshtein), social engineering language in descriptions, tool injection patterns in package metadata, new publisher accounts (<30 days). Live npm feed scan on every intel refresh. Automatically updates `aiglos_trust.yaml` blocklist on critical findings.
+
+```python
+# Pre-install check
+score = await RegistryMonitor().score_package("postmark-mcp-server")
+# score.risk_level == "critical"
+# score.signals == ["Known-malicious package name: postmark-mcp-server"]
+```
+
+CMMC: 3.14.2, 3.14.1
+
+-----
+
+### Layer 5 — Knowledge Base & Memory Security
+
+**T31 — RAG / Memory Poison Detector** `aiglos_core/autonomous/rag.py`
+
+Why this is architecturally different from prompt injection detection: the MCP proxy catches injection at tool-call time. RAG/memory poisoning happens at write time and executes silently at every retrieval. A poisoned document sitting in a shared vector store injects instructions into every agent session that retrieves it — across all users, indefinitely.
+
+Three scan modes:
+
+**Write-time** — scans documents before embedding:
+
+```python
+verdict = await detector.scan_document(content=doc_text, source="uploads/brief.pdf")
+if not verdict.safe:
+    raise SecurityError(verdict.reason)
+```
+
+**Memory write** — scans before persisting to Mem0/Zep/Letta (always strict mode):
+
+```python
+verdict = await detector.scan_memory_write(
+    content=memory_text, memory_key="pref_001", session_id="sess-abc"
+)
+```
+
+**Retrieval-time** — filters poisoned chunks before context injection:
+
+```python
+safe_chunks = await detector.filter_chunks(chunks=retrieved_chunks, session_id="sess-abc")
+```
+
+**Cross-session PII leakage** — blocks one user’s data from leaking into another’s context via over-broad semantic search:
+
+```python
+safe = await detector.check_cross_session_leakage(chunks, current_session_id, owner_session_id)
+```
+
+**Autonomous scan** — background scan of all configured memory paths:
+
+```python
+findings = await detector.scan()  # scans ./memory/, ./knowledge_base/, ./rag_data/, etc.
+```
+
+Two pattern tiers: T1 (hard injection — blocked immediately) and T2 (suspicious — flagged in standard mode, blocked in strict mode). Memory writes always use strict mode.
+
+CMMC: 3.14.2, 3.13.1, 3.1.3
+
+-----
+
+### Layer 6 — Red Team
+
+**T27 — ProbeEngine** `aiglos_probe.py`
+Adversarial self-testing with safe payloads only (no live exploits). Five probe types: `tool_injection`, `path_traversal`, `cmd_injection`, `oauth_escalation`, `tool_redefinition`. Returns VULNERABLE / HARDENED / INCONCLUSIVE verdicts. Persists findings to audit DB.
+
+```bash
+python aiglos.py probe --target filesystem --probes tool_injection path_traversal
+python aiglos.py probe --json
+```
+
+CMMC: 3.14.2 | §1513: 5.4
+
+-----
+
+## CVE Coverage
+
+|CVE / Threat           |CVSS|Description                                    |Covered by|
+|-----------------------|----|-----------------------------------------------|----------|
+|CVE-2025-6514          |9.6 |mcp-remote OAuth RCE (0.0.5–0.1.15)            |T25, T26  |
+|CVE-2025-68143         |—   |mcp-server-git path traversal                  |T26       |
+|CVE-2026-22807         |—   |mcp-server-git command injection               |T26       |
+|CVE-2026-23947         |—   |mcp-server-git deserialization                 |T26       |
+|Unit 42 Dec 2025       |—   |MCP sampling 3-vector attack                   |T24       |
+|Postmark impersonation |—   |postmark-mcp-server / mcp-postmark             |T26, T30  |
+|Smithery path traversal|—   |smithery.yaml build config                     |T26       |
+|OWASP Agentic #1       |—   |Tool injection                                 |T1–T4, T27|
+|OWASP Agentic #5       |—   |OAuth confused deputy                          |T25       |
+|Endor Labs 82%         |—   |Path traversal exposure                        |T27       |
+|Google A2A (Apr 2025)  |—   |Orchestrator impersonation / artifact injection|T29       |
+|RAG indirect injection |—   |Knowledge base poisoning at scale              |T31       |
+
+-----
+
+## Compliance Coverage
+
+|Framework   |Coverage                              |
+|------------|--------------------------------------|
+|CMMC Level 2|110 controls across all 14 domains    |
+|NDAA §1513  |18 controls, 6 domains, 90%+ readiness|
+
+```bash
+python aiglos.py compliance --org "Your Organization" --pdf cmmc_report.pdf
 ```
 
 -----
 
 ## Configuration
 
-`aiglos init` generates `aiglos.yaml` and `aiglos_policy.yaml`.
-
-**aiglos.yaml:**
+`aiglos.yaml`:
 
 ```yaml
 proxy:
   listen_port: 8765
   upstream_host: localhost
   upstream_port: 18789
-  deployment_tier: cloud  # cloud | on_prem | gov
+  deployment_tier: cloud   # cloud | on_prem | gov
 
 features:
   goal_integrity: true
@@ -152,23 +434,17 @@ features:
   policy_engine: true
   trust_registry: true
   attestation: true
-  sampling_monitor: true    # T24: MCP sampling channel
-  oauth_detection: true     # T25: Confused deputy
-  supply_chain_scan: true   # T26: SCA on intel refresh
-  autonomous_engine: true   # T23: Continuous runtime
+  a2a_monitor: true
+  rag_detector: true
+  registry_monitor: true
+  composition_analyzer: true
 
 goal_integrity:
   drift_threshold: 0.35
-  # anthropic_api_key: sk-ant-...  # Required for semantic evaluation
 
 trust:
-  mode: audit  # strict | audit | permissive
+  mode: audit   # strict | audit | permissive
   file: aiglos_trust.yaml
-
-autonomous:
-  scan_interval_seconds: 300      # Hunt cycle: every 5 minutes
-  intel_refresh_seconds: 3600     # Threat intel: every hour
-  state_file: aiglos_engine_state.json
 
 alerts:
   slack:
@@ -178,356 +454,123 @@ alerts:
     hec_url: https://splunk.example.com:8088/services/collector
     hec_token: YOUR_HEC_TOKEN
     min_severity: info
-  file_sink:
-    path: aiglos_events.jsonl
+
+a2a:
+  registered_agents_file: aiglos_agents.yaml
+
+rag:
+  memory_paths:
+    - ./memory/
+    - ./knowledge_base/
+    - ./rag_data/
+  strict_mode: false
 ```
-
------
-
-## Proxy Layer
-
-The proxy sits transparently between any AI agent and its MCP server. Every message passes through the security pipeline in under one millisecond.
-
-### Credential Scanner
-
-Detects 20+ secret patterns in tool arguments before they reach the server: AWS access keys, Anthropic API keys, GitHub personal access tokens, JWTs, Slack tokens, and high-entropy strings. Blocks transmission and fires a `CREDENTIAL_DETECTED` event.
-
-### Policy Engine
-
-YAML-based rule engine with glob matching. Ships with a defense profile that blocks `sudo`, `rm -rf`, path traversal, and arbitrary shell execution. Every rule maps to a CMMC control.
-
-```yaml
-rules:
-  - name: block_path_traversal
-    match:
-      argument_pattern: "\\.\\./\\.\\."
-    action: block
-    severity: critical
-    cmmc_controls: ["3.1.1", "3.14.2"]
-```
-
-### Goal Integrity Engine
-
-The core defensible IP. At session start, the authorized objective is hashed. On every tool call, a two-path evaluation runs:
-
-- **Fast path** (rule-based, sub-ms): suspicious tool chain detection, domain shift analysis, call acceleration anomaly, read-then-execute pattern detection
-- **Semantic path** (LLM-evaluated, async): triggered when fast path score drops below threshold; scores 0.0-1.0 alignment against the original goal hash
-
-### MCP Trust Registry
-
-Allowlist and blocklist with tool manifest fingerprinting. Detects when a server's tool schema changes between connections. Schema changes fire a `TOOL_REDEFINITION` event at CRITICAL severity.
-
-```bash
-aiglos trust allow localhost:18789 --alias dev-server
-aiglos trust block evil-mcp.example.com:443 --reason "Reported exfil"
-```
-
-### OAuth Confused Deputy Detector (T25)
-
-Real-time evaluation of every OAuth callback. Blocks three attack patterns immediately:
-
-- **Token reuse across identities** — Same token presented in a different session with a different identity hash. Signature of CVE-2025-6514 confused deputy.
-- **Overly broad scopes** — `files:*`, `db:*`, `admin:*`, and wildcard patterns blocked at the authorization step.
-- **Scope escalation** — Client requesting new scopes not present in its original authorization.
-
-Autonomous config scanner detects vulnerable `mcp-remote` versions (0.0.5-0.1.15) and static OAuth client ID patterns across all registered server configs.
-
-### Agent Identity Attestation
-
-Every session produces a signed, tamper-evident JSON document: model identity, system prompt hash, tool permissions, timeline, security posture, and a per-event SHA-256 manifest. RSA-2048 signed. Every document verifiable offline.
-
-```bash
-aiglos attest --session SESSION_ID
-aiglos verify SESSION_ID.attestation.json
-```
-
------
-
-## Autonomous Runtime
-
-The autonomous engine runs continuously without human intervention. It operates a three-layer architecture: `engine.py` as orchestrator, `intel.py` for threat intelligence ingestion, and `hunter.py` for proactive scanning.
-
-### Continuous Threat Hunting
-
-Six hunt modules run on a configurable cycle (default: every 5 minutes):
-
-|Module          |What It Catches                                                              |
-|----------------|-----------------------------------------------------------------------------|
-|Exposure        |Overprivileged tools, broad filesystem access, unsandboxed execution         |
-|Credential Scan |Historical credential exposure across all stored tool call records           |
-|Injection Hunt  |Command injection, path traversal, Unicode steganography in past calls       |
-|Behavioral Trend|Statistical anomalies: call frequency spikes, tool mix drift, domain shift   |
-|Policy Trend    |Recurring policy violations that indicate systematic misconfiguration        |
-|Sampling Monitor|Unit 42 three-vector sampling attack: hijacking, covert tools, resource theft|
-
-The engine self-heals: when new threat patterns arrive via intel refresh, detection policy updates automatically without a restart.
-
-### MCP Sampling Monitor (T24)
-
-The sampling channel (`sampling/createMessage`) has no existing defensive tooling. Three attack vectors documented by Unit 42 in December 2025:
-
-**Conversation hijacking** — Persistent instruction injection via sampling responses. Patterns: `ignore previous instructions`, `from now on`, zero-width Unicode characters.
-
-**Covert tool invocation** — Hidden file and network operations embedded in sampling responses. Patterns: `subprocess`, `exec`, `curl`, `cat /etc/passwd`.
-
-**Resource theft** — Anomalous token consumption. A single sampling session consuming tokens at 5x or more the session mean triggers a `RESOURCE_THEFT` finding.
-
-All findings persist to the audit DB and map to CMMC controls 3.14.2, 3.13.1, and 3.1.1.
-
-### Threat Intelligence
-
-Hourly refresh from NVD and community feeds. New indicators automatically generate policy rules and block server fingerprints. The supply chain scanner runs on every refresh cycle.
-
-```bash
-aiglos daemon intel   # Force immediate intel refresh
-```
-
-### Autonomous Engine Controls
-
-```bash
-aiglos daemon start   # Start background runtime
-aiglos daemon stop    # Graceful shutdown
-aiglos daemon status  # Show state, uptime, last scan
-aiglos daemon scan    # Force immediate hunt cycle
-```
-
------
-
-## Supply Chain Scanner (T26)
-
-Proactive supply chain security for MCP server packages. Runs on the hourly intel refresh cycle. Covers four attack surfaces documented in 2025-2026:
-
-**Package manifests (package.json, requirements.txt)**
-
-- Known-malicious package blocklist (e.g., `postmark-mcp-server`, `anthropic-mcp-server`)
-- Typosquatting detection via Levenshtein distance scoring against known-good package names
-- Vulnerable version range detection (e.g., `mcp-remote` 0.0.5-0.1.15 for CVE-2025-6514)
-
-**MCP server configs**
-
-- Inline credentials in server command arguments
-- Overly broad tool permission descriptions used for tool poisoning (OWASP Agentic #2)
-
-**Build configs (smithery.yaml)**
-
-- Path traversal patterns matching the Smithery CVE: `../../`, absolute sensitive paths, environment variable traversal
-
-Malicious packages are written directly to `aiglos_trust.yaml` blocked list. The scan runs automatically; no operator action required.
-
------
-
-## Red Team Probe (T27)
-
-Adversarial self-testing for MCP deployments. The only product on the market that lets you find your own vulnerabilities before attackers do at the tool and MCP layer.
-
-```bash
-# Probe all registered servers
-aiglos probe
-
-# Target a specific server
-aiglos probe --target filesystem
-
-# Select specific probe types
-aiglos probe --probes tool_injection,path_traversal
-
-# CI/CD integration
-aiglos probe --json | jq '.[] | select(.vulnerable_count > 0)'
-```
-
-Five probe types run in audit-only mode. No changes are made to production state. Safe payloads only.
-
-|Probe              |What It Tests                                                            |
-|-------------------|-------------------------------------------------------------------------|
-|`tool_injection`   |Hidden instructions in tool description metadata (OWASP Agentic #1)      |
-|`path_traversal`   |Filesystem servers with no `--root` directory restriction                |
-|`cmd_injection`    |Shell execution patterns in server command config (`bash -c`, `&&`, eval)|
-|`oauth_escalation` |Overly broad OAuth scopes relative to advertised server functionality    |
-|`tool_redefinition`|Namespace conflicts between co-registered MCP servers (shadow attack)    |
-
-All probe findings persist to the audit DB tagged `aiglos-probe-*` for compliance reporting. The probe command exits with code 1 when any vulnerability is found, enabling CI/CD gates.
-
------
-
-## Compliance
-
-### CMMC Level 2 / NIST SP 800-171
-
-Aiglos actively covers 18 NIST SP 800-171 Rev 2 controls across five families. Every security event automatically maps to applicable control IDs at the moment it is recorded.
-
-```bash
-aiglos report --level 2 --format json --output cmmc_report.json
-aiglos report --level 2 --format summary
-aiglos report --format pdf --org "Acme Defense" --output cmmc_report.pdf
-```
-
-### NDAA FY2026 Section 1513 (T28)
-
-Section 1513 of the National Defense Authorization Act for FY2026 directs DoD to extend CMMC to cover AI/ML systems acquired by the Pentagon. The framework status report is due to Congress on June 16, 2026. Full enforcement across 220,000+ defense contractors begins with CMMC Level 2 mandatory C3PAO assessments in November 2026.
-
-Aiglos maps to the six anticipated Section 1513 control domains derived from the statute and NIST AI RMF:
-
-|Domain               |Controls        |Aiglos Implementation                                                  |
-|---------------------|----------------|-----------------------------------------------------------------------|
-|1. Model Integrity   |S1513-1.1 to 1.3|Agent attestation, system prompt hash, T26 supply chain scan           |
-|2. Runtime Monitoring|S1513-2.1 to 2.3|Autonomous engine, goal integrity, T24 sampling monitor                |
-|3. Access Control    |S1513-3.1 to 3.3|Policy engine, T25 OAuth detector, trust fabric attestation            |
-|4. Audit Trail       |S1513-4.1 to 4.3|SQLite WAL audit log, RSA-2048 attestation, PDF reports                |
-|5. Anomaly Detection |S1513-5.1 to 5.4|Injection detection, credential scanner, behavioral baseline, T27 probe|
-|6. Incident Response |S1513-6.1 to 6.3|Alert dispatch, engine suspension, session forensics                   |
-
-```bash
-# Section 1513 readiness dashboard
-aiglos s1513
-
-# JSON export for C3PAO assessors
-aiglos s1513 --json-output
-
-# Extend existing CMMC PDF with §1513 section
-aiglos s1513 --pdf cmmc_report.pdf
-```
-
-**Section 1513 is a category creation opportunity.** The framework does not exist yet. Aiglos is the only product building to spec before the spec drops.
-
-### Compliance Timeline
-
-|Date         |Event                                                          |
-|-------------|---------------------------------------------------------------|
-|Nov 2025     |CMMC 2.0 enforcement begins                                    |
-|June 16, 2026|DoD §1513 framework status report due to Congress              |
-|Nov 2026     |CMMC Level 2 mandatory C3PAO assessments begin                 |
-|Nov 2027     |CMMC Level 3 enforcement                                       |
-|Nov 2028     |CMMC applies to all DoD contracts above micropurchase threshold|
-
------
-
-## Deployment Tiers
-
-|Tier     |Target                     |CMMC Level|§1513              |
-|---------|---------------------------|----------|-------------------|
-|`cloud`  |SaaS, commercial           |L1/L2     |Baseline           |
-|`on_prem`|Enterprise, air-gap capable|L3        |Full               |
-|`gov`    |FedRAMP, IL4/IL5           |L3+ STIG  |Full + STIG overlay|
-
-For air-gapped environments, inject the signing key via environment variable:
-
-```bash
-export AIGLOS_SIGNING_KEY="$(cat /path/to/private_key.pem)"
-```
-
------
-
-## Alert Dispatch
-
-Fan-out to Splunk HEC, Syslog CEF (QRadar / ArcSight / Sentinel), Slack, webhook (PagerDuty / Opsgenie), Microsoft Teams, and file JSONL sink. Rate-limited per destination. CRITICAL events bypass rate limiting.
 
 -----
 
 ## CLI Reference
 
 ```
-aiglos proxy              Start the MCP security proxy
-aiglos init               Generate config and policy files
-aiglos scan               Scan current config for security issues
-aiglos sessions           List agent sessions with integrity scores
-aiglos logs               View recent audit events
-aiglos tail               Live tail security events
-aiglos report             Generate CMMC compliance report
-aiglos attest             Produce signed attestation document
-aiglos verify             Verify an attestation document
-aiglos trust list         List trust registry entries
-aiglos trust allow        Allow an MCP server
-aiglos trust block        Block an MCP server
-aiglos alerts             Show alert destination configuration
-
-aiglos daemon start       Start the autonomous runtime
-aiglos daemon stop        Stop the autonomous runtime
-aiglos daemon status      Show runtime state and last scan time
-aiglos daemon scan        Force immediate hunt cycle
-aiglos daemon intel       Force immediate threat intel refresh
-
-aiglos probe              Adversarial self-test all registered servers
-aiglos probe --target ID  Target a specific MCP server
-aiglos probe --json       Output results as JSON (CI/CD)
-
-aiglos s1513              NDAA §1513 readiness dashboard
-aiglos s1513 --json-output  JSON export for assessors
-aiglos s1513 --pdf FILE   Extend existing PDF with §1513 section
+python aiglos.py modules          Check all 22 modules (✅/❌)
+python aiglos.py scan             Full autonomous threat scan (8 hunt modules)
+python aiglos.py probe            Red team adversarial probe
+  --target SERVER_ID              Probe a specific server
+  --probes TYPE [TYPE ...]        tool_injection path_traversal cmd_injection
+                                  oauth_escalation tool_redefinition
+  --json                          JSON output
+python aiglos.py compliance       CMMC Level 2 + NDAA §1513 report
+  --org "Name"                    Organization name
+  --pdf PATH                      Write PDF to path
+  --json                          JSON output
+python aiglos.py intel            Refresh threat intelligence
+python aiglos.py rag              Scan RAG/memory stores for poison
+  --paths PATH [PATH ...]         Paths to scan
+python aiglos.py daemon           Start continuous monitoring daemon
+  --interval SECONDS              Scan interval (default: 300)
+python aiglos.py status           Runtime status summary
+  --json                          JSON output
 ```
 
 -----
 
-## Architecture
+## Deployment
+
+**Standard**
+
+```bash
+pip install -e .
+python aiglos.py proxy
+# Point MCP client to localhost:8765
+```
+
+**Docker**
+
+```bash
+docker run -p 8765:8765 \
+  -e UPSTREAM_HOST=your-mcp-server \
+  -e UPSTREAM_PORT=18789 \
+  aiglos/aiglos:latest
+```
+
+**Air-gapped / gov**
+
+```bash
+export AIGLOS_SIGNING_KEY="$(cat /path/to/private_key.pem)"
+python aiglos.py proxy --tier gov
+```
+
+Deployment tiers:
+
+|Tier     |Target             |CMMC    |
+|---------|-------------------|--------|
+|`cloud`  |SaaS, commercial   |L1/L2   |
+|`on_prem`|Enterprise, air-gap|L3      |
+|`gov`    |FedRAMP, IL4/IL5   |L3+ STIG|
+
+-----
+
+## Repository Structure
 
 ```
 aiglos/
+├── aiglos.py                      Drop-in manifest — module map, CLI, Aiglos class
+├── aiglos_probe.py                Red team probe engine (T27)
 ├── aiglos_core/
 │   ├── proxy/
-│   │   ├── __init__.py         # WebSocket proxy, trust registry
-│   │   ├── trust.py            # Trust registry
-│   │   ├── trust_fabric.py     # Cryptographic multi-agent attestation
-│   │   └── oauth.py            # T25: OAuth confused deputy detector
-│   ├── scanner/                # Credential and secret scanner
-│   ├── policy/                 # YAML policy engine (OPA-style)
-│   ├── audit/                  # SQLite audit log (WAL mode)
-│   ├── intelligence/           # Goal integrity engine, attestation
-│   ├── autonomous/
-│   │   ├── engine.py           # T23: Autonomous orchestrator
-│   │   ├── intel.py            # Threat intelligence refresh
-│   │   ├── hunter.py           # 6-module hunt cycle
-│   │   ├── sampler.py          # T24: MCP sampling monitor
-│   │   └── sca.py              # T26: Supply chain scanner
+│   │   ├── __init__.py            MCP proxy, attestation, alert dispatch (T1, T7, T15)
+│   │   ├── trust.py               Trust scorer (T2)
+│   │   ├── trust_fabric.py        Multi-agent trust chain (T8)
+│   │   ├── oauth.py               OAuth confused deputy detector (T25)
+│   │   └── identity_bridge.py     Cross-vendor identity bridge (T33)
+│   ├── policy/
+│   │   └── engine.py              OPA-compatible policy engine (T5)
+│   ├── audit/
+│   │   └── __init__.py            SQLite audit log (T3)
 │   ├── compliance/
-│   │   ├── __init__.py         # CMMC control mapper
-│   │   ├── report_pdf.py       # PDF report generator
-│   │   └── s1513.py            # T28: NDAA §1513 mapper
-│   └── integrations/           # SIEM / alert dispatcher
-├── aiglos_cli/                 # CLI entry point
-├── aiglos_probe.py             # T27: Red team probe (standalone)
-└── tests/unit/                 # 465 passing tests
+│   │   ├── __init__.py            CMMC mapper (T18)
+│   │   ├── report_pdf.py          PDF generator (T19)
+│   │   └── s1513.py               NDAA §1513 mapper (T28)
+│   └── autonomous/
+│       ├── hunter.py              ThreatHunter — 8 modules (T21)
+│       ├── intel.py               Threat intelligence refresh (T22)
+│       ├── engine.py              Autonomous engine orchestrator (T23)
+│       ├── sampler.py             MCP sampling monitor (T24)
+│       ├── sca.py                 Supply chain scanner (T26)
+│       ├── a2a.py                 A2A protocol monitor (T29)
+│       ├── registry.py            Public registry monitor (T30)
+│       ├── rag.py                 RAG/memory poison detector (T31)
+│       └── composer.py            Skill composition analyzer (T32)
+└── tests/
+    └── unit/
+        ├── test_t1_t23.py         364 tests — proxy, compliance, hunting
+        ├── test_t24_t28.py        51 tests  — sampling, OAuth, SCA, probe, §1513
+        └── test_t29_t33.py        63 tests  — A2A, registry, RAG, composition, identity
 ```
 
------
-
-## Test Coverage
-
-```
-465 tests passing, 0 failures
-
-T1-T8:    Proxy, policy, credential scanner, goal integrity,
-          trust registry, attestation (163 tests)
-T9-T15:   Behavioral baseline, SIEM integration,
-          alert dispatch (89 tests)
-T16-T23:  CMMC reporting, autonomous engine,
-          threat intelligence (162 tests)
-T24:      MCP sampling monitor (8 tests)
-T25:      OAuth confused deputy (8 tests)
-T26:      Supply chain scanner (8 tests)
-T27:      Red team probe (8 tests)
-T28:      Section 1513 compliance (13 tests)
-```
-
------
-
-## Competitive Position
-
-|Capability                               |Aiglos|Point Solutions|
-|-----------------------------------------|------|---------------|
-|Real-time proxy enforcement              |✅     |Some           |
-|Goal integrity / semantic drift          |✅     |No             |
-|Continuous autonomous runtime            |✅     |No             |
-|MCP sampling attack detection            |✅     |No             |
-|OAuth confused deputy (CVE-2025-6514)    |✅     |No             |
-|Supply chain scanning (SCA)              |✅     |Partial        |
-|Adversarial self-testing (red team probe)|✅     |No             |
-|CMMC Level 2/3 compliance mapping        |✅     |Partial        |
-|NDAA FY2026 §1513 mapping                |✅     |No             |
-|Signed tamper-evident audit trail        |✅     |Rare           |
-|Air-gap / gov deployment                 |✅     |Rare           |
-
-The 2025 M&A wave (Palo Alto acquiring Protect AI, Check Point acquiring Lakera, F5 acquiring Calypso AI, Snyk acquiring Invariant Labs) consumed every point solution in the market. No acquirer has a full-stack autonomous runtime with DoD compliance. That gap is what Aiglos occupies.
+**528 tests passing.**
 
 -----
 
 ## License
 
-Proprietary. Contact [will@aiglos.dev](mailto:will@aiglos.dev) for licensing.
+Proprietary. Contact [will@aiglos.io](mailto:will@aiglos.io) for licensing.
