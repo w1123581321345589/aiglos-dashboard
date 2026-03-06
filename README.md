@@ -26,6 +26,16 @@ Five classes of attack no existing tool catches:
 
 -----
 
+## Use Cases
+
+**Security and engineering teams** deploy Aiglos as the security layer for AI agents in production. The proxy intercepts every tool call, enforces policy, and produces a tamper-evident audit trail without requiring changes to the agent or MCP server. For organizations deploying Claude, GPT-4, Gemini, or open-source models in agentic workflows, Aiglos is the control plane that makes those deployments defensible.
+
+**Defense contractors and government agencies** use Aiglos to meet CMMC Level 2 certification and NDAA FY2026 §1513 compliance requirements. AI agents touching CUI require demonstrable access control, audit and accountability, and system integrity controls — all 14 NIST SP 800-171 families. Aiglos maps every runtime event to specific controls and produces C3PAO-ready evidence artifacts. The §1513 readiness report addresses the DoD AI/ML security framework mandate with a status report due June 16, 2026.
+
+**Cyber insurance underwriters and brokers** use Aiglos to assess and price AI agent risk. As organizations deploy AI agents with access to filesystems, databases, external APIs, and sensitive data, insurers need a standardized way to evaluate exposure before binding a policy. The T7 attestation artifact, T18 CMMC score, and T28 §1513 readiness report provide the structured risk evidence an underwriter needs: what the agent was authorized to do, what it actually did, whether it drifted from its objective, and what security controls were active throughout. This positions Aiglos as infrastructure for a new category of AI agent liability coverage.
+
+-----
+
 ## Architecture
 
 ```
