@@ -121,7 +121,7 @@ User question
 ## Installation
 
 ```bash
-pip install -e .            # installs the aiglos CLI entry point
+pip install aiglos
 ```
 
 Or drop `aiglos.py` into any project root for zero-install use:
@@ -131,6 +131,69 @@ python aiglos.py modules    # verify all modules load (✅/❌ per module)
 ```
 
 Requires Python 3.11+.
+
+-----
+
+## Embedded Library (Zero-Config)
+
+The fastest path to production security. Instead of deploying a proxy server, import one line and Aiglos installs itself in-process, intercepting every MCP call before it leaves your runtime and routing telemetry to the Aiglos cloud.
+
+**Python:**
+
+```python
+import aiglos  # monkey-patches mcp.client.*, zero config required
+```
+
+**TypeScript:**
+
+```typescript
+import 'aiglos/auto'  // auto-registers before any MCP calls
+```
+
+Set one environment variable:
+
+```bash
+export AIGLOS_KEY=ak_live_xxx
+```
+
+The first MCP tool call through any Aiglos-wrapped client auto-registers your account and starts the usage meter. No server. No ports. No yaml. No ops.
+
+The embedded model is more powerful than the proxy model for detection purposes. In-process means Aiglos sees the full call stack, the agent's goal state, and the arguments before serialization. The proxy sees wire-format JSON. Richer data, zero deployment friction.
+
+-----
+
+## MCP Ecosystem Distribution
+
+**Claude Desktop:** Aiglos registers as an MCP server that all other MCP traffic routes through. Enable it by adding four lines to your config:
+
+```json
+{
+  "mcpServers": {
+    "aiglos": {
+      "command": "aiglos",
+      "env": {"AIGLOS_KEY": "ak_live_xxx"}
+    }
+  }
+}
+```
+
+**Claude Code:** Aiglos as a Claude Code extension gives every developer building agents with Claude Code a one-click path to security. Anthropic's developer ecosystem becomes the distribution channel.
+
+**MCP Server Registry:** Listed as a middleware layer in the MCP server registry, not as a separate product. Every MCP client and server is a potential insertion point.
+
+-----
+
+## Pricing
+
+|Tier                |Model                          |Price |
+|--------------------|-------------------------------|------|
+|Free                |First 10,000 tool calls/month  |$0    |
+|Pay-as-you-go       |Per tool call intercepted      |$0.001|
+|Blocked threat      |Per confirmed block event      |$0.01 |
+|Attestation artifact|Per signed session record      |$0.05 |
+|Compliance report   |Per CMMC/§1513 report generated|$50   |
+
+A solo developer costs nothing. A team of 10 agents running all day costs approximately $30/month. An enterprise with 100 concurrent agent sessions generates usage that triggers an enterprise contract conversation at flat-rate pricing. The free tier is the hook. The usage-based tier is the discovery mechanism. The flat-rate enterprise tier is where the money is.
 
 -----
 
@@ -819,7 +882,32 @@ blocked_servers: []
 
 ## Deployment
 
-**Standard**
+The architecture supports customers entering at any level and moving up:
+
+### Tier 1: Library Embed (seconds)
+
+```bash
+pip install aiglos
+export AIGLOS_KEY=ak_live_xxx
+```
+
+```python
+import aiglos  # one line, in-process interception, usage-based billing starts immediately
+```
+
+Target: individual developers, data engineering teams. No infrastructure required.
+
+### Tier 2: Cloud Proxy (minutes)
+
+```bash
+docker run aiglos/aiglos -e AIGLOS_KEY=ak_live_xxx
+```
+
+Routes traffic through Aiglos's managed infrastructure. Target: teams that want the proxy model without running infrastructure.
+
+### Tier 3: On-Prem Deployment (hours)
+
+Customer runs the Aiglos container in their own cloud. Flat-rate enterprise contract.
 
 ```bash
 pip install -e .
@@ -828,7 +916,7 @@ aiglos proxy
 # Point your MCP client to localhost:8765
 ```
 
-**Docker**
+**Docker:**
 
 ```bash
 docker run -p 8765:8765 \
@@ -837,7 +925,7 @@ docker run -p 8765:8765 \
   aiglos/aiglos:latest
 ```
 
-**Docker Compose**
+**Docker Compose:**
 
 ```bash
 UPSTREAM_HOST=your-mcp-server docker compose up
@@ -851,17 +939,26 @@ The compose file mounts `aiglos.yaml`, `aiglos_policy.yaml`, and `aiglos_trust.y
 |`UPSTREAM_PORT`     |`18789`    |MCP server port                                   |
 |`DEPLOYMENT_TIER`   |`cloud`    |cloud / on_prem / gov                             |
 |`TRUST_MODE`        |`audit`    |strict / audit / permissive                       |
+|`AIGLOS_KEY`        |N/A        |API key for Aiglos cloud telemetry and billing     |
 |`ANTHROPIC_API_KEY` |N/A        |Enables T6 LLM-based semantic evaluation          |
 |`AIGLOS_SIGNING_KEY`|N/A        |Injects RSA private key for air-gapped deployments|
 
-**Air-gapped / gov**
+Target: enterprise security teams, air-gap-capable deployments.
+
+### Tier 4: Program-Level Contract
+
+Custom integration, C3PAO evidence package, performance guarantee. Revenue is $5-20M TCV per contract. Target: DoD-adjacent prime contractors.
+
+Tiers 1-3 are self-serve. A developer discovers Aiglos via PyPI or the MCP registry, activates it in minutes, their enterprise upgrades them to tier 3, and the tier 3 relationship is the on-ramp to tier 4. The DoD channel does not require cold outreach; it requires tier 3 enterprise customers who are already defense-adjacent.
+
+**Air-gapped / gov:**
 
 ```bash
 export AIGLOS_SIGNING_KEY="$(cat /path/to/private_key.pem)"
 aiglos proxy --tier gov
 ```
 
-Deployment tiers:
+Infrastructure tiers:
 
 |Tier     |Target                     |CMMC Level|
 |---------|---------------------------|----------|
@@ -959,10 +1056,11 @@ aiglos/
 │       ├── a2a.py                 A2A protocol monitor (T29)
 │       ├── registry.py            Public registry monitor (T30)
 │       ├── rag.py                 RAG and memory poison detector (T31)
-│       └── composer.py            Skill composition analyzer (T32)
+│       ├── composer.py            Skill composition analyzer (T32)
+│       └── data_agent.py          Data agent monitor (T34)
 │
 └── tests/
-    └── unit/                      528 tests across 14 files
+    └── unit/                      576 tests across 15 files
         ├── test_core.py           T3 audit log, shared types
         ├── test_trust.py          T2 trust scorer
         ├── test_trust_fabric.py   T8 multi-agent trust chain
@@ -976,7 +1074,8 @@ aiglos/
         ├── test_autonomous.py     T21 / T22 / T23 autonomous stack
         ├── test_augmentation.py   T24 / T25 / T26 / T27 / T28
         ├── test_t24_t28.py        T24–T28 extended coverage
-        └── test_t29_t33.py        T29–T33 agent and skills proliferation
+        ├── test_t29_t33.py        T29–T33 agent and skills proliferation
+        └── test_t34.py            T34 data agent monitor
 ```
 
 -----
