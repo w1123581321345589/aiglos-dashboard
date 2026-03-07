@@ -3,7 +3,7 @@ aiglos.metering
 Usage metering client.
 
 Records every tool call to the Aiglos cloud for:
-  - Usage-based billing (free tier: 10,000 calls/month)
+  - Cloud telemetry (Pro tier and above; free tier runs local-only)
   - Threat telemetry (blocked events, findings)
   - Session attestation feed
 
@@ -17,7 +17,7 @@ Design constraints:
 
 Events emitted:
   tool_call    -- every call intercepted (CLEAN, WARN, or BLOCK)
-  block_event  -- every BLOCK verdict (billed separately: $0.01/event)
+  block_event  -- every BLOCK verdict (tracked for telemetry)
   session_end  -- emitted when session context is closed
 """
 
