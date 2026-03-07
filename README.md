@@ -4,7 +4,7 @@
 
 Aiglos is a full-stack security runtime for AI agents. It sits between any AI agent and the MCP servers it connects to, intercepting every tool call through a layered security pipeline while running a continuous autonomous threat hunting engine in the background. It covers the complete modern agent attack surface: real-time proxy enforcement, semantic goal integrity, behavioral baseline fingerprinting, stateful OPA policy, supply chain scanning, registry monitoring, RAG/memory poison detection, skill composition analysis, cryptographic identity across multi-vendor agent pipelines, full-session security monitoring for AI data agents, and complete coverage of the OpenClaw personal agent attack surface including ClawHub skill marketplace poisoning, WebSocket localhost hijacking, log injection, messaging channel prompt injection, and exposed instance detection. Also ships as a zero-config embedded library: `import aiglos` patches every MCP client call in-process with a 10-rule fast-path scanner, no proxy server required.
 
-**769 tests passing. 17 test files. Python 3.11+.**
+**875 tests passing. 18 test files. Python 3.11+.**
 
 -----
 
@@ -1165,7 +1165,7 @@ aiglos/
 │   └── metering.py                Fire-and-forget usage metering (T36)
 │
 └── tests/
-    └── unit/                      769 tests across 17 files
+    └── unit/                      875 tests across 18 files
         ├── test_core.py           T3 audit log, shared types
         ├── test_trust.py          T2 trust scorer
         ├── test_trust_fabric.py   T8 multi-agent trust chain
