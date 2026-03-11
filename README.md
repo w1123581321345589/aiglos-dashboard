@@ -42,7 +42,7 @@ import aiglos  # every tool call below this line is inspected
 
 ## What just happened
 
-Six events in 48 hours turned AI agent security from a developer concern into a geopolitical and market-structure fact.
+Seven events in 72 hours turned AI agent security from a developer concern into a geopolitical and market-structure fact.
 
 **March 10 — OpenClaw hits critical mass.** Tencent shares rose 7.3% after launching WorkBuddy, a fully OpenClaw-compatible workplace agent. Zhipu surged 13% after launching AutoClaw. MiniMax soared 22%. Every major Chinese platform company bet on the same technology in the same week. SecurityScorecard's STRIKE team counted 135,000 OpenClaw instances exposed to the public internet, 93.4% with authentication bypass conditions and 15,000+ vulnerable to remote code execution. This is not a developer tool anymore. It is infrastructure.
 
@@ -64,7 +64,9 @@ Their recommended fix for all three: *"planned improvements."*
 
 **March 11 — Nvidia starts over with NemoClaw.** Nvidia is developing NemoClaw, an open-source challenger to OpenClaw built explicitly around stronger security and privacy protections, with early partnerships at Adobe, Google, and Salesforce. When the world's largest AI infrastructure company decides the answer to OpenClaw is a security-first rewrite, the market has confirmed the gap.
 
-Aiglos is the runtime layer for the OpenClaw ecosystem that exists today, while Nvidia builds the one for tomorrow.
+**March 11 — Nvidia drops Nemotron Super: 1M context, 120B parameters, open weights, 5x faster.** This is not an incremental model release. This is a structural change to the threat model. An agent running Nemotron Super locally can load an entire codebase into a single context window and reason across the full dependency graph, CI/CD config, and secrets layout before making a single outbound call. The per-call scanner catches malicious tool calls. It does not catch reconnaissance that happens entirely within a 1M-token context window. Open weights mean local inference: no API-level guardrails, no provider rate limits, no endpoint to monitor, fine-tunable to ignore safety prompts. The attack unit is no longer a tool call. It is a campaign assembled in one inference pass that executes in one clean-looking tool call. Aiglos is adding campaign-mode session analysis — T06 extended — to address exactly this vector.
+
+Aiglos is the runtime layer for the OpenClaw ecosystem that exists today, while Nvidia builds the one for tomorrow. Nemotron Super is the model that will run inside it.
 
 ---
 
@@ -286,6 +288,7 @@ Everything OpenClaw exposed, Aiglos catches. Module-by-module.
 | Research Jan 2026 | **Log poisoning / indirect prompt injection** — malicious content written to agent log files via WebSocket; agent reads own logs to troubleshoot, executing embedded payload | `T21` `T31` |
 | Research Jan 2026 | **Auth-disabled instances** — 1,000 publicly accessible OpenClaw installations running without authentication, bound to 0.0.0.0 | `T04` |
 | Research Feb 2026 | **Prompt injection via messaging apps** — inbound Slack/email message instructs agent to read credential files; anyone who can message the agent inherits its full permissions | `T06` |
+| Threat Mar 2026 | **Nemotron Super 1M-context campaign attacks** — open-weight 120B model runs locally with no API guardrails; agent loads full codebase into single context window, performs silent reconnaissance across all secrets and auth flows, then emits one minimally suspicious tool call; per-call scanners see a clean call, not the reasoning chain that assembled it | `T06` `T22` `T27` |
 | Research Mar 2026 | **Moltbook A2A attacks** — OpenClaw agent-to-agent communication surface enables cross-agent privilege escalation via Agent Card artifacts | `T29` |
 
 Full CVE database: [CVES.md](CVES.md)
