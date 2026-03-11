@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing — Aiglos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+:root {
+  --bg:    #fafaf9;
+  --ink:   #0a0a0a;
+  --mid:   #525252;
+  --dim:   #a3a3a3;
+  --rule:  #e5e5e5;
+  --green: #16a34a;
+}
+body { background: var(--bg); color: var(--ink); font-family: 'Geist', sans-serif; font-size: 15px; line-height: 1.6; }
+a { color: inherit; text-decoration: none; }
+
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 56px;
+  background: rgba(250,250,249,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+}
+.nav-logo { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.nav-links { display: flex; gap: 28px; list-style: none; }
+.nav-links a { font-size: 14px; color: var(--mid); transition: color .15s; }
+.nav-links a:hover, .nav-links a.active { color: var(--ink); }
+.nav-right { display: flex; gap: 10px; align-items: center; }
+.btn-ghost { font-size: 13px; color: var(--mid); background: none; border: 1px solid var(--rule); padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all .15s; text-decoration: none; display: inline-block; }
+.btn-ghost:hover { border-color: #a3a3a3; color: var(--ink); }
+.btn-dark { font-size: 13px; color: #fff; background: var(--ink); border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; display: inline-block; text-decoration: none; }
+.btn-dark:hover { opacity: .8; }
+
+/* Page */
+.page { max-width: 860px; margin: 0 auto; padding: 96px 40px 120px; }
+
+.eyebrow { font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: var(--dim); text-transform: uppercase; margin-bottom: 16px; }
+
+h1 { font-size: clamp(30px, 4vw, 46px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 16px; }
+
+.page-sub { font-size: 17px; color: var(--mid); line-height: 1.7; max-width: 480px; margin-bottom: 72px; }
+
+/* Two-column pricing */
+.pricing-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--rule);
+  border: 1px solid var(--rule); border-radius: 14px;
+  overflow: hidden; margin-bottom: 72px;
+}
+
+.price-col {
+  background: var(--bg); padding: 40px 36px;
+  display: flex; flex-direction: column;
+}
+.price-col.featured { background: #fff; }
+
+.price-tier {
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 24px;
+}
+
+.price-amount {
+  font-size: 42px; font-weight: 600; letter-spacing: -0.04em;
+  color: var(--ink); line-height: 1; margin-bottom: 6px;
+}
+.price-amount .mo { font-size: 18px; font-weight: 400; color: var(--dim); }
+
+.price-tagline {
+  font-size: 13px; color: var(--dim); margin-bottom: 32px;
+}
+
+.divider { height: 1px; background: var(--rule); margin-bottom: 28px; }
+
+.feature-list { list-style: none; flex: 1; margin-bottom: 32px; }
+.feature-list li {
+  font-size: 14px; color: var(--mid);
+  padding: 8px 0; display: flex; gap: 12px;
+  align-items: flex-start; line-height: 1.5;
+  border-bottom: 1px solid #f5f5f4;
+}
+.feature-list li:last-child { border-bottom: none; }
+.feature-list li.on { color: var(--ink); }
+.check { flex-shrink: 0; margin-top: 1px; }
+.feature-list li.on .check { color: var(--green); }
+
+.price-cta {
+  display: block; width: 100%; text-align: center;
+  font-size: 14px; font-weight: 500; padding: 11px;
+  border-radius: 7px; cursor: pointer; transition: all .15s;
+  text-decoration: none;
+}
+.price-cta.dark { background: var(--ink); color: #fff; border: 1px solid var(--ink); }
+.price-cta.dark:hover { opacity: .82; }
+.price-cta.outline { border: 1px solid var(--rule); color: var(--mid); background: transparent; }
+.price-cta.outline:hover { border-color: #a3a3a3; color: var(--ink); }
+
+/* FAQ */
+.faq-section { }
+.faq-section h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.025em; margin-bottom: 28px; }
+.faq-list { border-top: 1px solid var(--rule); }
+.faq-item { border-bottom: 1px solid var(--rule); }
+.faq-q {
+  width: 100%; text-align: left; background: none; border: none;
+  padding: 20px 0; font-size: 15px; font-weight: 500; color: var(--ink);
+  cursor: pointer; display: flex; justify-content: space-between;
+  align-items: center; font-family: 'Geist', sans-serif; gap: 16px;
+}
+.faq-q .icon { color: var(--dim); font-size: 20px; transition: transform .2s; flex-shrink: 0; }
+.faq-q.open .icon { transform: rotate(45deg); }
+.faq-a {
+  font-size: 14px; color: var(--mid); line-height: 1.72;
+  max-height: 0; overflow: hidden; transition: max-height .28s ease, padding-bottom .28s;
+}
+.faq-a.open { max-height: 300px; padding-bottom: 20px; }
+.faq-a code { font-family: 'Geist Mono', monospace; font-size: 12px; background: #f0f0ef; padding: 2px 6px; border-radius: 4px; color: var(--ink); }
+.faq-a a { color: var(--ink); text-decoration: underline; }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); backdrop-filter: blur(6px); z-index: 500; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: #fff; border: 1px solid var(--rule); border-radius: 12px; padding: 40px; width: 400px; max-width: 92vw; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.1); }
+.modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 20px; color: var(--dim); cursor: pointer; }
+.modal-label { font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+.modal h3 { font-size: 22px; font-weight: 600; letter-spacing: -0.025em; margin-bottom: 8px; }
+.modal-sub { font-size: 13px; color: var(--mid); line-height: 1.65; margin-bottom: 24px; }
+.modal-input { width: 100%; border: 1px solid var(--rule); border-radius: 6px; padding: 10px 14px; font-family: 'Geist', sans-serif; font-size: 13px; color: var(--ink); background: var(--bg); outline: none; margin-bottom: 10px; transition: border-color .15s; }
+.modal-input:focus { border-color: #a3a3a3; }
+.modal-submit { width: 100%; background: var(--ink); color: #fff; border: none; border-radius: 6px; padding: 12px; font-family: 'Geist', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 12px; transition: opacity .15s; }
+.modal-submit:hover { opacity: .82; }
+.modal-legal { font-size: 11px; color: var(--dim); text-align: center; }
+
+footer { border-top: 1px solid var(--rule); padding: 28px 40px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--dim); }
+.footer-links { display: flex; gap: 22px; list-style: none; }
+.footer-links a { color: var(--dim); transition: color .15s; }
+.footer-links a:hover { color: var(--ink); }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .page { padding: 56px 20px 80px; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 16px; padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Aiglos</a>
+  <ul class="nav-links">
+    <li><a href="/#how">Product</a></li>
+    <li><a href="/threats.html">Threats</a></li>
+    <li><a href="/pricing.html" class="active">Pricing</a></li>
+    <li><a href="/docs.html">Docs</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="#" class="btn-ghost">Sign In</a>
+    <a href="#" class="btn-dark" onclick="openModal(); return false;">Get Started</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="eyebrow">Pricing</div>
+  <h1>One price.<br>Full protection.</h1>
+  <p class="page-sub">
+    $39/month. Every tool call your agents make, inspected before it runs.
+    Cancel anytime.
+  </p>
+
+  <div class="pricing-grid">
+
+    <div class="price-col featured">
+      <div class="price-tier">Pro</div>
+      <div class="price-amount">$39 <span class="mo">/mo</span></div>
+      <div class="price-tagline">Per developer · cancel anytime</div>
+      <div class="divider"></div>
+      <ul class="feature-list">
+        <li class="on"><span class="check">✓</span> Full T1–T36 detection stack</li>
+        <li class="on"><span class="check">✓</span> Unlimited tool call inspection</li>
+        <li class="on"><span class="check">✓</span> BLOCK / WARN / CLEAN verdicts</li>
+        <li class="on"><span class="check">✓</span> Signed attestation artifacts</li>
+        <li class="on"><span class="check">✓</span> Cloud dashboard</li>
+        <li class="on"><span class="check">✓</span> Compliance PDF export</li>
+        <li class="on"><span class="check">✓</span> CVE database updates</li>
+        <li class="on"><span class="check">✓</span> Works with Claude Code, Cursor, any MCP client</li>
+      </ul>
+      <a href="#" class="price-cta dark" onclick="openModal(); return false;">Get Started</a>
+    </div>
+
+    <div class="price-col">
+      <div class="price-tier">Defense &amp; Government</div>
+      <div class="price-amount" style="font-size:28px;padding-top:8px;margin-bottom:12px">Custom</div>
+      <div class="price-tagline">On-prem · air-gap · CMMC · §1513</div>
+      <div class="divider"></div>
+      <ul class="feature-list">
+        <li class="on"><span class="check">✓</span> Everything in Pro</li>
+        <li class="on"><span class="check">✓</span> On-premises or air-gap deployment</li>
+        <li class="on"><span class="check">✓</span> Multi-agent management</li>
+        <li class="on"><span class="check">✓</span> SIEM / webhook integration</li>
+        <li class="on"><span class="check">✓</span> CMMC evidence packages</li>
+        <li class="on"><span class="check">✓</span> NDAA §1513 compliance</li>
+        <li class="on"><span class="check">✓</span> C3PAO audit support</li>
+        <li class="on"><span class="check">✓</span> Dedicated engineering</li>
+      </ul>
+      <a href="/defense.html" class="price-cta outline">Talk to the Defense Team</a>
+    </div>
+
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-section">
+    <h2>Common questions</h2>
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          What does Aiglos actually do?
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-a">
+          Aiglos intercepts every MCP tool call your AI agents make — before it executes. One import, no proxy server, no config. It patches into the MCP client at runtime and runs every call through 36 rule families in under a millisecond. Malicious calls get blocked. Suspicious ones get flagged. Everything else runs normally.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          How is this different from Claude Code's built-in security?
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-a">
+          Claude Code asks for your approval before running commands. Aiglos inspects what those commands actually are against a continuously updated threat database — prompt injection patterns, credential extraction attempts, supply chain attacks, SSRF, shell abuse — before you ever see the approval prompt. It's the layer between the model and your machine.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Does it slow down my agents?
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-a">
+          No. The scanner runs synchronously in-process in under 1ms per call. Your agents don't notice it.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          What MCP clients does it work with?
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-a">
+          Any MCP client built on the Python or TypeScript SDK — Claude Code, Cursor, LangChain, LlamaIndex, AutoGen, CrewAI, n8n, or your own agent. Aiglos patches <code>mcp.client.session.ClientSession</code> at import time. If it uses MCP, it's covered.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Is the detection engine open source?
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-a">
+          Yes. The T1–T36 rule families, the Python and TypeScript SDKs, and the CVE database are MIT licensed on <a href="https://github.com/aiglos">GitHub</a>. You can read exactly what scans your tool calls before you pay for anything.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          What's the cancellation policy?
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-a">
+          Cancel anytime from your account dashboard. No contracts, no minimums. Your subscription runs to the end of the billing period and stops.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-label">Aiglos Pro</div>
+    <h3>Get started</h3>
+    <p class="modal-sub">$39/month. Full protection from your first tool call.</p>
+    <input id="m-email" type="email" class="modal-input" placeholder="you@company.com">
+    <button class="modal-submit" onclick="submitModal()">Create Account</button>
+    <p class="modal-legal">Cancel anytime. No contracts.</p>
+  </div>
+</div>
+
+<footer>
+  <span>Aiglos</span>
+  <ul class="footer-links">
+    <li><a href="/docs.html">Docs</a></li>
+    <li><a href="https://github.com/aiglos">GitHub</a></li>
+    <li><a href="/threats.html">CVEs</a></li>
+    <li><a href="/changelog.html">Changelog</a></li>
+    <li><a href="/defense.html">Defense</a></li>
+    <li><a href="/cdn-cgi/l/email-protection#e192808d8492a18088868d8e92cf888e">Contact</a></li>
+  </ul>
+  <span>aiglos.dev</span>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function toggleFaq(btn) {
+  const a = btn.nextElementSibling;
+  const open = a.classList.contains('open');
+  document.querySelectorAll('.faq-a').forEach(x => x.classList.remove('open'));
+  document.querySelectorAll('.faq-q').forEach(x => x.classList.remove('open'));
+  if (!open) { a.classList.add('open'); btn.classList.add('open'); }
+}
+function openModal() { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function submitModal() {
+  const email = document.getElementById('m-email').value.trim();
+  if (!email) { document.getElementById('m-email').focus(); return; }
+  document.querySelector('.modal').innerHTML = `
+    <div style="text-align:center;padding:16px 0">
+      <div style="font-size:36px;margin-bottom:16px">✓</div>
+      <h3 style="font-size:20px;font-weight:600;letter-spacing:-0.02em;margin-bottom:10px">You're in</h3>
+      <p style="font-size:13px;color:var(--mid);line-height:1.65;margin-bottom:24px">Check your email to complete setup and get your API key.</p>
+      <button onclick="closeModal()" style
