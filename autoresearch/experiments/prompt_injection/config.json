@@ -1,0 +1,10 @@
+{
+  "threat_id": "T27_PROMPT_INJECT",
+  "name": "Prompt Injection",
+  "description": "Detect agent tool calls that attempt to override system instructions, inject new directives, or manipulate agent behavior via content in tool arguments.",
+  "mitre_atlas": "AML.T0051",
+  "fitness_weights": {
+    "tpr_weight": 1.0,
+    "fpr_penalty": 2.0
+  }
+}
