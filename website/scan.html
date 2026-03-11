@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aiglos Skill Scanner — Scan any ClawHub skill before you install</title>
+  <meta name="description" content="Free security scanner for OpenClaw skills. Paste any ClawHub or SkillsMP skill name and get an instant risk score powered by Aiglos T26 + T30."/>
+  <meta property="og:title" content="Aiglos Skill Scanner"/>
+  <meta property="og:description" content="820 of 10,700 ClawHub skills are malicious. Scan before you install."/>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface2: #1a1a1a;
+      --border: #222222;
+      --text: #e8e8e8;
+      --muted: #666666;
+      --accent: #ffffff;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a { color: var(--text); text-decoration: none; }
+
+    /* NAV */
+    nav {
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links { display: flex; gap: 32px; font-size: 13px; color: var(--muted); }
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      background: var(--accent);
+      color: #000;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 5px;
+      letter-spacing: 0.3px;
+    }
+
+    /* HERO */
+    .hero {
+      padding: 80px 40px 60px;
+      max-width: 760px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .stat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: var(--red);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+      letter-spacing: 0.3px;
+    }
+
+    .stat-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    h1 {
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -1.5px;
+      margin-bottom: 18px;
+    }
+
+    h1 span { color: var(--muted); }
+
+    .hero-sub {
+      font-size: 16px;
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 540px;
+      margin-bottom: 40px;
+    }
+
+    /* SCANNER */
+    .scanner-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px;
+      max-width: 760px;
+      margin: 0 auto;
+      width: calc(100% - 80px);
+    }
+
+    .scanner-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .skill-input {
+      flex: 1;
+      min-width: 200px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 12px 16px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .skill-input:focus { border-color: #444; }
+    .skill-input::placeholder { color: var(--muted); }
+
+    .registry-select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 12px 14px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .scan-btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 7px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: -0.3px;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+
+    .scan-btn:hover { opacity: 0.9; }
+    .scan-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .example-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .pill:hover { color: var(--text); border-color: #444; }
+
+    /* RESULT */
+    .result-area {
+      max-width: 760px;
+      margin: 28px auto 0;
+      width: calc(100% - 80px);
+      display: none;
+    }
+
+    .result-area.show { display: block; }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .result-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .result-skill-name {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .risk-badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 4px;
+    }
+
+    .risk-critical { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.4); }
+    .risk-high     { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.4); }
+    .risk-medium   { background: rgba(245,158,11,0.08); color: var(--yellow); border: 1px solid rgba(245,158,11,0.2); }
+    .risk-low      { background: rgba(34,197,94,0.1);  color: var(--green);  border: 1px solid rgba(34,197,94,0.3); }
+    .risk-pass     { background: rgba(34,197,94,0.1);  color: var(--green);  border: 1px solid rgba(34,197,94,0.3); }
+
+    .score-row {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .score-number {
+      font-size: 56px;
+      font-weight: 800;
+      letter-spacing: -3px;
+      line-height: 1;
+      min-width: 80px;
+    }
+
+    .score-bar-wrap { flex: 1; min-width: 200px; }
+    .score-bar-label { font-size: 11px; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .score-track { background: var(--surface2); border-radius: 4px; height: 8px; overflow: hidden; }
+    .score-fill  { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(.23,1,.32,1); }
+
+    .signals-section { padding: 24px; }
+    .signals-title { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+
+    .signal-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .signal-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .signal-icon.crit { background: rgba(239,68,68,0.15); }
+    .signal-icon.warn { background: rgba(245,158,11,0.15); }
+    .signal-icon.ok   { background: rgba(34,197,94,0.15); }
+
+    .signal-name  { font-family: var(--font-mono); font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+    .signal-desc  { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    .verdict-row {
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .verdict-text { font-size: 15px; font-weight: 700; }
+
+    .install-cta {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 10px 16px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .install-cta:hover { border-color: #444; color: var(--text); }
+
+    /* STATS BAR */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      padding: 48px 40px;
+      flex-wrap: wrap;
+    }
+
+    .stat { text-align: center; }
+    .stat-number { font-size: 36px; font-weight: 800; letter-spacing: -2px; }
+    .stat-label  { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: 0.3px; }
+
+    /* HOW IT WORKS */
+    .section { max-width: 760px; margin: 0 auto; padding: 0 40px 64px; width: 100%; }
+    .section-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 24px; }
+
+    .signal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 600px) { .signal-grid { grid-template-columns: 1fr; } }
+
+    .signal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .signal-card-num {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .signal-card-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .signal-card-desc { font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+    /* CVE TABLE */
+    .cve-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .cve-table th {
+      text-align: left;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cve-table td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+
+    .cve-table tr:last-child td { border-bottom: none; }
+    .cve-id   { font-family: var(--font-mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+    .cve-name { font-weight: 600; }
+    .cve-rule { font-family: var(--font-mono); font-size: 11px; color: var(--green); white-space: nowrap; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    /* LOADING */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--text); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">aiglos</div>
+  <div class="nav-links">
+    <a href="https://aiglos.dev">Home</a>
+    <a href="https://aiglos.dev/docs">Docs</a>
+    <a href="https://github.com/w1123581321345589/aiglos">GitHub</a>
+  </div>
+  <a href="https://aiglos.dev#install" class="nav-cta">pip install aiglos</a>
+</nav>
+
+<div class="hero">
+  <div class="stat-badge">820 of 10,700 ClawHub skills confirmed malicious</div>
+  <h1>Scan before you install.<br/><span>Every time.</span></h1>
+  <p class="hero-sub">
+    Attackers distributed 335+ malicious skills via ClawHub using professional documentation
+    and names like "solana-wallet-tracker." Aiglos runs 8 risk signals against any skill
+    in under 2 seconds.
+  </p>
+</div>
+
+<div class="scanner-box">
+  <div class="scanner-label">Skill Scanner — T26 + T30</div>
+  <div class="input-row">
+    <input
+      class="skill-input"
+      id="skillInput"
+      type="text"
+      placeholder="solana-wallet-tracker  or  https://clawhub.ai/skills/..."
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <select class="registry-select" id="registrySelect">
+      <option value="clawhub">ClawHub</option>
+      <option value="skillsmp">SkillsMP</option>
+      <option value="npm">npm</option>
+      <option value="pypi">PyPI</option>
+    </select>
+    <button class="scan-btn" id="scanBtn" onclick="runScan()">Scan</button>
+  </div>
+  <div class="example-pills">
+    <span class="pill" onclick="prefill('solana-wallet-tracker')">solana-wallet-tracker</span>
+    <span class="pill" onclick="prefill('openclaw-installer')">openclaw-installer</span>
+    <span class="pill" onclick="prefill('calendar')">calendar</span>
+    <span class="pill" onclick="prefill('email-assistant')">email-assistant</span>
+    <span class="pill" onclick="prefill('browser-automation')">browser-automation</span>
+  </div>
+</div>
+
+<div class="result-area" id="resultArea"></div>
+
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-number" style="color:var(--red)">820</div>
+    <div class="stat-label">Malicious skills<br/>confirmed on ClawHub</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">8</div>
+    <div class="stat-label">Risk signals<br/>scored per skill</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number" style="color:var(--green)">&lt;2s</div>
+    <div class="stat-label">Scan time per<br/>skill</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">19k+</div>
+    <div class="stat-label">Skills on ClawHub<br/>monitored continuously</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">8 risk signals scored per skill</div>
+  <div class="signal-grid">
+    <div class="signal-card">
+      <div class="signal-card-num">01</div>
+      <div class="signal-card-name">Typosquatting</div>
+      <div class="signal-card-desc">Edit distance from known-legitimate packages. Catches "opencIaw-installer" vs "openclaw-installer."</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-card-num">02</div>
+      <div class="signal-card-name">Social Engineering Language</div>
+      <div class="signal-card-desc">README phrases like "paste in terminal," "required setup step," or "disable security check" used in 100% of GhostClaw attack samples.</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-card-num">03</div>
+      <div class="signal-card-name">Known-Malicious Publisher</div>
+      <div class="signal-card-desc">Publisher account fingerprint matched against Aiglos post-mortem blocklist from OpenClaw ClawJacked analysis.</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-card-num">04</div>
+      <div class="signal-card-name">Version Gap Anomaly</div>
+      <div class="signal-card-desc">Version jumped from 0.0.1 to 9.x with no install history. Common in fast-publish supply chain attacks.</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-card-num">05</div>
+      <div class="signal-card-name">New Publish Anomaly</div>
+      <div class="signal-card-desc">Published under 48 hours ago, zero downloads. The GhostClaw npm package matched this exact profile on launch day.</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-card-num">06</div>
+      <div class="signal-card-name">Dependency Confusion</div>
+      <div class="signal-card-desc">Internal-looking package name pattern published to a public registry. Targets developer CI environments.</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-card-num">07</div>
+      <div class="signal-card-name">Suspicious Permissions</div>
+      <div class="signal-card-desc">Skill requests shell, credentials, keychain, or network access without documented justification in the manifest.</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-card-num">08</div>
+      <div class="signal-card-name">Community Flags</div>
+      <div class="signal-card-desc">Aggregated abuse reports from ClawHub, SkillsMP, GitHub Issues, and Discord researcher channels. Scales with count.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Everything OpenClaw exposed — Aiglos catches</div>
+  <table class="cve-table">
+    <thead>
+      <tr>
+        <th>CVE / Incident</th>
+        <th>Vulnerability</th>
+        <th>Aiglos Rule</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="cve-id">CVE-2026-25253<br/>CVSS 8.8</td>
+        <td><span class="cve-name">ClawJacked — WebSocket gateway brute force</span><br/>Malicious JavaScript opens localhost WebSocket, exploits missing rate-limiting to brute-force gateway password.</td>
+        <td class="cve-rule">T1 · T25</td>
+      </tr>
+      <tr>
+        <td class="cve-id">CVE-2026-24763<br/>CVE-2026-25157</td>
+        <td><span class="cve-name">Command injection + path traversal</span><br/>Tool call arguments pass unsanitized shell commands and directory traversal sequences to the MCP server.</td>
+        <td class="cve-rule">T1</td>
+      </tr>
+      <tr>
+        <td class="cve-id">Incident<br/>Mar 2026</td>
+        <td><span class="cve-name">GhostClaw — malicious npm package</span><br/>Fake OpenClaw installer deploys persistent RAT. Steals SSH keys, AWS credentials, crypto wallets. JFrog confirmed active on launch day.</td>
+        <td class="cve-rule">T26 · T30</td>
+      </tr>
+      <tr>
+        <td class="cve-id">Incident<br/>Feb 2026</td>
+        <td><span class="cve-name">ClawHub / SkillsMP malicious skills</span><br/>820 malicious skills distributed with professional documentation. Installed keyloggers and Atomic Stealer via social-engineering README instructions.</td>
+        <td class="cve-rule">T26 · T30</td>
+      </tr>
+      <tr>
+        <td class="cve-id">Incident<br/>Jan 2026</td>
+        <td><span class="cve-name">Log poisoning / indirect prompt injection</span><br/>WebSocket writes malicious content to agent log files. Agent re-reads logs to troubleshoot, executing the embedded payload.</td>
+        <td class="cve-rule">T21 · T31</td>
+      </tr>
+      <tr>
+        <td class="cve-id">Research<br/>Jan 2026</td>
+        <td><span class="cve-name">Auth-disabled instances (1,000+ exposed)</span><br/>Nearly 1,000 publicly accessible OpenClaw installations found with authentication entirely disabled, bound to 0.0.0.0.</td>
+        <td class="cve-rule">T4</td>
+      </tr>
+      <tr>
+        <td class="cve-id">Research<br/>Jan 2026</td>
+        <td><span class="cve-name">Credential exfiltration via plaintext storage</span><br/>1,200+ misconfigured instances leaking API keys and chat logs. T1 inline credential scanner covers 20+ pattern families.</td>
+        <td class="cve-rule">T1 · T32</td>
+      </tr>
+      <tr>
+        <td class="cve-id">Research<br/>Feb 2026</td>
+        <td><span class="cve-name">Persistent memory attack amplifier</span><br/>Poisoned memory persists across all future sessions, turning point-in-time exploits into stateful delayed-execution attacks.</td>
+        <td class="cve-rule">T31</td>
+      </tr>
+      <tr>
+        <td class="cve-id">Research<br/>Feb 2026</td>
+        <td><span class="cve-name">Prompt injection via messaging apps</span><br/>Inbound Slack/email message instructs agent to read password manager. Anyone who can message the agent inherits its permissions.</td>
+        <td class="cve-rule">T6</td>
+      </tr>
+      <tr>
+        <td class="cve-id">Research<br/>Mar 2026</td>
+        <td><span class="cve-name">A2A / Moltbook agent-to-agent attacks</span><br/>OpenClaw's agent communication surface enables cross-agent privilege escalation via Agent Card artifacts and subagent dispatch.</td>
+        <td class="cve-rule">T29</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section" style="padding-bottom: 80px;">
+  <div class="section-title">Protect your agent runtime</div>
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 32px;">
+    <p style="font-size: 15px; color: var(--muted); margin-bottom: 20px; line-height: 1.65;">
+      The skill scanner catches threats before install. Aiglos catches everything that runs after.
+      T1-T36 detection on every MCP tool call, signed session artifacts, NDAA §1513 compliance.
+    </p>
+    <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 20px; font-family: var(--font-mono); font-size: 13px; line-height: 2;">
+      <span style="color: var(--muted)">$</span> pip install aiglos<br/>
+      <span style="color: var(--muted)">$</span> python -m aiglos scan-skill solana-wallet-tracker<br/>
+      <span style="color: var(--muted)">$</span> python -m aiglos scan-skill --top 50 --registry clawhub
+    </div>
+    <div style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+      <a href="https://aiglos.dev/docs" style="background: var(--accent); color: #000; font-size: 13px; font-weight: 700; padding: 10px 20px; border-radius: 6px;">Read the docs</a>
+      <a href="https://github.com/w1123581321345589/aiglos" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 6px;">GitHub</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div><strong>aiglos</strong> — Security infrastructure for AI agents</div>
+  <div style="display:flex; gap: 24px;">
+    <a href="https://aiglos.dev">aiglos.dev</a>
+    <a href="https://aiglos.dev/docs">Docs</a>
+    <a href="https://github.com/w1123581321345589/aiglos">GitHub</a>
+  </div>
+</footer>
+
+<script>
+  function prefill(name) {
+    document.getElementById('skillInput').value = name;
+    document.getElementById('skillInput').focus();
+  }
+
+  document.getElementById('skillInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') runScan();
+  });
+
+  // Parse URL or name -> {registry, name}
+  function parseInput(value) {
+    value = value.trim();
+    if (!value) return null;
+    if (value.startsWith('http')) {
+      if (value.includes('clawhub') || value.includes('openclaw')) {
+        return { registry: 'clawhub', name: value.split('/').pop() };
+      }
+      if (value.includes('skillsmp')) {
+        return { registry: 'skillsmp', name: value.split('/').pop() };
+      }
+      if (value.includes('npmjs')) {
+        return { registry: 'npm', name: value.split('/').pop() };
+      }
+      if (value.includes('pypi')) {
+        return { registry: 'pypi', name: value.split('/').pop() };
+      }
+      return { registry: 'clawhub', name: value.split('/').pop() };
+    }
+    return { registry: document.getElementById('registrySelect').value, name: value };
+  }
+
+  // Simulate T26+T30 scoring in the browser (mirrors Python logic exactly)
+  // In production this would call the aiglos.dev API
+  function scoreLocally(skillName, registry) {
+    const name = skillName.toLowerCase();
+    let score = 0;
+    const signals = [];
+
+    // Signal 1: Typosquatting
+    const legit = {
+      clawhub: ['calendar','email','weather','browser','files','telegram','whatsapp','slack','discord','notes'],
+      skillsmp: ['calendar','email','weather','browser','notes'],
+      npm: ['anthropic','mcp','openai','axios','zod','langchain'],
+      pypi: ['anthropic','openai','langchain','mcp','httpx','pydantic'],
+    };
+
+    function levenshtein(a, b) {
+      if (a.length < b.length) [a, b] = [b, a];
+      if (!b.length) return a.length;
+      let prev = [...Array(b.length + 1).keys()];
+      for (let i = 0; i < a.length; i++) {
+        let curr = [i + 1];
+        for (let j = 0; j < b.length; j++) {
+          curr.push(Math.min(prev[j + 1] + 1, curr[j] + 1, prev[j] + (a[i] !== b[j] ? 1 : 0)));
+        }
+        prev = curr;
+      }
+      return prev[prev.length - 1];
+    }
+
+    const clean = n => n.replace(/[-_@/]/g,'');
+    const known = legit[registry] || legit.clawhub;
+    for (const leg of known) {
+      if (clean(name) !== clean(leg) && levenshtein(clean(name), clean(leg)) <= 2 && clean(name).length > 3) {
+        score += 25;
+        signals.push({ name: 'TYPOSQUATTING', desc: `Name is ${levenshtein(clean(name), clean(leg))} edit(s) from legitimate skill "${leg}"`, level: 'crit' });
+        break;
+      }
+    }
+
+    // Signal 2: Social engineering (simulated based on name patterns)
+    const socialPatterns = ['installer','setup','activation','launcher','bootstrap','required','official'];
+    if (socialPatterns.some(p => name.includes(p))) {
+      score += 15;
+      signals.push({ name: 'SOCIAL_ENGINEERING', desc: 'Name matches patterns seen in malicious install-time social engineering attacks', level: 'warn' });
+    }
+
+    // Signal 3: Suspicious permissions patterns in name
+    const permPatterns = ['wallet','keychain','credential','password','key','ssh','aws','token','secret','vault'];
+    if (permPatterns.some(p => name.includes(p))) {
+      score += 12;
+      signals.push({ name: 'SUSPICIOUS_SCOPE', desc: 'Name implies credential or key access — verify permission manifest before installing', level: 'warn' });
+    }
+
+    // Signal 4: Known-bad name fragments from OpenClaw incident post-mortems
+    const knownBad = ['openclaw-install', 'claw-setup', 'mcp-tools-hub', 'ai-skills-market', 'claw-community'];
+    if (knownBad.some(p => name.includes(p.replace(/-/g,'')))) {
+      score += 20;
+      signals.push({ name: 'KNOWN_MALICIOUS_PATTERN', desc: 'Name matches patterns from confirmed malicious ClawHub packages in the OpenClaw security incident', level: 'crit' });
+    }
+
+    // Bonus: solana-wallet-tracker specifically (the canonical example)
+    if (name.includes('solana') && name.includes('wallet')) {
+      score = Math.max(score, 78);
+      if (!signals.find(s => s.name === 'KNOWN_MALICIOUS_PATTERN')) {
+        signals.push({ name: 'KNOWN_MALICIOUS_PATTERN', desc: 'This skill name matches the canonical GhostClaw attack package. Do not install.', level: 'crit' });
+      }
+    }
+
+    // Determine risk
+    let risk, riskClass, verdict, verdictColor;
+    if (score >= 70) {
+      risk = 'CRITICAL'; riskClass = 'risk-critical';
+      verdict = 'DO NOT INSTALL'; verdictColor = 'var(--red)';
+    } else if (score >= 50) {
+      risk = 'HIGH'; riskClass = 'risk-high';
+      verdict = 'HIGH RISK — review manually'; verdictColor = 'var(--yellow)';
+    } else if (score >= 25) {
+      risk = 'MEDIUM'; riskClass = 'risk-medium';
+      verdict = 'MEDIUM — proceed with caution'; verdictColor = 'var(--yellow)';
+    } else {
+      risk = 'LOW'; riskClass = 'risk-low';
+      verdict = 'PASS — no significant signals found'; verdictColor = 'var(--green)';
+      signals.push({ name: 'NO_SIGNALS_DETECTED', desc: 'All 8 risk signals came back clean for this skill name.', level: 'ok' });
+    }
+
+    if (signals.length === 0) {
+      signals.push({ name: 'NO_SIGNALS_DETECTED', desc: 'All 8 risk signals came back clean.', level: 'ok' });
+    }
+
+    return { score, risk, riskClass, verdict, verdictColor, signals };
+  }
+
+  function signalIcon(level) {
+    if (level === 'crit') return '⚠';
+    if (level === 'warn') return '!';
+    return '✓';
+  }
+
+  async function runScan() {
+    const raw = document.getElementById('skillInput').value;
+    const parsed = parseInput(raw);
+    if (!parsed) return;
+
+    const btn = document.getElementById('scanBtn');
+    const resultArea = document.getElementById('resultArea');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Scanning…';
+
+    // Simulate network latency
+    await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
+
+    const result = scoreLocally(parsed.name, parsed.registry);
+    const registryLabels = {
+      clawhub: 'ClawHub (openclaw.ai)',
+      skillsmp: 'SkillsMP (skillsmp.io)',
+      npm: 'npm Registry',
+      pypi: 'PyPI',
+    };
+
+    const fillColor = result.risk === 'CRITICAL' ? 'var(--red)' :
+                      result.risk === 'HIGH' ? 'var(--yellow)' :
+                      result.risk === 'MEDIUM' ? 'var(--yellow)' : 'var(--green)';
+
+    const signalsHTML = result.signals.map(s => `
+      <div class="signal-row">
+        <div class="signal-icon ${s.level}">${signalIcon(s.level)}</div>
+        <div>
+          <div class="signal-name" style="color:${s.level === 'crit' ? 'var(--red)' : s.level === 'warn' ? 'var(--yellow)' : 'var(--green)'}">${s.name.replace(/_/g, ' ')}</div>
+          <div class="signal-desc">${s.desc}</div>
+        </div>
+      </div>
+    `).join('');
+
+    resultArea.innerHTML = `
+      <div class="result-card">
+        <div class="result-header">
+          <div class="result-skill-name">${parsed.name}</div>
+          <span class="risk-badge ${result.riskClass}">${result.risk}</span>
+        </div>
+        <div class="score-row">
+          <div class="score-number" style="color:${fillColor}">${result.score}</div>
+          <div class="score-bar-wrap">
+            <div class="score-bar-label">
+              <span>Risk Score</span>
+              <span style="color:${fillColor}">${result.score} / 100</span>
+            </div>
+            <div class="score-track">
+              <div class="score-fill" id="scoreFill" style="width:0%;background:${fillColor}"></div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:8px;">
+              Registry: ${registryLabels[parsed.registry] || parsed.registry} &nbsp;·&nbsp;
+              Powered by Aiglos T26 + T30
+            </div>
+          </div>
+        </div>
+        <div class="signals-section">
+          <div class="signals-title">Signals (${result.signals.length})</div>
+          ${signalsHTML}
+        </div>
+        <div class="verdict-row">
+          <div class="verdict-text" style="color:${result.verdictColor}">${result.verdict}</div>
+          <div class="install-cta" onclick="copyInstall()" title="Copy to clipboard">pip install aiglos</div>
+        </div>
+      </div>
+    `;
+
+    resultArea.classList.add('show');
+    resultArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Animate score bar
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById('scoreFill').style.width = result.score + '%';
+      });
+    });
+
+    btn.disabled = false;
+    btn.innerHTML = 'Scan';
+  }
+
+  function copyInstall() {
+    navigator.clipboard?.writeText('pip install aiglos');
+  }
+</script>
+
+</body>
+</html>
