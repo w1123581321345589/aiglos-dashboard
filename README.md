@@ -18,7 +18,6 @@ Signed audit artifacts for SOC 2, CMMC, and NDAA §1513.
 [![MIT](https://img.shields.io/badge/license-MIT-000?style=flat-square&labelColor=000)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-000?style=flat-square&labelColor=000)](https://python.org)
 [![CVEs](https://img.shields.io/badge/CVEs_filed-10-c0392b?style=flat-square&labelColor=000)](CVES.md)
-[![Discord](https://img.shields.io/badge/discord-join-000?style=flat-square&labelColor=000&logo=discord&logoColor=white)](https://discord.gg/aiglos)
 
 |  |  |  |  |
 | --- | --- | --- | --- |
