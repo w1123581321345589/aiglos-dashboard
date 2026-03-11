@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docs — Aiglos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+:root {
+  --bg: #fafaf9;
+  --ink: #0a0a0a;
+  --mid: #525252;
+  --dim: #a3a3a3;
+  --rule: #e5e5e5;
+  --panel: #111111;
+  --panel-border: #252525;
+  --green: #16a34a;
+  --blue: #2563eb;
+  --sidebar-w: 220px;
+}
+body { background: var(--bg); color: var(--ink); font-family: 'Geist', sans-serif; font-size: 15px; line-height: 1.65; }
+a { color: inherit; text-decoration: none; }
+
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 56px;
+  background: rgba(250,250,249,0.94); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+}
+.nav-logo { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.nav-links { display: flex; gap: 28px; list-style: none; }
+.nav-links a { font-size: 14px; color: var(--mid); transition: color .15s; }
+.nav-links a:hover, .nav-links a.active { color: var(--ink); }
+.nav-right { display: flex; gap: 10px; align-items: center; }
+.btn-ghost { font-size: 13px; color: var(--mid); background: none; border: 1px solid var(--rule); padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all .15s; }
+.btn-ghost:hover { border-color: #a3a3a3; color: var(--ink); }
+.btn-dark { font-size: 13px; color: #fff; background: var(--ink); border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; }
+.btn-dark:hover { opacity: .8; }
+
+/* Docs layout */
+.docs-layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  max-width: 1080px; margin: 0 auto;
+  min-height: calc(100vh - 56px);
+}
+
+/* Sidebar */
+.sidebar {
+  border-right: 1px solid var(--rule);
+  padding: 32px 0; position: sticky;
+  top: 56px; height: calc(100vh - 56px); overflow-y: auto;
+}
+
+.sidebar-section {
+  padding: 0 20px 20px;
+}
+
+.sidebar-heading {
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  letter-spacing: 0.12em; color: var(--dim); text-transform: uppercase;
+  margin-bottom: 8px; padding: 0 12px;
+}
+
+.sidebar-link {
+  display: block; padding: 6px 12px; font-size: 13px;
+  color: var(--mid); border-radius: 5px; transition: all .12s;
+}
+.sidebar-link:hover { color: var(--ink); background: #f0f0ef; }
+.sidebar-link.active { color: var(--ink); background: #ebebea; font-weight: 500; }
+
+/* Content */
+.docs-content { padding: 48px 56px; max-width: 720px; }
+
+.docs-content h1 {
+  font-size: 30px; font-weight: 600; letter-spacing: -0.025em;
+  line-height: 1.15; margin-bottom: 14px; color: var(--ink);
+}
+
+.docs-content h2 {
+  font-size: 20px; font-weight: 600; letter-spacing: -0.02em;
+  color: var(--ink); margin: 40px 0 12px; padding-top: 40px;
+  border-top: 1px solid var(--rule);
+}
+.docs-content h2:first-of-type { margin-top: 36px; }
+
+.docs-content h3 {
+  font-size: 15px; font-weight: 600; color: var(--ink);
+  margin: 24px 0 10px;
+}
+
+.docs-content p { font-size: 14px; color: var(--mid); margin-bottom: 16px; line-height: 1.7; }
+.docs-content p strong { color: var(--ink); font-weight: 500; }
+
+.docs-content ul, .docs-content ol {
+  font-size: 14px; color: var(--mid); margin-bottom: 16px;
+  padding-left: 20px; line-height: 1.7;
+}
+.docs-content li { margin-bottom: 4px; }
+
+.docs-content a { color: var(--blue); }
+.docs-content a:hover { text-decoration: underline; }
+
+/* Code blocks */
+.code-block {
+  background: var(--panel); border: 1px solid var(--panel-border);
+  border-radius: 8px; overflow: hidden; margin: 20px 0;
+}
+
+.code-block-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.code-lang {
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  color: #555; letter-spacing: 0.08em;
+}
+
+.copy-code {
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  color: #555; background: none; border: none; cursor: pointer;
+  transition: color .15s; letter-spacing: 0.04em;
+}
+.copy-code:hover { color: #aaa; }
+.copy-code.done { color: var(--green); }
+
+.code-block pre {
+  padding: 18px 20px; overflow-x: auto; font-family: 'Geist Mono', monospace;
+  font-size: 13px; line-height: 1.7; color: #e2e8f0;
+}
+
+.code-block code { font-family: inherit; }
+
+/* Inline code */
+.docs-content :not(.code-block) code {
+  font-family: 'Geist Mono', monospace; font-size: 12px;
+  background: #f0f0ef; padding: 2px 6px; border-radius: 4px; color: var(--ink);
+}
+
+/* Callout */
+.callout {
+  border-radius: 8px; padding: 16px 20px; margin: 20px 0;
+  font-size: 13px; line-height: 1.6;
+}
+.callout.info  { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+.callout.warn  { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.callout.tip   { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+
+/* Verdict table */
+.verdict-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0 24px; }
+.verdict-table th {
+  text-align: left; padding: 10px 14px;
+  background: #f5f5f4; border-bottom: 1px solid var(--rule);
+  font-size: 11px; font-family: 'Geist Mono', monospace;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--dim); font-weight: 400;
+}
+.verdict-table td {
+  padding: 11px 14px; border-bottom: 1px solid #f5f5f4; color: var(--mid);
+}
+.verdict-table td:first-child { font-family: 'Geist Mono', monospace; font-size: 12px; }
+.tag { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; font-family: 'Geist Mono', monospace; }
+.tag.clean { background: #f0fdf4; color: #166534; }
+.tag.warn  { background: #fffbeb; color: #92400e; }
+.tag.block { background: #fef2f2; color: #991b1b; }
+
+/* Footer */
+footer {
+  border-top: 1px solid var(--rule); padding: 28px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; color: var(--dim);
+}
+.footer-links { display: flex; gap: 20px; list-style: none; }
+.footer-links a { color: var(--dim); transition: color .15s; }
+.footer-links a:hover { color: var(--ink); }
+
+/* Syntax highlight helpers */
+.kw { color: #c678dd; }
+.fn { color: #61afef; }
+.st { color: #98c379; }
+.cm { color: #5c6370; font-style: italic; }
+.nb { color: #e5c07b; }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .docs-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .docs-content { padding: 32px 20px; }
+  footer { flex-direction: column; gap: 16px; padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Aiglos</a>
+  <ul class="nav-links">
+    <li><a href="/#how">Product</a></li>
+    <li><a href="/threats.html">Threats</a></li>
+    <li><a href="/pricing.html">Pricing</a></li>
+    <li><a href="/docs.html" class="active">Docs</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="#" class="btn-ghost">Sign In</a>
+    <a href="#install" class="btn-dark">Get Started</a>
+  </div>
+</nav>
+
+<div class="docs-layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Getting Started</div>
+      <a href="#install"       class="sidebar-link active">Installation</a>
+      <a href="#quickstart"    class="sidebar-link">Quickstart</a>
+      <a href="#how-it-works"  class="sidebar-link">How It Works</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Configuration</div>
+      <a href="#env-vars"  class="sidebar-link">Environment Variables</a>
+      <a href="#modes"     class="sidebar-link">Scan Modes</a>
+      <a href="#tiers"     class="sidebar-link">Tiers & Gates</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Features</div>
+      <a href="#attestation"  class="sidebar-link">Attestation</a>
+      <a href="#verdicts"     class="sidebar-link">Verdicts</a>
+      <a href="#telemetry"    class="sidebar-link">Telemetry</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Reference</div>
+      <a href="#rule-families" class="sidebar-link">Rule Families</a>
+      <a href="#exceptions"    class="sidebar-link">Exceptions</a>
+      <a href="/threats.html"  class="sidebar-link">CVE Database →</a>
+    </div>
+  </aside>
+
+  <main class="docs-content">
+    <h1>Documentation</h1>
+    <p>Aiglos is an in-process MCP security runtime. It intercepts every tool call your AI agents make — before execution — and inspects it against 36 rule families in under a millisecond.</p>
+
+    <h2 id="install">Installation</h2>
+    <p>Aiglos requires Python 3.9+. Install from PyPI:</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-lang">SHELL</span>
+        <button class="copy-code" onclick="copyCode(this, 'pip install aiglos')">Copy</button>
+      </div>
+      <pre><code>pip install aiglos</code></pre>
+    </div>
+
+    <p>For TypeScript / Node.js:</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-lang">SHELL</span>
+        <button class="copy-code" onclick="copyCode(this, 'npm install aiglos')">Copy</button>
+      </div>
+      <pre><code>npm install aiglos</code></pre>
+    </div>
+
+    <h2 id="quickstart">Quickstart</h2>
+    <p>Add one import before your agent starts. Aiglos patches <code>mcp.client.session.ClientSession</code> at import time. No config file. No proxy server. No port.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-lang">PYTHON</span>
+        <button class="copy-code" onclick="copyCode(this, 'import aiglos\n\n# your existing agent code below — nothing else changes\nfrom mcp import ClientSession\n...')">Copy</button>
+      </div>
+      <pre><code><span class="kw">import</span> aiglos  <span class="cm"># add this line — that's it</span>
+
+<span class="cm"># your existing agent code below — nothing else changes</span>
+<span class="kw">from</span> mcp <span class="kw">import</span> ClientSession
+<span class="kw">from</span> langchain_mcp <span class="kw">import</span> MCPToolkit
+
+<span class="cm"># aiglos is now intercepting every tool call</span>
+toolkit = <span class="fn">MCPToolkit</span>(session=session)
+agent = <span class="fn">create_react_agent</span>(llm, toolkit.get_tools())</code></pre>
+    </div>
+
+    <div class="callout tip">
+      <strong>Free tier:</strong> With no API key set, Aiglos runs in local-only mode — full T1–T36 detection, zero telemetry, no call limits. This works forever without a key.
+    </div>
+
+    <p>To enable cloud telemetry and attestation artifacts, set your API key:</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-lang">SHELL</span>
+        <button class="copy-code" onclick="copyCode(this, 'export AIGLOS_KEY=ak_live_pro_your_key_here')">Copy</button>
+      </div>
+      <pre><code><span class="kw">export</span> AIGLOS_KEY=ak_live_pro_your_key_here</code></pre>
+    </div>
+
+    <h2 id="how-it-works">How It Works</h2>
+    <p>When you <code>import aiglos</code>, it monkey-patches <code>mcp.client.session.ClientSession.call_tool</code>. Every subsequent tool call is intercepted synchronously before the MCP transport layer sends it.</p>
+    <p>The fast-path scanner runs 36 rule families against the tool name and arguments. The entire scan takes less than 1ms. Your agent never notices the overhead.</p>
+
+    <h2 id="env-vars">Environment Variables</h2>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-lang">SHELL</span>
+        <button class="copy-code" onclick="copyCode(this, '# Required for paid features\nexport AIGLOS_KEY=ak_live_pro_...\n\n# Optional\nexport AIGLOS_MODE=block      # block | warn | audit\nexport AIGLOS_LOG_LEVEL=info  # debug | info | warning | error')">Copy</button>
+      </div>
+      <pre><code><span class="cm"># Required for paid features</span>
+<span class="kw">export</span> AIGLOS_KEY=ak_live_pro_...
+
+<span class="cm"># Optional</span>
+<span class="kw">export</span> AIGLOS_MODE=block       <span class="cm"># block | warn | audit</span>
+<span class="kw">export</span> AIGLOS_LOG_LEVEL=info   <span class="cm"># debug | info | warning | error</span></code></pre>
+    </div>
+
+    <h2 id="modes">Scan Modes</h2>
+    <p>Aiglos supports three scan modes set via <code>AIGLOS_MODE</code>:</p>
+    <ul>
+      <li><strong>block</strong> (default) — Raises <code>AiglosBlockedError</code> on BLOCK verdicts, stops tool execution.</li>
+      <li><strong>warn</strong> — Logs findings but allows all calls through. Useful during onboarding.</li>
+      <li><strong>audit</strong> — Records everything silently. Zero runtime impact. Good for baselining.</li>
+    </ul>
+
+    <h2 id="tiers">Tiers & Gates</h2>
+    <p>Feature access is determined by your API key prefix:</p>
+    <ul>
+      <li><code>ak_live_pro_*</code> — Developer Pro</li>
+      <li><code>ak_live_team_*</code> — Team</li>
+      <li><code>ak_live_ent_*</code> — Enterprise</li>
+      <li>No key — Free tier (local only)</li>
+    </ul>
+    <p>The first time a free-tier installation calls a gated feature (<code>aiglos.attest()</code> or cloud telemetry), a 30-day Pro trial starts automatically. A non-blocking prompt appears in stderr. After 30 days, gated features lock until a key is set.</p>
+
+    <h2 id="attestation">Attestation</h2>
+    <p>Attestation artifacts are RSA-2048 signed JSON documents proving that an Aiglos runtime was active during a given agent session and that every tool call was inspected before execution.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-lang">PYTHON</span>
+        <button class="copy-code" onclick="copyCode(this, 'import aiglos\n\n# At the end of an agent session:\nartifact = aiglos.attest({\n    \"session_id\": \"sess-abc123\",\n    \"agent_id\": \"my-agent\",\n})\n\nprint(artifact[\"artifact_id\"])\nprint(artifact[\"session_summary\"])\n\n# Verify any artifact offline:\nvalid = aiglos.verify(artifact)\nprint(valid)  # True')">Copy</button>
+      </div>
+      <pre><code><span class="kw">import</span> aiglos
+
+<span class="cm"># At the end of an agent session:</span>
+artifact = aiglos.<span class="fn">attest</span>({
+    <span class="st">"session_id"</span>: <span class="st">"sess-abc123"</span>,
+    <span class="st">"agent_id"</span>:   <span class="st">"my-agent"</span>,
+})
+
+<span class="fn">print</span>(artifact[<span class="st">"artifact_id"</span>])
+<span class="fn">print</span>(artifact[<span class="st">"session_summary"</span>])
+
+<span class="cm"># Verify any artifact offline:</span>
+valid = aiglos.<span class="fn">verify</span>(artifact)
+<span class="fn">print</span>(valid)  <span class="cm"># True</span></code></pre>
+    </div>
+
+    <div class="callout info">
+      <strong>Verification is free.</strong> <code>aiglos.verify()</code> works on any tier with no API key. Only generation requires Pro.
+    </div>
+
+    <h2 id="verdicts">Verdicts</h2>
+
+    <table class="verdict-table">
+      <thead>
+        <tr><th>Verdict</th><th>Meaning</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag clean">CLEAN</span></td>
+          <td style="color:var(--mid)">Passes all 36 rule families</td>
+          <td style="color:var(--mid)">Executes normally. No overhead.</td>
+        </tr>
+        <tr>
+          <td><span class="tag warn">WARN</span></td>
+          <td style="color:var(--mid)">Suspicious pattern detected</td>
+          <td style="color:var(--mid)">Logged. Call proceeds. Appears in telemetry.</td>
+        </tr>
+        <tr>
+          <td><span class="tag block">BLOCK</span></td>
+          <td style="color:var(--mid)">Attack pattern confirmed</td>
+          <td style="color:var(--mid)">Raises <code>AiglosBlockedError</code> before execution.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 id="telemetry">Telemetry</h2>
+    <p>With a Pro key, Aiglos batches usage events and sends them to <code>api.aiglos.dev/v1/events</code> every 30 seconds. Telemetry is strictly best-effort — network failures are swallowed silently and never block the agent call path.</p>
+    <p>The free tier generates zero telemetry. Nothing is sent to any remote endpoint without an API key.</p>
+
+    <h2 id="rule-families">Rule Families</h2>
+    <p>All 36 rule families are MIT licensed. <a href="https://github.com/aiglos/aiglos-core">View source on GitHub →</a></p>
+    <ul>
+      <li><strong>T01–T06</strong> — Injection &amp; Exfiltration</li>
+      <li><strong>T07–T12</strong> — Shell &amp; OS Abuse</li>
+      <li><strong>T13–T18</strong> — Network &amp; SSRF</li>
+      <li><strong>T19–T24</strong> — Secrets &amp; Credentials</li>
+      <li><strong>T25–T29</strong> — A2A Protocol</li>
+      <li><strong>T30–T34</strong> — Supply Chain</li>
+      <li><strong>T35</strong> — Personal Agent Monitor</li>
+      <li><strong>T36</strong> — Embedded Mode</li>
+    </ul>
+
+    <h2 id="exceptions">Exceptions</h2>
+    <p>When a tool call is blocked, Aiglos raises <code>AiglosBlockedError</code>:</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-lang">PYTHON</span>
+        <button class="copy-code" onclick="copyCode(this, 'from aiglos import AiglosBlockedError\n\ntry:\n    result = await session.call_tool(\"shell.execute\", {\"cmd\": \"rm -rf /\"})\nexcept AiglosBlockedError as e:\n    print(e.tool_name)    # shell.execute\n    print(e.result.reason)  # shell_injection detected\n    print(e.result.risk_type)  # T07')">Copy</button>
+      </div>
+      <pre><code><span class="kw">from</span> aiglos <span class="kw">import</span> AiglosBlockedError
+
+<span class="kw">try</span>:
+    result = <span class="kw">await</span> session.<span class="fn">call_tool</span>(<span class="st">"shell.execute"</span>, {<span class="st">"cmd"</span>: <span class="st">"rm -rf /"</span>})
+<span class="kw">except</span> AiglosBlockedError <span class="kw">as</span> e:
+    <span class="fn">print</span>(e.tool_name)          <span class="cm"># shell.execute</span>
+    <span class="fn">print</span>(e.result.reason)      <span class="cm"># shell_injection detected</span>
+    <span class="fn">print</span>(e.result.risk_type)   <span class="cm"># T07</span></code></pre>
+    </div>
+  </main>
+</div>
+
+<footer>
+  <span>Aiglos</span>
+  <ul class="footer-links">
+    <li><a href="https://github.com/aiglos">GitHub</a></li>
+    <li><a href="/threats.html">CVEs</a></li>
+    <li><a href="/pricing.html">Pricing</a></li>
+    <li><a href="/changelog.html">Changelog</a></li>
+    <li><a href="/defense.html">Defense</a></li>
+    <li><a href="/cdn-cgi/l/email-protection#b2c1d3ded7c1f2d3dbd5deddc19cdbdd">Contact</a></li>
+  </ul>
+  <span>aiglos.dev</span>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function copyCode(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied'; btn.classList.add('done');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('done'); }, 2000);
+  });
+}
+
+// Sidebar active state on scroll
+const headings = document.querySelectorAll('.docs-content h2[id]');
+const links = document.querySelectorAll('.sidebar-link');
+window.add
