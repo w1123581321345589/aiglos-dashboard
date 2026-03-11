@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You're in — Aiglos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #060608; --surface: #0d0d10; --border: #1e1e24;
+    --muted: #6b6b80; --body: #b0b0c0; --white: #f0f0f5;
+    --green: #00e87a; --green-dim: #00a855; --cyan: #00c8e0;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--black);
+    color: var(--body);
+    font-family: var(--font-display);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,232,122,.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,232,122,.018) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+  }
+  .card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid #2e2e38;
+    border-radius: 16px;
+    padding: 56px;
+    max-width: 560px;
+    width: 100%;
+    box-shadow: 0 40px 120px rgba(0,0,0,.7);
+    animation: fadeIn .5s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(16px);} to {opacity:1; transform:none;} }
+  .shield {
+    width: 56px; height: 56px;
+    background: var(--green);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    margin-bottom: 28px;
+  }
+  h1 {
+    font-size: 36px; font-weight: 800; color: var(--white);
+    letter-spacing: -.03em; margin-bottom: 10px; line-height: 1.1;
+  }
+  .sub {
+    font-size: 15px; color: var(--muted); margin-bottom: 36px; line-height: 1.7;
+  }
+  .key-box {
+    background: rgba(0,232,122,.05);
+    border: 1px solid rgba(0,232,122,.2);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 32px;
+  }
+  .key-label {
+    font-family: var(--font-mono);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase;
+    color: var(--green-dim); margin-bottom: 8px;
+  }
+  .key-value {
+    font-family: var(--font-mono);
+    font-size: 15px; font-weight: 700;
+    color: var(--white);
+    word-break: break-all;
+    letter-spacing: .02em;
+  }
+  .key-note {
+    font-family: var(--font-mono);
+    font-size: 11px; color: var(--muted);
+    margin-top: 10px;
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid #2e2e38;
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase;
+    padding: 5px 12px; cursor: pointer;
+    transition: all .15s;
+    margin-top: 12px;
+  }
+  .copy-btn:hover { border-color: var(--green-dim); color: var(--green); }
+  .code-block {
+    background: #0d0d10;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.9;
+    margin-bottom: 32px;
+  }
+  .tok-comment { color: #3a3a48; }
+  .tok-kw   { color: var(--cyan); }
+  .tok-fn   { color: var(--green); }
+  .tok-str  { color: #ffaa00; }
+  .tok-plain { color: var(--body); }
+  .next-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .next-step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    font-size: 14px;
+    color: var(--body);
+    line-height: 1.6;
+  }
+  .next-step-num {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    background: rgba(0,232,122,.1);
+    border: 1px solid rgba(0,232,122,.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 10px; font-weight: 700; color: var(--green);
+    margin-top: 2px;
+  }
+  .home-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px; font-weight: 700;
+    color: var(--muted);
+    letter-spacing: .04em;
+    transition: color .15s;
+  }
+  .home-link:hover { color: var(--white); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="shield"></div>
+  <h1>You're protected.</h1>
+  <p class="sub">Your API key has been emailed to you. Set it as an environment variable and add one import — you're done.</p>
+
+  <div class="key-box" id="keyBox" style="display:none;">
+    <div class="key-label">Your API key</div>
+    <div class="key-value" id="apiKeyDisplay">Loading...</div>
+    <div class="key-note">Keep this secret. Treat it like a password.</div>
+    <button class="copy-btn" onclick="copyKey()">Copy key</button>
+  </div>
+
+  <div class="key-box" id="emailBox">
+    <div class="key-label">API key delivery</div>
+    <div style="font-size:14px;color:var(--body);line-height:1.6;">
+      Your API key was sent to your email. Check your inbox (and spam folder).
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div><span class="tok-comment"># 1. Set your key</span></div>
+    <div><span class="tok-plain">$ export </span><span class="tok-str">AIGLOS_KEY</span><span class="tok-plain">=ak_live_...</span></div>
+    <div>&nbsp;</div>
+    <div><span class="tok-comment"># 2. Install</span></div>
+    <div><span class="tok-plain">$ </span><span class="tok-fn">pip install aiglos</span></div>
+    <div>&nbsp;</div>
+    <div><span class="tok-comment"># 3. One import — that's it</span></div>
+    <div><span class="tok-kw">import</span> <span class="tok-fn">aiglos</span></div>
+    <div><span class="tok-kw">from</span> <span class="tok-plain">mcp</span> <span class="tok-kw">import</span> <span class="tok-plain">ClientSession</span></div>
+    <div>&nbsp;</div>
+    <div><span class="tok-comment"># Every MCP tool call now protected.</span></div>
+  </div>
+
+  <div class="next-steps">
+    <div class="next-step">
+      <div class="next-step-num">1</div>
+      <div>Set <code style="font-family:var(--font-mono);font-size:12px;color:var(--cyan)">AIGLOS_KEY</code> in your environment or <code style="font-family:var(--font-mono);font-size:12px;color:var(--cyan)">.env</code> file</div>
+    </div>
+    <div class="next-step">
+      <div class="next-step-num">2</div>
+      <div>Run <code style="font-family:var(--font-mono);font-size:12px;color:var(--cyan)">pip install aiglos</code> in your agent project</div>
+    </div>
+    <div class="next-step">
+      <div class="next-step-num">3</div>
+      <div>Add <code style="font-family:var(--font-mono);font-size:12px;color:var(--cyan)">import aiglos</code> as the first line of your agent entry point</div>
+    </div>
+    <div class="next-step">
+      <div class="next-step-num">4</div>
+      <div>Your dashboard shows live threat telemetry, blocked events, and attestation artifacts</div>
+    </div>
+  </div>
+
+  <a href="/" class="home-link">← Back to aiglos.dev</a>
+</div>
+
+<script>
+// Retrieve session info from URL params (Stripe passes session_id)
+const params = new URLSearchParams(window.location.search);
+const sessionId = params.get('session_id');
+
+if (sessionId) {
+  // In production, call your backend to retrieve the API key for this session
+  fetch('/api/get-key?session_id=' + sessionId)
+    .then(r => r.json())
+    .then(data => {
+      if (data.apiKey) {
+        document.getElementById('emailBox').style.display = 'none';
+        document.getElementById('keyBox').style.display = 'block';
+        document.getElementById('apiKeyDisplay').textContent = data.apiKey;
+        window._aiglosKey = data.apiKey;
+      }
+    })
+    .catch(() => {
+      // Email delivery fallback — already shown by default
+    });
+}
+
+function copyKey() {
+  const key = window._aiglosKey || document.getElementById('apiKeyDisplay').textContent;
+  navigator.clipboard.writeText(key).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Copied ✓';
+    setTimeout(() => { btn.textContent = 'Copy key'; }, 2000);
+  });
+}
+</script>
+</body>
+</html>
