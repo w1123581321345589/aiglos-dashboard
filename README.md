@@ -18,6 +18,7 @@ Signed audit artifacts for SOC 2, CMMC, and NDAA §1513.
 [![MIT](https://img.shields.io/badge/license-MIT-000?style=flat-square&labelColor=000)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-000?style=flat-square&labelColor=000)](https://python.org)
 [![CVEs](https://img.shields.io/badge/CVEs_filed-10-c0392b?style=flat-square&labelColor=000)](CVES.md)
+[![Discord](https://img.shields.io/badge/discord-join-000?style=flat-square&labelColor=000&logo=discord&logoColor=white)](https://discord.gg/aiglos)
 
 |  |  |  |  |
 | --- | --- | --- | --- |
@@ -41,7 +42,9 @@ import aiglos  # every tool call below this line is inspected
 
 ## What just happened
 
-Four events in 48 hours made AI agent security unavoidable.
+Six events in 48 hours turned AI agent security from a developer concern into a geopolitical and market-structure fact.
+
+**March 10 — OpenClaw hits critical mass.** Tencent shares rose 7.3% after launching WorkBuddy, a fully OpenClaw-compatible workplace agent. Zhipu surged 13% after launching AutoClaw. MiniMax soared 22%. Every major Chinese platform company bet on the same technology in the same week. SecurityScorecard's STRIKE team counted 135,000 OpenClaw instances exposed to the public internet, 93.4% with authentication bypass conditions and 15,000+ vulnerable to remote code execution. This is not a developer tool anymore. It is infrastructure.
 
 **March 10 — Amazon production outage.** Amazon's ecommerce SVP called a mandatory all-hands after AI coding tools caused production outages with "high blast radius." Their own AWS AI coding tool spent 13 hours recovering after deleting a production environment. Their fix: require senior engineer sign-off on all AI-assisted code. That is a human workaround to a software problem.
 
@@ -55,9 +58,13 @@ Four events in 48 hours made AI agent security unavoidable.
 
 Their recommended fix for all three: *"planned improvements."*
 
-**March 11 — China bans OpenClaw from government and state enterprise computers.** Bloomberg reported that China moved to restrict banks, state firms, and government bodies from using OpenClaw AI apps on office computers over security concerns. When a nation-state treats an AI agent framework as a security threat requiring a government ban, the risk has crossed from developer concern to geopolitical fact.
+**March 11 — GhostClaw: live supply chain attack targeting OpenClaw developers.** Security researchers at JFrog uncovered a malicious npm package posing as the OpenClaw installer. It deploys GhostLoader, a RAT that steals SSH keys, AWS credentials, browser passwords, crypto wallets, Kubernetes configs, and AI tool configurations including files from OpenClaw environments. The attack exploits the install frenzy directly. The vector is T30 SUPPLY_CHAIN. The package was live as developers rushed to install OpenClaw for the first time.
 
-Aiglos ships the fix today, as a runtime intercept on every tool call.
+**March 11 — China bans OpenClaw from government and state enterprise computers.** Bloomberg reported that China moved to restrict banks, state firms, and government bodies from using OpenClaw on office computers over security concerns. Chinese tech hubs in Shenzhen and Wuxi simultaneously announced programs to build local industry around OpenClaw. The same country is banning it from government and racing to deploy it commercially. That is not contradiction. That is a security gap being recognized and managed by a nation-state while the West has no equivalent response.
+
+**March 11 — Nvidia starts over with NemoClaw.** Nvidia is developing NemoClaw, an open-source challenger to OpenClaw built explicitly around stronger security and privacy protections, with early partnerships at Adobe, Google, and Salesforce. When the world's largest AI infrastructure company decides the answer to OpenClaw is a security-first rewrite, the market has confirmed the gap.
+
+Aiglos is the runtime layer for the OpenClaw ecosystem that exists today, while Nvidia builds the one for tomorrow.
 
 ---
 
