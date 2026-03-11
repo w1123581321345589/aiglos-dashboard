@@ -267,11 +267,11 @@ Framework vendors built for speed. Security was deferred. Aiglos closes the gap.
 
 ## CVE coverage
 
-Every CVE filed against MCP-based agents has a corresponding rule family:
+Everything OpenClaw exposed, Aiglos catches. Module-by-module.
 
-| CVE | Attack | Module |
-|-----|--------|--------|
-| `CVE-2026-25253` | ClawJacked: one-click RCE via malicious skill | `T01` `T25` |
+| CVE / Incident | Attack | Module |
+|----------------|--------|--------|
+| `CVE-2026-25253` CVSS 8.8 | **ClawJacked** — WebSocket to localhost brute-forces gateway password via missing rate limiting | `T01` `T25` |
 | `CVE-2026-24763` | Command injection via shell tool parameters | `T07` |
 | `CVE-2026-25157` | Path traversal in filesystem tools | `T03` |
 | `CVE-2026-24891` | SSRF via agent network fetch | `T13` |
@@ -280,9 +280,18 @@ Every CVE filed against MCP-based agents has a corresponding rule family:
 | `CVE-2026-24612` | Persistent memory poisoning | `T31` |
 | `CVE-2026-25198` | Agent-to-agent protocol hijacking | `T29` |
 | `CVE-2026-24774` | OAuth confused deputy via MCP tool auth | `T25` |
-| `CVE-2026-25312` | Heartbeat loop: crafted `HEARTBEAT.md` triggers unbounded scheduled execution with no human authorization step | `T06` `T24` |
+| `CVE-2026-25312` | Heartbeat loop: crafted `HEARTBEAT.md` triggers unbounded scheduled execution | `T06` `T24` |
+| Incident Feb 2026 | **ClawHub / SkillsMP malicious skills** — 820 of 10,700 ClawHub skills confirmed malicious; attackers used professional READMEs and names like "solana-wallet-tracker" to distribute keyloggers and Atomic Stealer | `T26` `T30` |
+| Incident Mar 2026 | **GhostClaw** — malicious npm package posing as OpenClaw installer; deploys persistent RAT stealing SSH keys, AWS credentials, browser passwords, and crypto wallets (JFrog, confirmed live on launch day) | `T26` `T30` |
+| Research Jan 2026 | **Log poisoning / indirect prompt injection** — malicious content written to agent log files via WebSocket; agent reads own logs to troubleshoot, executing embedded payload | `T21` `T31` |
+| Research Jan 2026 | **Auth-disabled instances** — 1,000 publicly accessible OpenClaw installations running without authentication, bound to 0.0.0.0 | `T04` |
+| Research Feb 2026 | **Prompt injection via messaging apps** — inbound Slack/email message instructs agent to read credential files; anyone who can message the agent inherits its full permissions | `T06` |
+| Research Mar 2026 | **Moltbook A2A attacks** — OpenClaw agent-to-agent communication surface enables cross-agent privilege escalation via Agent Card artifacts | `T29` |
 
 Full CVE database: [CVES.md](CVES.md)
+
+**Free ClawHub skill scanner:** `python -m aiglos scan-skill <skill-name>` or [aiglos.dev/scan](https://aiglos.dev/scan)
+Scan any ClawHub or SkillsMP skill against 8 risk signals before installing. T26 + T30 in two seconds.
 
 ---
 
