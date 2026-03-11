@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Changelog — Aiglos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+:root {
+  --bg: #fafaf9;
+  --ink: #0a0a0a;
+  --mid: #525252;
+  --dim: #a3a3a3;
+  --rule: #e5e5e5;
+  --green: #16a34a;
+  --red: #dc2626;
+  --orange: #d97706;
+  --blue: #2563eb;
+}
+body { background: var(--bg); color: var(--ink); font-family: 'Geist', sans-serif; font-size: 15px; line-height: 1.6; }
+a { color: inherit; text-decoration: none; }
+
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 56px;
+  background: rgba(250,250,249,0.94); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+}
+.nav-logo { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.nav-links { display: flex; gap: 28px; list-style: none; }
+.nav-links a { font-size: 14px; color: var(--mid); transition: color .15s; }
+.nav-links a:hover, .nav-links a.active { color: var(--ink); }
+.nav-right { display: flex; gap: 10px; align-items: center; }
+.btn-ghost { font-size: 13px; color: var(--mid); background: none; border: 1px solid var(--rule); padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all .15s; }
+.btn-ghost:hover { border-color: #a3a3a3; color: var(--ink); }
+.btn-dark { font-size: 13px; color: #fff; background: var(--ink); border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; }
+.btn-dark:hover { opacity: .8; }
+
+.page { max-width: 760px; margin: 0 auto; padding: 80px 40px; }
+
+.page-eyebrow {
+  font-family: 'Geist Mono', monospace; font-size: 11px;
+  letter-spacing: 0.12em; color: var(--dim); text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: clamp(28px, 3.6vw, 40px); font-weight: 600;
+  letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 12px;
+}
+
+.page-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-bottom: 64px; }
+
+/* Filter tabs */
+.filter-row {
+  display: flex; gap: 4px; margin-bottom: 48px;
+  border-bottom: 1px solid var(--rule); padding-bottom: 0;
+}
+.filter-tab {
+  font-size: 13px; color: var(--mid); padding: 8px 16px;
+  border-bottom: 2px solid transparent; cursor: pointer;
+  transition: all .15s; background: none; border-top: none;
+  border-left: none; border-right: none; font-family: 'Geist', sans-serif;
+  margin-bottom: -1px;
+}
+.filter-tab:hover { color: var(--ink); }
+.filter-tab.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 500; }
+
+/* Entry */
+.entry {
+  padding: 40px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.entry:last-child { border-bottom: none; }
+
+.entry-meta {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+}
+
+.entry-date {
+  font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--dim);
+}
+
+.entry-tag {
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  padding: 3px 8px; border-radius: 4px; letter-spacing: 0.06em; font-weight: 500;
+}
+.entry-tag.release   { background: #f0f0ef; color: var(--mid); }
+.entry-tag.cve       { background: #fef2f2; color: var(--red); }
+.entry-tag.feature   { background: #f0fdf4; color: var(--green); }
+.entry-tag.fix       { background: #eff6ff; color: var(--blue); }
+.entry-tag.security  { background: #fff7ed; color: var(--orange); }
+
+.entry-version {
+  font-family: 'Geist Mono', monospace; font-size: 12px;
+  color: var(--mid); background: #f5f5f4; padding: 2px 8px; border-radius: 4px;
+}
+
+.entry h2 {
+  font-size: 20px; font-weight: 600; letter-spacing: -0.02em;
+  color: var(--ink); margin-bottom: 10px; border-top: none; padding-top: 0;
+}
+
+.entry p {
+  font-size: 14px; color: var(--mid); line-height: 1.7; margin-bottom: 12px;
+}
+.entry p:last-of-type { margin-bottom: 0; }
+.entry p strong { color: var(--ink); font-weight: 500; }
+.entry p code {
+  font-family: 'Geist Mono', monospace; font-size: 12px;
+  background: #f0f0ef; padding: 2px 6px; border-radius: 4px; color: var(--ink);
+}
+
+.entry-list { margin: 12px 0 0 0; padding-left: 0; list-style: none; }
+.entry-list li {
+  font-size: 13px; color: var(--mid); padding: 5px 0;
+  display: flex; gap: 10px; align-items: flex-start; line-height: 1.5;
+}
+.entry-list li::before { color: var(--dim); flex-shrink: 0; margin-top: 1px; content: '·'; }
+.entry-list li.added::before   { content: '+'; color: var(--green); }
+.entry-list li.fixed::before   { content: '↑'; color: var(--blue); }
+.entry-list li.changed::before { content: '~'; color: var(--orange); }
+.entry-list li.removed::before { content: '−'; color: var(--red); }
+
+/* CVE entry special treatment */
+.cve-block {
+  background: #fef2f2; border: 1px solid #fecaca;
+  border-radius: 8px; padding: 16px 20px; margin: 14px 0;
+}
+.cve-block-id {
+  font-family: 'Geist Mono', monospace; font-size: 11px;
+  color: var(--red); margin-bottom: 4px;
+}
+.cve-block-score {
+  font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px;
+}
+.cve-block-desc { font-size: 13px; color: var(--mid); line-height: 1.55; }
+.cve-block-status {
+  margin-top: 10px; font-family: 'Geist Mono', monospace; font-size: 11px;
+}
+.cve-block-status.patched   { color: var(--green); }
+.cve-block-status.reviewing { color: var(--orange); }
+
+.entry-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 13px; color: var(--ink); margin-top: 14px;
+  border-bottom: 1px solid var(--rule); padding-bottom: 1px;
+  transition: border-color .15s;
+}
+.entry-link:hover { border-color: var(--ink); }
+
+/* Footer */
+footer {
+  border-top: 1px solid var(--rule); padding: 28px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; color: var(--dim);
+}
+.footer-links { display: flex; gap: 20px; list-style: none; }
+.footer-links a { color: var(--dim); transition: color .15s; }
+.footer-links a:hover { color: var(--ink); }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .page { padding: 48px 20px; }
+  footer { flex-direction: column; gap: 16px; padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Aiglos</a>
+  <ul class="nav-links">
+    <li><a href="/#how">Product</a></li>
+    <li><a href="/threats.html">Threats</a></li>
+    <li><a href="/pricing.html">Pricing</a></li>
+    <li><a href="/docs.html">Docs</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="#" class="btn-ghost">Sign In</a>
+    <a href="/docs.html#install" class="btn-dark">Get Started</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-eyebrow">Changelog</div>
+  <h1>What's changed.</h1>
+  <p class="page-sub">Every release, every CVE disclosure, in reverse chronological order.</p>
+
+  <div class="filter-row">
+    <button class="filter-tab active" onclick="filterEntries('all', this)">All</button>
+    <button class="filter-tab" onclick="filterEntries('release', this)">Releases</button>
+    <button class="filter-tab" onclick="filterEntries('cve', this)">CVE Disclosures</button>
+    <button class="filter-tab" onclick="filterEntries('security', this)">Security</button>
+  </div>
+
+  <!-- Entries -->
+  <div id="entries">
+
+    <div class="entry" data-type="cve">
+      <div class="entry-meta">
+        <span class="entry-date">March 2026</span>
+        <span class="entry-tag cve">CVE Disclosure</span>
+      </div>
+      <h2>Two new CVEs: supply chain RCE and A2A spoofing</h2>
+      <p>Aiglos researchers identified two new vulnerabilities in the MCP ecosystem during routine fuzzing of the T30 Supply Chain and T25 A2A Protocol rule families.</p>
+
+      <div class="cve-block">
+        <div class="cve-block-id">CVE-2026-26319</div>
+        <div class="cve-block-score">CVSS 9.0 — Critical</div>
+        <div class="cve-block-desc">Remote code execution via malicious tool registration overriding a trusted server namespace. An attacker controlling a malicious MCP server can register a tool with the same name as a trusted tool, causing the client to execute attacker-controlled code.</div>
+        <div class="cve-block-status reviewing">● In coordinated disclosure</div>
+      </div>
+
+      <div class="cve-block">
+        <div class="cve-block-id">CVE-2026-26322</div>
+        <div class="cve-block-score">CVSS 7.7 — High</div>
+        <div class="cve-block-desc">Agent delegation spoofing via crafted A2A task message. A malicious agent can forge a task message appearing to originate from a trusted orchestrator, causing unauthorized tool execution under a different agent's permissions.</div>
+        <div class="cve-block-status reviewing">● In coordinated disclosure</div>
+      </div>
+
+      <p>Detection rules for both are included in <code>aiglos-core</code> v1.2.0 and above. Patches are in coordinated disclosure with affected vendors.</p>
+      <a href="/threats.html" class="entry-link">View full CVE database →</a>
+    </div>
+
+    <div class="entry" data-type="release">
+      <div class="entry-meta">
+        <span class="entry-date">March 2026</span>
+        <span class="entry-tag release">Release</span>
+        <span class="entry-version">v1.2.0</span>
+      </div>
+      <h2>T35 Personal Agent Monitor + 8 new CVEs</h2>
+      <p>Major detection expansion. T35 covers the personal agent attack surface — devices running local MCP servers, Claude Desktop, and similar single-user agent environments.</p>
+      <ul class="entry-list">
+        <li class="added">T35 rule family: WebSocket localhost guard, log poisoning detector, messaging channel guard, exposed instance detector</li>
+        <li class="added">T36 embedded library: zero-config <code>import aiglos</code> auto-patching for pip environments</li>
+        <li class="added">8 new CVEs filed against personal agent and embedded scenarios</li>
+        <li class="added">30-day Pro trial mechanic — auto-starts on first <code>aiglos.attest()</code> call</li>
+        <li class="fixed">Gate hits now persisted to <code>~/.aiglos/license.json</code> on every call</li>
+        <li class="fixed">Concurrent trial start race condition resolved (trial starts exactly once under 20-thread load)</li>
+        <li class="changed">Free tier attestation locked at zero artifacts (previously 3/month)</li>
+      </ul>
+    </div>
+
+    <div class="entry" data-type="cve security">
+      <div class="entry-meta">
+        <span class="entry-date">February 2026</span>
+        <span class="entry-tag cve">CVE Disclosure</span>
+        <span class="entry-tag security">Security</span>
+      </div>
+      <h2>CVE-2026-25253: WebSocket localhost hijack — CVSS 8.8</h2>
+      <p>A malicious MCP server can register a tool that proxies calls to a locally running WebSocket server, bypassing same-origin restrictions and gaining access to local-only services including Claude Desktop's internal API surface.</p>
+
+      <div class="cve-block">
+        <div class="cve-block-id">CVE-2026-25253</div>
+        <div class="cve-block-score">CVSS 8.8 — Critical</div>
+        <div class="cve-block-desc">WebSocket localhost hijack via malicious MCP tool registration. Affected: any MCP client running on a host with locally bound WebSocket services. Patch: aiglos-core v1.1.3 adds T35 WebSocket guard blocking <code>ws://localhost:*</code> and <code>ws://127.0.0.1:*</code> destinations in tool arguments.</div>
+        <div class="cve-block-status patched">✓ Patched in v1.1.3</div>
+      </div>
+
+      <a href="/threats.html" class="entry-link">View all CVEs →</a>
+    </div>
+
+    <div class="entry" data-type="release">
+      <div class="entry-meta">
+        <span class="entry-date">February 2026</span>
+        <span class="entry-tag release">Release</span>
+        <span class="entry-version">v1.1.0</span>
+      </div>
+      <h2>A2A protocol coverage + attestation artifacts</h2>
+      <p>Aiglos now covers the Google Agent-to-Agent protocol (T25–T29) and ships the first production-ready attestation artifact generator.</p>
+      <ul class="entry-list">
+        <li class="added">T25–T29 rule families: A2A protocol coverage — task spoofing, replay, unauthorized delegation, orchestrator impersonation</li>
+        <li class="added">RSA-2048 attestation artifact generation (<code>aiglos.attest()</code>)</li>
+        <li class="added">Offline artifact verification (<code>aiglos.verify()</code>)</li>
+        <li class="added">LicenseManager tier system — FREE / TRIAL / PRO / TEAM / ENTERPRISE</li>
+        <li class="added">TypeScript / Node.js SDK: <code>npm install aiglos</code></li>
+        <li class="fixed">Metering flush thread no longer blocks process exit</li>
+      </ul>
+    </div>
+
+    <div class="entry" data-type="cve security">
+      <div class="entry-meta">
+        <span class="entry-date">January 2026</span>
+        <span class="entry-tag cve">CVE Disclosure</span>
+        <span class="entry-tag security">Security</span>
+      </div>
+      <h2>CVE-2026-25593: SSRF via MCP file-fetch tool</h2>
+      <p>A tool argument validation gap allows agents to reach internal network endpoints via a seemingly innocuous file-fetch MCP tool. The vulnerability was discovered during T13 Network rule family development.</p>
+
+      <div class="cve-block">
+        <div class="cve-block-id">CVE-2026-25593</div>
+        <div class="cve-block-score">CVSS 5.9 — Medium</div>
+        <div class="cve-block-desc">SSRF via internal network probe through file-fetch MCP tool. The tool accepts a URL argument with no scheme or host restrictions, allowing requests to <code>http://169.254.169.254</code> (AWS metadata), <code>http://10.x.x.x</code> (internal networks), and <code>file://</code> URIs.</div>
+        <div class="cve-block-status patched">✓ Patched in v1.0.4</div>
+      </div>
+    </div>
+
+    <div class="entry" data-type="release">
+      <div class="entry-meta">
+        <span class="entry-date">January 2026</span>
+        <span class="entry-tag release">Release</span>
+        <span class="entry-version">v1.0.0</span>
+      </div>
+      <h2>Initial release — T1–T34, 769 tests passing</h2>
+      <p>First public release of Aiglos. The T1–T34 rule families cover the full MCP attack surface known at time of release. Detection engine is MIT licensed.</p>
+      <ul class="entry-list">
+        <li class="added">T01–T06: Injection &amp; Exfiltration</li>
+        <li class="added">T07–T12: Shell &amp; OS Abuse</li>
+        <li class="added">T13–T18: Network &amp; SSRF</li>
+        <li class="added">T19–T24: Secrets &amp; Credentials</li>
+        <li class="added">T25–T29: A2A Protocol (initial coverage)</li>
+        <li class="added">T30–T34: Supply Chain</li>
+        <li class="added">In-process MCP SDK patching — zero proxy, zero config</li>
+        <li class="added">Sync and async interceptor paths</li>
+        <li class="added">MeterClient with 30s batch flush, graceful degradation</li>
+        <li class="added">769 unit tests, 17 test files</li>
+      </ul>
+    </div>
+
+  </div><!-- /entries -->
+</div>
+
+<footer>
+  <span>Aiglos</span>
+  <ul class="footer-links">
+    <li><a href="/docs.html">Docs</a></li>
+    <li><a href="https://github.com/aiglos">GitHub</a></li>
+    <li><a href="/threats.html">CVEs</a></li>
+    <li><a href="/pricing.html">Pricing</a></li>
+    <li><a href="/defense.html">Defense</a></li>
+    <li><a href="/cdn-cgi/l/email-protection#e695878a8395a6878f818a8995c88f89">Contact</a></li>
+  </ul>
+  <span>aiglos.dev</span>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function filterEntries(type, btn) {
+  document.querySelectorAll('.filter-tab').forEach(b =
