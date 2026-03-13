@@ -180,6 +180,61 @@ _T36_PACKAGE_HOSTS = re.compile(
     re.IGNORECASE,
 )
 
+# T37: Financial transaction execution
+# Autonomous financial API calls are Tier 3 GATED by default.
+# Covers payment processing (Stripe, PayPal, Square, Braintree),
+# crypto/blockchain execution (Ethereum RPC, Coinbase, Alchemy),
+# wire/ACH transfer APIs, and generic amount+transfer body patterns.
+
+# "Hard" financial hosts: any POST here is a transaction attempt
+_T37_FIN_HOSTS_HARD = re.compile(
+    r"("
+    r"api\.stripe\.com/(v1/charges|v1/payment_intents|v1/transfers|v1/payouts)"
+    r"|api-m\.paypal\.com/v(1|2)/payments"
+    r"|connect\.squareup\.com/v2/payments"
+    r"|payments\.braintree-api\.com"
+    r"|api\.adyen\.com/.*payment"
+    r"|sandbox\.checkout\.com|api\.checkout\.com/payments"
+    r"|api\.coinbase\.com/v2/transactions"
+    r"|api\.binance\.com/api/v3/order"
+    r"|api\.kraken\.com/.*/AddOrder"
+    r"|api\.dwolla\.com/transfers"
+    r"|api\.plaid\.com/transfer"
+    r"|api\.treasury\.io/payments"
+    r")",
+    re.IGNORECASE,
+)
+
+# RPC hosts: only block when body contains execution methods
+_T37_FIN_HOSTS_RPC = re.compile(
+    r"("
+    r"mainnet\.infura\.io|polygon-mainnet\.infura\.io"
+    r"|eth-mainnet\.alchemyapi\.io|arb-mainnet\.g\.alchemy\.com"
+    r")",
+    re.IGNORECASE,
+)
+
+# Execution-only signals for RPC hosts (not read-only calls like eth_call)
+_T37_FIN_BODY_EXEC = re.compile(
+    r"("
+    r"eth_sendTransaction|eth_sendRawTransaction"
+    r"|personal_sign.*0x"
+    r")",
+    re.IGNORECASE,
+)
+
+# Generic financial body signals (any host)
+_T37_FIN_BODY_AMOUNT = re.compile(
+    r"("
+    r"\"amount\"\s*:\s*[1-9]\d{2,}"    # amount >= 100
+    r"|\"transfer_amount\"\s*:"
+    r"|\"payment_amount\"\s*:"
+    r"|\"send_amount\"\s*:"
+    r"|\"quantity\"\s*:\s*\d+.*\"side\"\s*:\s*\"(buy|sell)\""
+    r")",
+    re.IGNORECASE,
+)
+
 # Suspicious TLDs / known exfil staging hosts (high confidence)
 _EXFIL_TLD_PATTERNS = re.compile(
     r"(ngrok\.io|ngrok\.app|requestbin\.com|webhook\.site"
@@ -341,6 +396,36 @@ def inspect_request(
     if _T36_PACKAGE_HOSTS.search(url) and method.upper() in ("POST", "PUT"):
         return _result("T36", "SUPPLY_CHAIN",
                        f"Package publish to registry: {host}")
+
+    # T37: Financial transaction execution
+    # Hard financial hosts: any POST/PUT/PATCH is a transaction attempt.
+    # RPC hosts: only block on execution methods in body.
+    # Allow-listed hosts are exempt (explicit operator authorization).
+    if method.upper() in ("POST", "PUT", "PATCH") and not allowed:
+        hard_match = _T37_FIN_HOSTS_HARD.search(url)
+        if hard_match:
+            detail = hard_match.group()
+            return _result(
+                "T37", "FIN_EXEC",
+                f"Autonomous financial transaction execution blocked: '{detail[:80]}'. "
+                "Add to allow_http if this endpoint is explicitly authorized.",
+            )
+        rpc_match = _T37_FIN_HOSTS_RPC.search(url)
+        if rpc_match and body_str:
+            exec_match = _T37_FIN_BODY_EXEC.search(body_str)
+            if exec_match:
+                return _result(
+                    "T37", "FIN_EXEC",
+                    f"Blockchain transaction execution blocked on '{rpc_match.group()}': "
+                    f"'{exec_match.group()[:60]}'. Add to allow_http if authorized.",
+                )
+        if body_str:
+            amount_match = _T37_FIN_BODY_AMOUNT.search(body_str)
+            if amount_match and (_T37_FIN_HOSTS_HARD.search(url) or _T37_FIN_HOSTS_RPC.search(url)):
+                return _result(
+                    "T37", "FIN_EXEC",
+                    f"Financial transaction body pattern detected: '{amount_match.group()[:60]}'.",
+                )
 
     # Exfil staging hosts (always block, regardless of allow-list)
     if _EXFIL_TLD_PATTERNS.search(url):
