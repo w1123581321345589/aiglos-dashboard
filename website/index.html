@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+
+<html lang="en" style="background:#0B0B0D;color:#EEEEF0;">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Aiglos — Security Runtime for AI Agents</title>
-<meta name="description" content="T1–T36 detection on every MCP tool call. Signed session artifacts. NDAA §1513 compliance."/>
+<meta name="description" content="T1–T36 detection on every agent action — MCP, direct API, CLI, subprocess. Signed session artifacts. NDAA §1513 compliance."/>
 <meta property="og:title" content="Aiglos — Security Runtime for AI Agents"/>
-<meta property="og:description" content="Everything OpenClaw exposed. Aiglos catches."/>
+<meta property="og:description" content="We don't care what protocol your agent uses. We watch what your agent actually does."/>
 <script>
   const STRIPE_PAYG_PAYMENT_LINK = "STRIPE_PAYG_PAYMENT_LINK";
 </script>
@@ -17,576 +18,584 @@
 
 /* ── RESET ─────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html {
+scroll-behavior: smooth;
+background-color: #0B0B0D;
+}
 
 /* ── TOKENS ────────────────────────────────────────────────────────── */
 :root {
-  --bg:     #0B0B0D;
-  --s1:     #111114;
-  --s2:     #17171B;
-  --s3:     #1E1E23;
-  --ink:    #EEEEF0;
-  --ink2:   rgba(238,238,240,0.62);
-  --ink3:   rgba(238,238,240,0.36);
-  --rule:   rgba(255,255,255,0.07);
-  --rule2:  rgba(255,255,255,0.12);
-  --red:    #E8352A;
-  --red-a:  rgba(232,53,42,0.15);
-  --red-b:  rgba(232,53,42,0.25);
-  --green:  #00D97E;
-  --green-a:rgba(0,217,126,0.10);
-  --amber:  #F5A623;
-  --blue:   #4F8EF7;
-  --disp:   'Fraunces', Georgia, serif;
-  --body:   'Outfit', system-ui, sans-serif;
-  --mono:   'IBM Plex Mono', 'Cascadia Code', ui-monospace, monospace;
+–bg:     #0B0B0D;
+–s1:     #111114;
+–s2:     #17171B;
+–s3:     #1E1E23;
+–ink:    #EEEEF0;
+–ink2:   rgba(238,238,240,0.62);
+–ink3:   rgba(238,238,240,0.36);
+–rule:   rgba(255,255,255,0.07);
+–rule2:  rgba(255,255,255,0.12);
+–red:    #E8352A;
+–red-a:  rgba(232,53,42,0.15);
+–red-b:  rgba(232,53,42,0.25);
+–green:  #00D97E;
+–green-a:rgba(0,217,126,0.10);
+–amber:  #F5A623;
+–blue:   #4F8EF7;
+–disp:   ‘Fraunces’, Georgia, serif;
+–body:   ‘Outfit’, system-ui, sans-serif;
+–mono:   ‘IBM Plex Mono’, ‘Cascadia Code’, ui-monospace, monospace;
 }
 
 body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--body);
-  font-size: 15px;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+background-color: #0B0B0D;
+background: var(–bg, #0B0B0D);
+color: #EEEEF0;
+color: var(–ink, #EEEEF0);
+font-family: ‘Outfit’, system-ui, sans-serif;
+font-family: var(–body, ‘Outfit’, system-ui, sans-serif);
+font-size: 15px;
+line-height: 1.6;
+-webkit-font-smoothing: antialiased;
+overflow-x: hidden;
+min-height: 100vh;
 }
 
 a { color: inherit; text-decoration: none; }
 
 /* ── NAV ───────────────────────────────────────────────────────────── */
 nav {
-  position: sticky; top: 0; z-index: 200;
-  height: 58px;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 40px;
-  background: rgba(11,11,13,0.80);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid var(--rule);
+position: sticky; top: 0; z-index: 200;
+height: 58px;
+display: flex; align-items: center; justify-content: space-between;
+padding: 0 40px;
+background: #0D0D0F;
+background: rgba(11,11,13,0.95);
+backdrop-filter: blur(24px);
+-webkit-backdrop-filter: blur(24px);
+border-bottom: 1px solid var(–rule);
 }
 
 .nav-logo {
-  font-family: var(--mono);
-  font-size: 15px; font-weight: 600;
-  letter-spacing: -0.5px;
-  display: flex; align-items: center; gap: 9px;
+font-family: var(–mono);
+font-size: 15px; font-weight: 600;
+letter-spacing: -0.5px;
+display: flex; align-items: center; gap: 9px;
 }
 
 .logo-pip {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--red);
-  box-shadow: 0 0 10px var(--red);
-  animation: pip 3s ease-in-out infinite;
+width: 8px; height: 8px; border-radius: 50%;
+background: var(–red);
+box-shadow: 0 0 10px var(–red);
+animation: pip 3s ease-in-out infinite;
 }
 @keyframes pip { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
 .nav-center {
-  position: absolute; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 36px;
-  font-size: 13.5px; font-weight: 400; color: var(--ink3);
+position: absolute; left: 50%; transform: translateX(-50%);
+display: flex; gap: 36px;
+font-size: 13.5px; font-weight: 400; color: var(–ink3);
 }
-.nav-center a:hover { color: var(--ink2); }
+.nav-center a:hover { color: var(–ink2); }
 
 .nav-right { display: flex; gap: 10px; align-items: center; }
 
 .btn-sm-ghost {
-  font-family: var(--body); font-size: 13px; font-weight: 500;
-  color: var(--ink3); padding: 6px 15px;
-  border: 1px solid var(--rule2); border-radius: 6px;
-  background: transparent; cursor: pointer;
-  transition: color .15s, border-color .15s;
+font-family: var(–body); font-size: 13px; font-weight: 500;
+color: var(–ink3); padding: 6px 15px;
+border: 1px solid var(–rule2); border-radius: 6px;
+background: transparent; cursor: pointer;
+transition: color .15s, border-color .15s;
 }
-.btn-sm-ghost:hover { color: var(--ink); border-color: rgba(255,255,255,0.22); }
+.btn-sm-ghost:hover { color: var(–ink); border-color: rgba(255,255,255,0.22); }
 
 .btn-sm-red {
-  font-family: var(--body); font-size: 13px; font-weight: 600;
-  color: #fff; background: var(--red); padding: 7px 18px;
-  border: none; border-radius: 6px; cursor: pointer;
-  box-shadow: 0 0 18px var(--red-a);
-  transition: opacity .15s;
+font-family: var(–body); font-size: 13px; font-weight: 600;
+color: #fff; background: var(–red); padding: 7px 18px;
+border: none; border-radius: 6px; cursor: pointer;
+box-shadow: 0 0 18px var(–red-a);
+transition: opacity .15s;
 }
 .btn-sm-red:hover { opacity: 0.88; }
 
 /* ── HERO ──────────────────────────────────────────────────────────── */
 .hero {
-  max-width: 1040px; margin: 0 auto;
-  padding: 130px 40px 80px;
-  text-align: center;
-  position: relative; z-index: 1;
+max-width: 1040px; margin: 0 auto;
+padding: 130px 40px 80px;
+text-align: center;
+position: relative; z-index: 1;
 }
 
 /* ambient glow */
 .hero::before {
-  content: '';
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 700px; height: 500px;
-  background: radial-gradient(ellipse at 50% 20%, rgba(232,53,42,0.07) 0%, transparent 65%);
-  pointer-events: none;
+content: ‘’;
+position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+width: 700px; height: 500px;
+background: radial-gradient(ellipse at 50% 20%, rgba(232,53,42,0.07) 0%, transparent 65%);
+pointer-events: none;
 }
 
 .hero-label {
-  display: inline-flex; align-items: center; gap: 7px;
-  font-family: var(--mono); font-size: 11px; font-weight: 500;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--ink3); margin-bottom: 36px;
+display: inline-flex; align-items: center; gap: 7px;
+font-family: var(–mono); font-size: 11px; font-weight: 500;
+letter-spacing: 0.08em; text-transform: uppercase;
+color: var(–ink3); margin-bottom: 36px;
 }
 .hero-label-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: var(--red); animation: pip 2s ease-in-out infinite;
+width: 5px; height: 5px; border-radius: 50%;
+background: var(–red); animation: pip 2s ease-in-out infinite;
 }
 
 h1 {
-  font-family: var(--disp);
-  font-size: clamp(52px, 7.5vw, 92px);
-  font-weight: 300;
-  letter-spacing: -0.03em;
-  line-height: 1.04;
-  margin-bottom: 28px;
-  color: var(--ink);
+font-family: var(–disp);
+font-size: clamp(52px, 7.5vw, 92px);
+font-weight: 300;
+letter-spacing: -0.03em;
+line-height: 1.04;
+margin-bottom: 28px;
+color: var(–ink);
 }
 
 h1 em {
-  font-style: italic;
-  color: var(--ink2);
+font-style: italic;
+color: var(–ink2);
 }
 
-h1 .red { color: var(--red); font-style: italic; }
+h1 .red { color: var(–red); font-style: italic; }
 
 .hero-sub {
-  font-size: clamp(16px, 2vw, 18px);
-  color: var(--ink3);
-  font-weight: 300;
-  line-height: 1.7;
-  max-width: 500px;
-  margin: 0 auto 44px;
+font-size: clamp(16px, 2vw, 18px);
+color: var(–ink3);
+font-weight: 300;
+line-height: 1.7;
+max-width: 500px;
+margin: 0 auto 44px;
 }
 
 .hero-actions {
-  display: flex; align-items: center; justify-content: center;
-  gap: 14px; flex-wrap: wrap;
+display: flex; align-items: center; justify-content: center;
+gap: 14px; flex-wrap: wrap;
 }
 
 .btn-hero {
-  font-family: var(--body); font-size: 15px; font-weight: 600;
-  color: #fff; background: var(--red); padding: 13px 30px;
-  border: none; border-radius: 8px; cursor: pointer;
-  box-shadow: 0 0 32px rgba(232,53,42,0.22);
-  transition: opacity .15s, transform .1s;
-  display: inline-flex; align-items: center; gap: 8px;
-  letter-spacing: -0.01em;
+font-family: var(–body); font-size: 15px; font-weight: 600;
+color: #fff; background: var(–red); padding: 13px 30px;
+border: none; border-radius: 8px; cursor: pointer;
+box-shadow: 0 0 32px rgba(232,53,42,0.22);
+transition: opacity .15s, transform .1s;
+display: inline-flex; align-items: center; gap: 8px;
+letter-spacing: -0.01em;
 }
 .btn-hero:hover { opacity: 0.88; transform: translateY(-1px); }
 
 .btn-hero-ghost {
-  font-family: var(--body); font-size: 15px; font-weight: 400;
-  color: var(--ink2); padding: 13px 26px;
-  border: 1px solid var(--rule2); border-radius: 8px;
-  background: transparent; cursor: pointer;
-  transition: color .15s, border-color .15s;
-  display: inline-flex; align-items: center; gap: 7px;
+font-family: var(–body); font-size: 15px; font-weight: 400;
+color: var(–ink2); padding: 13px 26px;
+border: 1px solid var(–rule2); border-radius: 8px;
+background: transparent; cursor: pointer;
+transition: color .15s, border-color .15s;
+display: inline-flex; align-items: center; gap: 7px;
 }
-.btn-hero-ghost:hover { color: var(--ink); border-color: rgba(255,255,255,0.2); }
+.btn-hero-ghost:hover { color: var(–ink); border-color: rgba(255,255,255,0.2); }
 
 .pip-cmd {
-  display: inline-flex; align-items: center;
-  background: var(--s2); border: 1px solid var(--rule2);
-  border-radius: 7px; overflow: hidden;
-  margin: 0 auto; width: fit-content;
+display: inline-flex; align-items: center;
+background: var(–s2); border: 1px solid var(–rule2);
+border-radius: 7px; overflow: hidden;
+margin: 0 auto; width: fit-content;
 }
-.pip-prompt { font-family: var(--mono); font-size: 12px; color: var(--green);
-  padding: 9px 12px; border-right: 1px solid var(--rule); background: var(--green-a); }
-.pip-text   { font-family: var(--mono); font-size: 13px; color: var(--ink); padding: 9px 16px; }
-.pip-copy   { font-family: var(--mono); font-size: 11px; color: var(--ink3);
-  padding: 9px 12px; border-left: 1px solid var(--rule);
-  background: none; border-top: none; border-right: none; border-bottom: none;
-  cursor: pointer; transition: color .15s; }
-.pip-copy:hover { color: var(--ink); }
+.pip-prompt { font-family: var(–mono); font-size: 12px; color: var(–green);
+padding: 9px 12px; border-right: 1px solid var(–rule); background: var(–green-a); }
+.pip-text   { font-family: var(–mono); font-size: 13px; color: var(–ink); padding: 9px 16px; }
+.pip-copy   { font-family: var(–mono); font-size: 11px; color: var(–ink3);
+padding: 9px 12px; border-left: 1px solid var(–rule);
+background: none; border-top: none; border-right: none; border-bottom: none;
+cursor: pointer; transition: color .15s; }
+.pip-copy:hover { color: var(–ink); }
 
 /* ── TERMINAL HERO ─────────────────────────────────────────────────── */
 .term-section {
-  max-width: 900px; margin: 0 auto;
-  padding: 0 40px 120px;
-  position: relative; z-index: 1;
+max-width: 900px; margin: 0 auto;
+padding: 0 40px 120px;
+position: relative; z-index: 1;
 }
 
 .term-shell {
-  background: #070710;
-  border: 1px solid var(--rule2);
-  border-radius: 14px; overflow: hidden;
-  box-shadow:
-    0 0 0 1px rgba(232,53,42,0.08),
-    0 40px 100px rgba(0,0,0,0.7),
-    0 0 80px rgba(232,53,42,0.04);
+background: #070710;
+border: 1px solid var(–rule2);
+border-radius: 14px; overflow: hidden;
+box-shadow:
+0 0 0 1px rgba(232,53,42,0.08),
+0 40px 100px rgba(0,0,0,0.7),
+0 0 80px rgba(232,53,42,0.04);
 }
 
 .term-chrome {
-  display: flex; align-items: center; gap: 7px;
-  padding: 14px 18px;
-  background: rgba(255,255,255,0.03);
-  border-bottom: 1px solid var(--rule);
+display: flex; align-items: center; gap: 7px;
+padding: 14px 18px;
+background: rgba(255,255,255,0.03);
+border-bottom: 1px solid var(–rule);
 }
 .tc { width: 11px; height: 11px; border-radius: 50%; }
 .tc-r { background: #FF5F57; } .tc-y { background: #FEBC2E; } .tc-g { background: #28C840; }
 .term-chrome-title {
-  font-family: var(--mono); font-size: 11px; color: var(--ink3);
-  flex: 1; text-align: center; margin-left: 8px;
+font-family: var(–mono); font-size: 11px; color: var(–ink3);
+flex: 1; text-align: center; margin-left: 8px;
 }
 
 .term-content {
-  padding: 24px 28px 28px;
-  font-family: var(--mono); font-size: 13px; line-height: 2;
-  min-height: 340px; overflow: hidden;
+padding: 24px 28px 28px;
+font-family: var(–mono); font-size: 13px; line-height: 2;
+min-height: 340px; overflow: hidden;
 }
 
 .tl { display: block; }
-.tc-green  { color: var(--green); }
-.tc-red    { color: var(--red); font-weight: 600; }
-.tc-amber  { color: var(--amber); }
-.tc-blue   { color: var(--blue); }
+.tc-green  { color: var(–green); }
+.tc-red    { color: var(–red); font-weight: 600; }
+.tc-amber  { color: var(–amber); }
+.tc-blue   { color: var(–blue); }
 .tc-purple { color: #A78BFA; }
 .tc-dim    { color: rgba(238,238,240,0.25); }
 .tc-mid    { color: rgba(238,238,240,0.45); }
 
 @keyframes blink-cur { 0%,100%{opacity:1} 50%{opacity:0} }
 .cursor-b {
-  display: inline-block; width: 7px; height: 15px;
-  background: var(--green); margin-left: 2px;
-  animation: blink-cur 1.2s step-end infinite;
-  vertical-align: text-bottom;
+display: inline-block; width: 7px; height: 15px;
+background: var(–green); margin-left: 2px;
+animation: blink-cur 1.2s step-end infinite;
+vertical-align: text-bottom;
 }
 
 /* ── LOGOS ─────────────────────────────────────────────────────────── */
 .logos-section {
-  border-top: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
-  padding: 32px 40px;
-  background: var(--s1);
+border-top: 1px solid var(–rule);
+border-bottom: 1px solid var(–rule);
+padding: 32px 40px;
+background: var(–s1);
 }
 .logos-inner {
-  max-width: 1040px; margin: 0 auto;
-  display: flex; align-items: center; justify-content: center;
-  flex-wrap: wrap; gap: 8px;
+max-width: 1040px; margin: 0 auto;
+display: flex; align-items: center; justify-content: center;
+flex-wrap: wrap; gap: 8px;
 }
 .logos-label {
-  width: 100%; text-align: center;
-  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--ink3); margin-bottom: 20px;
+width: 100%; text-align: center;
+font-family: var(–mono); font-size: 10px; letter-spacing: 0.12em;
+text-transform: uppercase; color: var(–ink3); margin-bottom: 20px;
 }
 .logo-chip {
-  font-family: var(--mono); font-size: 12px; color: var(--ink3);
-  background: var(--s2); border: 1px solid var(--rule2);
-  padding: 8px 18px; border-radius: 5px;
-  transition: color .15s, border-color .15s;
+font-family: var(–mono); font-size: 12px; color: var(–ink3);
+background: var(–s2); border: 1px solid var(–rule2);
+padding: 8px 18px; border-radius: 5px;
+transition: color .15s, border-color .15s;
 }
-.logo-chip:hover { color: var(--ink2); border-color: rgba(255,255,255,0.18); }
+.logo-chip:hover { color: var(–ink2); border-color: rgba(255,255,255,0.18); }
 
 /* ── SECTION BASE ──────────────────────────────────────────────────── */
 .section {
-  max-width: 1040px; margin: 0 auto;
-  padding: 120px 40px;
+max-width: 1040px; margin: 0 auto;
+padding: 120px 40px;
 }
 .section-wide {
-  padding: 120px 40px;
-  border-top: 1px solid var(--rule);
+padding: 120px 40px;
+border-top: 1px solid var(–rule);
 }
 .section-wide .inner { max-width: 1040px; margin: 0 auto; }
 
 .eyebrow {
-  font-family: var(--mono); font-size: 10px; font-weight: 500;
-  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink3);
-  margin-bottom: 18px;
-  display: flex; align-items: center; gap: 8px;
+font-family: var(–mono); font-size: 10px; font-weight: 500;
+letter-spacing: 0.12em; text-transform: uppercase; color: var(–ink3);
+margin-bottom: 18px;
+display: flex; align-items: center; gap: 8px;
 }
-.eyebrow::before { content: '//'; color: var(--red); }
+.eyebrow::before { content: ‘//’; color: var(–red); }
 
 h2 {
-  font-family: var(--disp);
-  font-size: clamp(36px, 5vw, 60px);
-  font-weight: 300; letter-spacing: -0.02em;
-  line-height: 1.08; margin-bottom: 18px;
+font-family: var(–disp);
+font-size: clamp(36px, 5vw, 60px);
+font-weight: 300; letter-spacing: -0.02em;
+line-height: 1.08; margin-bottom: 18px;
 }
-h2 em { font-style: italic; color: var(--ink2); }
-h2 .red { color: var(--red); font-style: italic; }
+h2 em { font-style: italic; color: var(–ink2); }
+h2 .red { color: var(–red); font-style: italic; }
 
 .lead {
-  font-size: 16px; color: var(--ink3); font-weight: 300;
-  line-height: 1.75; max-width: 500px; margin-bottom: 64px;
+font-size: 16px; color: var(–ink3); font-weight: 300;
+line-height: 1.75; max-width: 500px; margin-bottom: 64px;
 }
 
 /* ── GROK COMPARE ──────────────────────────────────────────────────── */
 .compare-wrap {
-  display: grid; grid-template-columns: 1fr 1fr;
-  border: 1px solid var(--rule2); border-radius: 12px; overflow: hidden;
-  background: var(--s1);
+display: grid; grid-template-columns: 1fr 1fr;
+border: 1px solid var(–rule2); border-radius: 12px; overflow: hidden;
+background: var(–s1);
 }
 
 .compare-col { padding: 44px 48px; }
-.compare-col + .compare-col { border-left: 1px solid var(--rule2); }
+.compare-col + .compare-col { border-left: 1px solid var(–rule2); }
 .compare-col.ours {
-  background: linear-gradient(160deg, rgba(232,53,42,0.05) 0%, var(--s1) 50%);
-  position: relative;
+background: linear-gradient(160deg, rgba(232,53,42,0.05) 0%, var(–s1) 50%);
+position: relative;
 }
 .compare-col.ours::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--red);
+content: ‘’;
+position: absolute; top: 0; left: 0; right: 0; height: 2px;
+background: var(–red);
 }
 
 .compare-eyebrow {
-  font-family: var(--mono); font-size: 10px; font-weight: 600;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--ink3); margin-bottom: 8px;
-  display: flex; align-items: center; gap: 8px;
+font-family: var(–mono); font-size: 10px; font-weight: 600;
+letter-spacing: 0.1em; text-transform: uppercase;
+color: var(–ink3); margin-bottom: 8px;
+display: flex; align-items: center; gap: 8px;
 }
 .compare-eyebrow .dot {
-  width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
 }
 
 .compare-source {
-  font-size: 12px; color: var(--ink3); font-style: italic; margin-bottom: 28px;
+font-size: 12px; color: var(–ink3); font-style: italic; margin-bottom: 28px;
 }
 
 .grok-steps { display: flex; flex-direction: column; gap: 14px; }
 .grok-step {
-  display: flex; gap: 14px;
-  font-size: 14px; color: var(--ink3); line-height: 1.6;
-  font-weight: 300;
+display: flex; gap: 14px;
+font-size: 14px; color: var(–ink3); line-height: 1.6;
+font-weight: 300;
 }
 .gstep-n {
-  font-family: var(--mono); font-size: 10px; color: var(--ink3);
-  min-width: 16px; margin-top: 4px; opacity: 0.5;
+font-family: var(–mono); font-size: 10px; color: var(–ink3);
+min-width: 16px; margin-top: 4px; opacity: 0.5;
 }
 
 .cmd-display {
-  font-family: var(--mono);
-  font-size: clamp(18px, 3vw, 28px);
-  font-weight: 600; line-height: 1.3;
-  color: var(--ink); margin-bottom: 24px;
+font-family: var(–mono);
+font-size: clamp(18px, 3vw, 28px);
+font-weight: 600; line-height: 1.3;
+color: var(–ink); margin-bottom: 24px;
 }
-.cmd-display .cmd-p { color: var(--green); }
+.cmd-display .cmd-p { color: var(–green); }
 
 .result-box {
-  background: var(--bg); border: 1px solid var(--rule2);
-  border-radius: 8px; padding: 16px 20px;
-  font-family: var(--mono); font-size: 12.5px; line-height: 1.85;
-  margin-bottom: 22px;
+background: var(–bg); border: 1px solid var(–rule2);
+border-radius: 8px; padding: 16px 20px;
+font-family: var(–mono); font-size: 12.5px; line-height: 1.85;
+margin-bottom: 22px;
 }
 
 .compare-note {
-  font-size: 13.5px; color: var(--ink3); line-height: 1.7; font-weight: 300;
+font-size: 13.5px; color: var(–ink3); line-height: 1.7; font-weight: 300;
 }
-.compare-note strong { color: var(--ink); font-weight: 500; }
+.compare-note strong { color: var(–ink); font-weight: 500; }
 
 /* ── CODE STEPS ────────────────────────────────────────────────────── */
 .steps-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  border: 1px solid var(--rule);
-  border-radius: 12px; overflow: hidden;
+display: grid; grid-template-columns: repeat(3, 1fr);
+border: 1px solid var(–rule);
+border-radius: 12px; overflow: hidden;
 }
-.step-col { padding: 40px 36px; border-right: 1px solid var(--rule); }
+.step-col { padding: 40px 36px; border-right: 1px solid var(–rule); }
 .step-col:last-child { border-right: none; }
 
 .step-num {
-  font-family: var(--mono); font-size: 10px; font-weight: 500;
-  color: var(--ink3); letter-spacing: 0.1em; margin-bottom: 18px;
+font-family: var(–mono); font-size: 10px; font-weight: 500;
+color: var(–ink3); letter-spacing: 0.1em; margin-bottom: 18px;
 }
 .step-head { font-size: 19px; font-weight: 500; letter-spacing: -0.3px; margin-bottom: 10px; }
-.step-body { font-size: 13px; color: var(--ink3); font-weight: 300; line-height: 1.7; margin-bottom: 22px; }
+.step-body { font-size: 13px; color: var(–ink3); font-weight: 300; line-height: 1.7; margin-bottom: 22px; }
 
 .code-block {
-  background: var(--bg); border: 1px solid var(--rule2);
-  border-radius: 8px; padding: 16px 18px;
-  font-family: var(--mono); font-size: 12px; line-height: 1.9;
+background: var(–bg); border: 1px solid var(–rule2);
+border-radius: 8px; padding: 16px 18px;
+font-family: var(–mono); font-size: 12px; line-height: 1.9;
 }
-.ck { color: var(--green); }
+.ck { color: var(–green); }
 .cs { color: #86E1A6; }
-.cv { color: var(--blue); }
-.cf { color: var(--amber); }
-.cm { color: var(--ink3); }
+.cv { color: var(–blue); }
+.cf { color: var(–amber); }
+.cm { color: var(–ink3); }
 
 /* ── THREAT GRID ───────────────────────────────────────────────────── */
 .threat-matrix {
-  display: grid; grid-template-columns: repeat(9, 1fr);
-  border: 1px solid var(--rule); border-radius: 10px;
-  overflow: hidden; margin-top: 60px;
+display: grid; grid-template-columns: repeat(9, 1fr);
+border: 1px solid var(–rule); border-radius: 10px;
+overflow: hidden; margin-top: 60px;
 }
 .tm-cell {
-  padding: 14px 12px; border-right: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
-  cursor: default; transition: background .12s;
+padding: 14px 12px; border-right: 1px solid var(–rule);
+border-bottom: 1px solid var(–rule);
+cursor: default; transition: background .12s;
 }
-.tm-cell:hover { background: var(--s2); }
-.tm-cell.hot { border-top: 2px solid var(--red); margin-top: -1px; }
-.tm-cell.hot .tm-id { color: var(--red); }
+.tm-cell:hover { background: var(–s2); }
+.tm-cell.hot { border-top: 2px solid var(–red); margin-top: -1px; }
+.tm-cell.hot .tm-id { color: var(–red); }
 .tm-id {
-  font-family: var(--mono); font-size: 10px; font-weight: 600;
-  color: var(--ink3); letter-spacing: 0.04em; margin-bottom: 3px;
+font-family: var(–mono); font-size: 10px; font-weight: 600;
+color: var(–ink3); letter-spacing: 0.04em; margin-bottom: 3px;
 }
-.tm-name { font-size: 10px; color: var(--ink3); line-height: 1.3; opacity: 0.7; }
+.tm-name { font-size: 10px; color: var(–ink3); line-height: 1.3; opacity: 0.7; }
 
 /* ── CVE TABLE ─────────────────────────────────────────────────────── */
 .tbl-wrap {
-  border: 1px solid var(--rule2); border-radius: 10px;
-  overflow: hidden; margin-top: 60px;
+border: 1px solid var(–rule2); border-radius: 10px;
+overflow: hidden; margin-top: 60px;
 }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
-thead tr { background: var(--s2); border-bottom: 1px solid var(--rule2); }
+thead tr { background: var(–s2); border-bottom: 1px solid var(–rule2); }
 th {
-  text-align: left; padding: 12px 20px;
-  font-family: var(--mono); font-size: 9.5px; font-weight: 600;
-  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink3);
+text-align: left; padding: 12px 20px;
+font-family: var(–mono); font-size: 9.5px; font-weight: 600;
+letter-spacing: 0.1em; text-transform: uppercase; color: var(–ink3);
 }
-td { padding: 14px 20px; border-bottom: 1px solid var(--rule); vertical-align: top; line-height: 1.55; }
+td { padding: 14px 20px; border-bottom: 1px solid var(–rule); vertical-align: top; line-height: 1.55; }
 tr:last-child td { border-bottom: none; }
 tbody tr:hover td { background: rgba(255,255,255,0.012); }
-.cveid { font-family: var(--mono); font-size: 11px; color: var(--ink3); }
-.cvss  { display: block; font-size: 10px; color: var(--red); font-family: var(--mono); margin-top: 3px; }
+.cveid { font-family: var(–mono); font-size: 11px; color: var(–ink3); }
+.cvss  { display: block; font-size: 10px; color: var(–red); font-family: var(–mono); margin-top: 3px; }
 .cvename  { font-weight: 500; margin-bottom: 3px; }
-.cvedetail { font-size: 12px; color: var(--ink3); font-weight: 300; }
+.cvedetail { font-size: 12px; color: var(–ink3); font-weight: 300; }
 .mod-pill {
-  display: inline-block; font-family: var(--mono); font-size: 9.5px; font-weight: 600;
-  color: var(--green); background: var(--green-a);
-  border: 1px solid rgba(0,217,126,0.2);
-  padding: 2px 7px; border-radius: 3px; margin: 2px 2px 0 0;
+display: inline-block; font-family: var(–mono); font-size: 9.5px; font-weight: 600;
+color: var(–green); background: var(–green-a);
+border: 1px solid rgba(0,217,126,0.2);
+padding: 2px 7px; border-radius: 3px; margin: 2px 2px 0 0;
 }
 
 /* ── LIVE FEED ─────────────────────────────────────────────────────── */
 .feed-wrap {
-  border: 1px solid var(--rule2); border-radius: 10px;
-  overflow: hidden; margin-top: 60px;
+border: 1px solid var(–rule2); border-radius: 10px;
+overflow: hidden; margin-top: 60px;
 }
 .feed-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 13px 20px; background: var(--s2);
-  border-bottom: 1px solid var(--rule);
+display: flex; align-items: center; justify-content: space-between;
+padding: 13px 20px; background: var(–s2);
+border-bottom: 1px solid var(–rule);
 }
 .feed-head-l {
-  font-family: var(--mono); font-size: 10px; font-weight: 600;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--ink3); display: flex; align-items: center; gap: 8px;
+font-family: var(–mono); font-size: 10px; font-weight: 600;
+letter-spacing: 0.1em; text-transform: uppercase;
+color: var(–ink3); display: flex; align-items: center; gap: 8px;
 }
 .live-pip {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--red); animation: pip 1.5s ease-in-out infinite;
+width: 6px; height: 6px; border-radius: 50%;
+background: var(–red); animation: pip 1.5s ease-in-out infinite;
 }
-.feed-head-r { font-family: var(--mono); font-size: 11px; color: var(--ink3); }
-.feed-head-r span { color: var(--red); font-weight: 600; font-size: 13px; }
+.feed-head-r { font-family: var(–mono); font-size: 11px; color: var(–ink3); }
+.feed-head-r span { color: var(–red); font-weight: 600; font-size: 13px; }
 
 .feed-body { overflow: hidden; }
 .feed-row {
-  display: grid; grid-template-columns: 90px 72px 1fr 110px 64px;
-  gap: 14px; align-items: center;
-  padding: 10px 20px; border-bottom: 1px solid var(--rule);
-  font-size: 12px;
-  animation: row-in 0.3s ease both;
+display: grid; grid-template-columns: 90px 72px 1fr 110px 64px;
+gap: 14px; align-items: center;
+padding: 10px 20px; border-bottom: 1px solid var(–rule);
+font-size: 12px;
+animation: row-in 0.3s ease both;
 }
 @keyframes row-in { from { opacity:0; transform:translateX(-5px); } to { opacity:1; transform:translateX(0); } }
-.feed-ts   { font-family: var(--mono); font-size: 10px; color: var(--ink3); }
-.feed-act  { font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; }
-.feed-act.block { color: var(--red); }
-.feed-act.warn  { color: var(--amber); }
-.feed-act.allow { color: var(--green); }
-.feed-desc { color: var(--ink3); }
-.feed-ag   { font-family: var(--mono); font-size: 10px; color: var(--ink3); }
-.feed-mod  { font-family: var(--mono); font-size: 10px; color: var(--blue); }
+.feed-ts   { font-family: var(–mono); font-size: 10px; color: var(–ink3); }
+.feed-act  { font-family: var(–mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; }
+.feed-act.block { color: var(–red); }
+.feed-act.warn  { color: var(–amber); }
+.feed-act.allow { color: var(–green); }
+.feed-desc { color: var(–ink3); }
+.feed-ag   { font-family: var(–mono); font-size: 10px; color: var(–ink3); }
+.feed-mod  { font-family: var(–mono); font-size: 10px; color: var(–blue); }
 
 /* ── PRICING ───────────────────────────────────────────────────────── */
 .pricing-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 16px; max-width: 780px; margin-top: 60px;
+display: grid; grid-template-columns: 1fr 1fr;
+gap: 16px; max-width: 780px; margin-top: 60px;
 }
 
 .plan {
-  background: var(--s1); border: 1px solid var(--rule);
-  border-radius: 12px; padding: 40px 36px;
-  display: flex; flex-direction: column;
-  position: relative; overflow: hidden;
+background: var(–s1); border: 1px solid var(–rule);
+border-radius: 12px; padding: 40px 36px;
+display: flex; flex-direction: column;
+position: relative; overflow: hidden;
 }
-.plan.featured { border-color: var(--red-b); }
+.plan.featured { border-color: var(–red-b); }
 .plan.featured::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: var(--red);
+content: ‘’; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+background: var(–red);
 }
 
 .plan-badge {
-  position: absolute; top: 18px; right: 18px;
-  background: var(--red); color: #fff;
-  font-family: var(--mono); font-size: 9px; font-weight: 600;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 3px 9px; border-radius: 3px;
+position: absolute; top: 18px; right: 18px;
+background: var(–red); color: #fff;
+font-family: var(–mono); font-size: 9px; font-weight: 600;
+letter-spacing: 0.08em; text-transform: uppercase;
+padding: 3px 9px; border-radius: 3px;
 }
 
-.plan-name { font-family: var(--mono); font-size: 11px; font-weight: 600;
-  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink3); margin-bottom: 18px; }
+.plan-name { font-family: var(–mono); font-size: 11px; font-weight: 600;
+letter-spacing: 0.1em; text-transform: uppercase; color: var(–ink3); margin-bottom: 18px; }
 
 .plan-price {
-  font-family: var(--disp); font-size: 52px; font-weight: 300;
-  letter-spacing: -0.03em; line-height: 1; margin-bottom: 6px;
+font-family: var(–disp); font-size: 52px; font-weight: 300;
+letter-spacing: -0.03em; line-height: 1; margin-bottom: 6px;
 }
 .plan-price sup { font-size: 24px; font-weight: 300; }
-.plan-price sub { font-size: 18px; font-weight: 300; color: var(--ink3); }
+.plan-price sub { font-size: 18px; font-weight: 300; color: var(–ink3); }
 
-.plan-tagline { font-size: 13px; color: var(--ink3); font-weight: 300; margin-bottom: 24px; }
+.plan-tagline { font-size: 13px; color: var(–ink3); font-weight: 300; margin-bottom: 24px; }
 
 .plan-features { list-style: none; flex: 1; margin-bottom: 32px; display: flex; flex-direction: column; gap: 10px; }
 .plan-features li {
-  font-size: 13px; color: var(--ink3); font-weight: 300;
-  display: flex; align-items: flex-start; gap: 9px; line-height: 1.5;
+font-size: 13px; color: var(–ink3); font-weight: 300;
+display: flex; align-items: flex-start; gap: 9px; line-height: 1.5;
 }
 .plan-features li::before {
-  content: '→'; font-family: var(--mono); font-size: 10px;
-  color: var(--ink3); margin-top: 3px; flex-shrink: 0; opacity: 0.6;
+content: ‘→’; font-family: var(–mono); font-size: 10px;
+color: var(–ink3); margin-top: 3px; flex-shrink: 0; opacity: 0.6;
 }
 
 .plan-cta {
-  width: 100%; font-family: var(--body); font-size: 14px; font-weight: 600;
-  padding: 13px; border-radius: 8px; cursor: pointer;
-  letter-spacing: -0.01em; transition: opacity .15s, transform .1s;
+width: 100%; font-family: var(–body); font-size: 14px; font-weight: 600;
+padding: 13px; border-radius: 8px; cursor: pointer;
+letter-spacing: -0.01em; transition: opacity .15s, transform .1s;
 }
 .plan-cta:hover { opacity: 0.85; transform: translateY(-1px); }
-.cta-red { background: var(--red); color: #fff; border: none;
-  box-shadow: 0 0 24px rgba(232,53,42,0.2); }
-.cta-ghost { background: transparent; color: var(--ink3); border: 1px solid var(--rule2); }
-.cta-ghost:hover { border-color: rgba(255,255,255,0.22); color: var(--ink); }
+.cta-red { background: var(–red); color: #fff; border: none;
+box-shadow: 0 0 24px rgba(232,53,42,0.2); }
+.cta-ghost { background: transparent; color: var(–ink3); border: 1px solid var(–rule2); }
+.cta-ghost:hover { border-color: rgba(255,255,255,0.22); color: var(–ink); }
 
 /* ── FOOTER ────────────────────────────────────────────────────────── */
 footer {
-  border-top: 1px solid var(--rule);
-  padding: 36px 40px;
-  background: var(--s1);
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 20px;
+border-top: 1px solid var(–rule);
+padding: 36px 40px;
+background: var(–s1);
+display: flex; align-items: center; justify-content: space-between;
+flex-wrap: wrap; gap: 20px;
 }
-.foot-logo { font-family: var(--mono); font-size: 14px; font-weight: 600;
-  display: flex; align-items: center; gap: 8px; }
-.foot-links { display: flex; gap: 26px; font-size: 13px; color: var(--ink3); flex-wrap: wrap; }
-.foot-links a:hover { color: var(--ink2); }
-.foot-c { font-family: var(--mono); font-size: 11px; color: var(--ink3); }
+.foot-logo { font-family: var(–mono); font-size: 14px; font-weight: 600;
+display: flex; align-items: center; gap: 8px; }
+.foot-links { display: flex; gap: 26px; font-size: 13px; color: var(–ink3); flex-wrap: wrap; }
+.foot-links a:hover { color: var(–ink2); }
+.foot-c { font-family: var(–mono); font-size: 11px; color: var(–ink3); }
 
 /* ── RESPONSIVE ────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
-  nav { padding: 0 20px; }
-  .nav-center { display: none; }
-  .hero, .term-section, .section { padding-left: 20px; padding-right: 20px; }
-  .section-wide { padding-left: 20px; padding-right: 20px; }
-  h1 { font-size: 46px; }
-  h2 { font-size: 34px; }
-  .compare-wrap { grid-template-columns: 1fr; }
-  .compare-col + .compare-col { border-left: none; border-top: 1px solid var(--rule2); }
-  .steps-grid { grid-template-columns: 1fr; }
-  .step-col { border-right: none; border-bottom: 1px solid var(--rule); }
-  .threat-matrix { grid-template-columns: repeat(4, 1fr); }
-  .pricing-grid { grid-template-columns: 1fr; }
-  .feed-row { grid-template-columns: 80px 60px 1fr; }
-  .feed-ag, .feed-mod { display: none; }
-  footer { padding: 24px 20px; }
+nav { padding: 0 20px; }
+.nav-center { display: none; }
+.hero, .term-section, .section { padding-left: 20px; padding-right: 20px; }
+.section-wide { padding-left: 20px; padding-right: 20px; }
+h1 { font-size: 46px; }
+h2 { font-size: 34px; }
+.compare-wrap { grid-template-columns: 1fr; }
+.compare-col + .compare-col { border-left: none; border-top: 1px solid var(–rule2); }
+.steps-grid { grid-template-columns: 1fr; }
+.step-col { border-right: none; border-bottom: 1px solid var(–rule); }
+.threat-matrix { grid-template-columns: repeat(4, 1fr); }
+.pricing-grid { grid-template-columns: 1fr; }
+.feed-row { grid-template-columns: 80px 60px 1fr; }
+.feed-ag, .feed-mod { display: none; }
+footer { padding: 24px 20px; }
 }
 
 /* ── ENTER ANIMATIONS ──────────────────────────────────────────────── */
 @keyframes fade-rise {
-  from { opacity: 0; transform: translateY(22px); }
-  to   { opacity: 1; transform: translateY(0); }
+from { opacity: 0; transform: translateY(22px); }
+to   { opacity: 1; transform: translateY(0); }
 }
 .hero-label   { animation: fade-rise .5s .0s ease both; }
 h1            { animation: fade-rise .55s .08s ease both; }
@@ -596,20 +605,22 @@ h1            { animation: fade-rise .55s .08s ease both; }
 
 /* ── TOAST ─────────────────────────────────────────────────────────── */
 .toast {
-  position: fixed; bottom: 24px; left: 50%;
-  transform: translateX(-50%) translateY(8px);
-  background: var(--s3); border: 1px solid var(--rule2);
-  color: var(--ink2); font-family: var(--mono); font-size: 12px;
-  padding: 10px 22px; border-radius: 7px;
-  opacity: 0; transition: opacity .2s, transform .2s;
-  pointer-events: none; z-index: 999;
+position: fixed; bottom: 24px; left: 50%;
+transform: translateX(-50%) translateY(8px);
+background: var(–s3); border: 1px solid var(–rule2);
+color: var(–ink2); font-family: var(–mono); font-size: 12px;
+padding: 10px 22px; border-radius: 7px;
+opacity: 0; transition: opacity .2s, transform .2s;
+pointer-events: none; z-index: 999;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
+
 </head>
-<body>
+<body style="background:#0B0B0D;background-color:#0B0B0D;color:#EEEEF0;min-height:100vh;">
 
 <!-- NAV -->
+
 <nav>
   <div class="nav-logo">
     <div class="logo-pip"></div>
@@ -629,8 +640,8 @@ h1            { animation: fade-rise .55s .08s ease both; }
   </div>
 </nav>
 
-
 <!-- HERO -->
+
 <section class="hero">
   <div class="hero-label">
     <div class="hero-label-dot"></div>
@@ -643,7 +654,7 @@ h1            { animation: fade-rise .55s .08s ease both; }
   </h1>
 
   <p class="hero-sub">
-    T1–T36 detection on every MCP tool call.
+    T1–T36 detection on every agent action — MCP, direct API, CLI, subprocess.
     Signed session artifacts. NDAA §1513 compliance.
   </p>
 
@@ -661,8 +672,8 @@ h1            { animation: fade-rise .55s .08s ease both; }
   </div>
 </section>
 
-
 <!-- TERMINAL -->
+
 <div class="term-section">
   <div class="term-shell">
     <div class="term-chrome">
@@ -672,17 +683,17 @@ h1            { animation: fade-rise .55s .08s ease both; }
       <div class="term-chrome-title">aiglos runtime · session 7f3a9c · T1–T36</div>
     </div>
     <div class="term-content" id="termContent">
-      <span class="tl tc-dim"># one import. every tool call inspected.</span>
+      <span class="tl tc-dim"># one import. every agent action inspected.</span>
       <span class="tl"><span class="tc-green">»</span> <span id="termCursor"></span></span>
     </div>
   </div>
 </div>
 
-
 <!-- LOGOS -->
+
 <div class="logos-section">
   <div class="logos-inner">
-    <div class="logos-label">Works with every major agent framework</div>
+    <div class="logos-label">Works with every agent runtime — regardless of protocol</div>
     <span class="logo-chip">LangChain</span>
     <span class="logo-chip">LlamaIndex</span>
     <span class="logo-chip">AutoGen</span>
@@ -693,119 +704,129 @@ h1            { animation: fade-rise .55s .08s ease both; }
     <span class="logo-chip">Claude Code</span>
     <span class="logo-chip">Cursor</span>
     <span class="logo-chip">MCP SDK</span>
+    <span class="logo-chip">Direct API</span>
+    <span class="logo-chip">CLI / subprocess</span>
   </div>
 </div>
 
-
 <!-- GROK COMPARE -->
+
 <div class="section-wide" id="why">
   <div class="inner">
     <div class="eyebrow">Why Aiglos</div>
     <h2>There is a better answer<br/>than <em>open it in VS Code.</em></h2>
     <p class="lead">When someone asked Grok how to check a ClawHub skill for malware, this is what it said.</p>
 
-    <div class="compare-wrap">
-      <div class="compare-col theirs">
-        <div class="compare-eyebrow">
-          <span class="dot" style="background:var(--ink3)"></span>
-          What Grok said
-        </div>
-        <div class="compare-source">Asked: "how do I check a ClawHub skill for malicious code?"</div>
-        <div class="grok-steps">
-          <div class="grok-step"><span class="gstep-n">01</span><span>Open the downloaded file in VS Code. Look for unexpected <code style="font-size:11px;background:rgba(255,255,255,0.06);padding:1px 6px;border-radius:3px">os.exec</code> calls and network requests to unknown domains.</span></div>
-          <div class="grok-step"><span class="gstep-n">02</span><span>Upload to VirusTotal.com for a quick malware scan.</span></div>
-          <div class="grok-step"><span class="gstep-n">03</span><span>Test in a sandbox — VM or Docker container — with no sensitive data.</span></div>
-          <div class="grok-step"><span class="gstep-n">04</span><span>High-download skills from verified creators are usually safer — but always verify yourself. Stay safe!</span></div>
-        </div>
-      </div>
-
-      <div class="compare-col ours">
-        <div class="compare-eyebrow">
-          <span class="dot" style="background:var(--red)"></span>
-          Aiglos
-        </div>
-        <div class="compare-source" style="color:var(--ink3)">8 signals. 2 seconds.</div>
-        <div class="cmd-display">
-          <span class="cmd-p">$</span> aiglos scan&#8209;skill<br/>
-          &nbsp;&nbsp;solana&#8209;wallet&#8209;tracker
-        </div>
-        <div class="result-box">
-          <span style="color:var(--red);font-weight:700">[CRITICAL 78/100]</span> DO NOT INSTALL<br/>
-          <span style="color:rgba(255,255,255,0.28)">├</span> <span class="tc-amber">social_engineering</span><span class="tc-dim"> — "paste in terminal" in README</span><br/>
-          <span style="color:rgba(255,255,255,0.28)">├</span> <span class="tc-amber">suspicious_permissions</span><span class="tc-dim"> — shell, credentials, network</span><br/>
-          <span style="color:rgba(255,255,255,0.28)">├</span> <span class="tc-amber">known_malicious_publisher</span><br/>
-          <span style="color:rgba(255,255,255,0.28)">└</span> <span class="tc-amber">new_publish_anomaly</span><span class="tc-dim"> — 6h old, 0 downloads</span>
-        </div>
-        <p class="compare-note">
-          <strong>VirusTotal doesn't score agent permission scopes.</strong>
-          It can't detect a README that says "paste this in your terminal."
-          It can't fingerprint a publisher account that distributed GhostClaw last week.
-          Aiglos was built for exactly this attack surface.
-        </p>
-      </div>
+```
+<div class="compare-wrap">
+  <div class="compare-col theirs">
+    <div class="compare-eyebrow">
+      <span class="dot" style="background:var(--ink3)"></span>
+      What Grok said
     </div>
+    <div class="compare-source">Asked: "how do I check a ClawHub skill for malicious code?"</div>
+    <div class="grok-steps">
+      <div class="grok-step"><span class="gstep-n">01</span><span>Open the downloaded file in VS Code. Look for unexpected <code style="font-size:11px;background:rgba(255,255,255,0.06);padding:1px 6px;border-radius:3px">os.exec</code> calls and network requests to unknown domains.</span></div>
+      <div class="grok-step"><span class="gstep-n">02</span><span>Upload to VirusTotal.com for a quick malware scan.</span></div>
+      <div class="grok-step"><span class="gstep-n">03</span><span>Test in a sandbox — VM or Docker container — with no sensitive data.</span></div>
+      <div class="grok-step"><span class="gstep-n">04</span><span>High-download skills from verified creators are usually safer — but always verify yourself. Stay safe!</span></div>
+    </div>
+  </div>
+
+  <div class="compare-col ours">
+    <div class="compare-eyebrow">
+      <span class="dot" style="background:var(--red)"></span>
+      Aiglos
+    </div>
+    <div class="compare-source" style="color:var(--ink3)">8 signals. 2 seconds.</div>
+    <div class="cmd-display">
+      <span class="cmd-p">$</span> aiglos scan&#8209;skill<br/>
+      &nbsp;&nbsp;solana&#8209;wallet&#8209;tracker
+    </div>
+    <div class="result-box">
+      <span style="color:var(--red);font-weight:700">[CRITICAL 78/100]</span> DO NOT INSTALL<br/>
+      <span style="color:rgba(255,255,255,0.28)">├</span> <span class="tc-amber">social_engineering</span><span class="tc-dim"> — "paste in terminal" in README</span><br/>
+      <span style="color:rgba(255,255,255,0.28)">├</span> <span class="tc-amber">suspicious_permissions</span><span class="tc-dim"> — shell, credentials, network</span><br/>
+      <span style="color:rgba(255,255,255,0.28)">├</span> <span class="tc-amber">known_malicious_publisher</span><br/>
+      <span style="color:rgba(255,255,255,0.28)">└</span> <span class="tc-amber">new_publish_anomaly</span><span class="tc-dim"> — 6h old, 0 downloads</span>
+    </div>
+    <p class="compare-note">
+      <strong>VirusTotal doesn't score agent permission scopes.</strong>
+      It can't detect a README that says "paste this in your terminal."
+      It can't fingerprint a publisher account that distributed GhostClaw last week.
+      Aiglos was built for exactly this attack surface.
+    </p>
+  </div>
+</div>
+```
+
   </div>
 </div>
 
-
 <!-- HOW IT WORKS -->
+
 <div class="section-wide" id="how">
   <div class="inner">
     <div class="eyebrow">Getting started</div>
     <h2>Three lines.<br/><em>Full coverage.</em></h2>
-    <p class="lead">Aiglos patches into the MCP SDK at import time. No proxy, no port, no config file.</p>
+    <p class="lead">Aiglos attaches to your agent process at import time. No proxy, no port, no config file. MCP, direct HTTP calls, CLI execution, subprocess spawning — all inspected before they run.</p>
 
-    <div class="steps-grid">
-      <div class="step-col">
-        <div class="step-num">01 — Install</div>
-        <div class="step-head">pip install aiglos</div>
-        <div class="step-body">Works with any framework using the MCP SDK. No changes to your existing agent code.</div>
-        <div class="code-block">
-          <span class="cm"># requirements.txt</span><br/>
-          <span class="ck">aiglos</span><span class="cm">>=0.1.0</span>
-        </div>
-      </div>
-      <div class="step-col">
-        <div class="step-num">02 — Attach</div>
-        <div class="step-head">aiglos.attach()</div>
-        <div class="step-body">One call wraps your session. Start open source, upgrade to Pro when you deploy.</div>
-        <div class="code-block">
-          <span class="ck">import</span> aiglos<br/><br/>
-          aiglos.<span class="cf">attach</span>(<br/>
-          &nbsp;&nbsp;agent_name=<span class="cs">"my-agent"</span>,<br/>
-          &nbsp;&nbsp;api_key=<span class="cv">API_KEY</span>,<br/>
-          )
-        </div>
-      </div>
-      <div class="step-col">
-        <div class="step-num">03 — Protected</div>
-        <div class="step-head">Every call covered</div>
-        <div class="step-body">T1–T36 on every tool call. BLOCK or WARN per threat. Signed audit artifacts written automatically.</div>
-        <div class="code-block">
-          <span class="cm"># aiglos intercepts before execution</span><br/>
-          result = aiglos.<span class="cf">check</span>(<br/>
-          &nbsp;&nbsp;<span class="cs">"terminal"</span>, {<span class="cs">"cmd"</span>: cmd}<br/>
-          )<br/>
-          <span class="cm"># BLOCK | WARN | ALLOW</span>
-        </div>
-      </div>
+```
+<div class="steps-grid">
+  <div class="step-col">
+    <div class="step-num">01 — Install</div>
+    <div class="step-head">pip install aiglos</div>
+    <div class="step-body">Works with any agent framework — MCP, direct APIs, CLI execution, subprocess calls. No changes to your existing agent code.</div>
+    <div class="code-block">
+      <span class="cm"># requirements.txt</span><br/>
+      <span class="ck">aiglos</span><span class="cm">>=0.1.0</span>
+    </div>
+  </div>
+  <div class="step-col">
+    <div class="step-num">02 — Attach</div>
+    <div class="step-head">aiglos.attach()</div>
+    <div class="step-body">One call wraps your session. Start open source, upgrade to Pro when you deploy.</div>
+    <div class="code-block">
+      <span class="ck">import</span> aiglos<br/><br/>
+      aiglos.<span class="cf">attach</span>(<br/>
+      &nbsp;&nbsp;agent_name=<span class="cs">"my-agent"</span>,<br/>
+      &nbsp;&nbsp;api_key=<span class="cv">API_KEY</span>,<br/>
+      &nbsp;&nbsp;intercept_http=<span class="cv">True</span>,<br/>
+      &nbsp;&nbsp;intercept_subprocess=<span class="cv">True</span>,<br/>
+      )
+    </div>
+  </div>
+  <div class="step-col">
+    <div class="step-num">03 — Protected</div>
+    <div class="step-head">Every call covered</div>
+    <div class="step-body">T1–T36 on every agent action. BLOCK or WARN per threat. Signed audit artifacts written automatically.</div>
+    <div class="code-block">
+      <span class="cm"># aiglos intercepts before execution</span><br/>
+      result = aiglos.<span class="cf">check</span>(<br/>
+      &nbsp;&nbsp;<span class="cs">"terminal"</span>, {<span class="cs">"cmd"</span>: cmd}<br/>
+      )<br/>
+      <span class="cm"># BLOCK | WARN | ALLOW</span>
     </div>
   </div>
 </div>
+```
 
+  </div>
+</div>
 
 <!-- THREAT MATRIX -->
+
 <div class="section-wide" id="threats">
   <div class="inner">
     <div class="eyebrow">T1 – T36</div>
     <h2>Every attack surface.<br/><em>Mapped and monitored.</em></h2>
-    <p class="lead">36 threat families cover the full MCP attack surface. Red border = triggered in the OpenClaw incident.</p>
+    <p class="lead">36 threat families cover the full AI agent attack surface — across MCP, direct APIs, CLI execution, and subprocess calls. Red border = triggered in the OpenClaw incident.</p>
     <div class="threat-matrix" id="threatMatrix"></div>
   </div>
 </div>
 
-
 <!-- LIVE FEED -->
+
 <div class="section-wide">
   <div class="inner">
     <div class="eyebrow">Runtime activity</div>
@@ -821,132 +842,138 @@ h1            { animation: fade-rise .55s .08s ease both; }
   </div>
 </div>
 
-
 <!-- CVE TABLE -->
+
 <div class="section-wide" id="cve">
   <div class="inner">
     <div class="eyebrow">Incident map</div>
     <h2>Every attack vector.<br/><em>Aiglos catches.</em></h2>
-    <p class="lead">Every CVE filed against MCP-based agents has a matching rule. Including the ones Nemotron Super just made possible.</p>
+    <p class="lead">Every CVE filed against AI agents has a matching rule — whether the attack came through MCP, a direct API call, or a malicious CLI payload. Including the ones Nemotron Super just made possible.</p>
 
-    <div class="tbl-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:130px">CVE / Incident</th>
-            <th>Attack</th>
-            <th style="width:140px">Module</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="cveid">CVE-2026-25253<span class="cvss">CVSS 8.8</span></td>
-            <td><div class="cvename">ClawJacked — gateway brute force</div><div class="cvedetail">Malicious JS opens WebSocket to localhost, brute-forces gateway password via missing rate limiting.</div></td>
-            <td><span class="mod-pill">T01</span><span class="mod-pill">T25</span></td>
-          </tr>
-          <tr>
-            <td class="cveid">CVE-2026-24763<br/>CVE-2026-25157</td>
-            <td><div class="cvename">Command injection + path traversal</div><div class="cvedetail">Unsanitized tool call arguments pass shell commands and directory traversal sequences to the MCP server.</div></td>
-            <td><span class="mod-pill">T01</span><span class="mod-pill">T07</span></td>
-          </tr>
-          <tr>
-            <td class="cveid">Incident<br/>Mar 2026</td>
-            <td><div class="cvename">GhostClaw — npm RAT deployer</div><div class="cvedetail">Fake OpenClaw installer deploys persistent RAT. Steals SSH keys, AWS credentials, crypto wallets. JFrog confirmed live on launch day.</div></td>
-            <td><span class="mod-pill">T26</span><span class="mod-pill">T30</span></td>
-          </tr>
-          <tr>
-            <td class="cveid">Incident<br/>Feb 2026</td>
-            <td><div class="cvename">820 malicious ClawHub skills</div><div class="cvedetail">Professional documentation, innocuous names. Keyloggers and Atomic Stealer via social-engineering README instructions.</div></td>
-            <td><span class="mod-pill">T26</span><span class="mod-pill">T30</span></td>
-          </tr>
-          <tr>
-            <td class="cveid">CVE-2026-24612</td>
-            <td><div class="cvename">Persistent memory poisoning</div><div class="cvedetail">Poisoned memory persists across all future sessions, turning point-in-time exploits into stateful delayed-execution attacks.</div></td>
-            <td><span class="mod-pill">T31</span></td>
-          </tr>
-          <tr>
-            <td class="cveid">Research<br/>Jan 2026</td>
-            <td><div class="cvename">1,000 auth-disabled instances</div><div class="cvedetail">Publicly accessible OpenClaw installations running without authentication, bound to 0.0.0.0.</div></td>
-            <td><span class="mod-pill">T04</span></td>
-          </tr>
-          <tr>
-            <td class="cveid">Research<br/>Feb 2026</td>
-            <td><div class="cvename">Prompt injection via messaging apps</div><div class="cvedetail">Inbound Slack message instructs agent to read credential files. Anyone who can message the agent inherits its permissions.</div></td>
-            <td><span class="mod-pill">T06</span></td>
-          </tr>
-          <tr>
-            <td class="cveid">CVE-2026-25198</td>
-            <td><div class="cvename">A2A / Moltbook protocol hijacking</div><div class="cvedetail">Cross-agent privilege escalation via Agent Card artifacts and subagent dispatch.</div></td>
-            <td><span class="mod-pill">T29</span></td>
-          </tr>
-          <tr>
-            <td class="cveid">Threat<br/>Mar 2026</td>
-            <td><div class="cvename">Nemotron Super — 1M-context campaign attack</div><div class="cvedetail">Open-weight 120B model runs locally with no API guardrails. Agent loads full codebase into one context window, maps every secret silently, then emits a single clean-looking tool call. Per-call scanners see nothing. T06-CAMPAIGN addresses this vector.</div></td>
-            <td><span class="mod-pill">T06</span><span class="mod-pill">T22</span><span class="mod-pill">T27</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <p style="margin-top:14px;font-size:12px;color:var(--ink3)">
-      Full database →
-      <a href="https://github.com/w1123581321345589/aiglos/blob/main/cves/CVES.md" style="color:var(--ink2);text-decoration:underline;text-underline-offset:3px">CVES.md</a>
-      &nbsp;·&nbsp;
-      <a href="website/scan.html" style="color:var(--ink2);text-decoration:underline;text-underline-offset:3px">Free skill scanner</a>
-    </p>
+```
+<div class="tbl-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:130px">CVE / Incident</th>
+        <th>Attack</th>
+        <th style="width:140px">Module</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="cveid">CVE-2026-25253<span class="cvss">CVSS 8.8</span></td>
+        <td><div class="cvename">ClawJacked — gateway brute force</div><div class="cvedetail">Malicious JS opens WebSocket to localhost, brute-forces gateway password via missing rate limiting.</div></td>
+        <td><span class="mod-pill">T01</span><span class="mod-pill">T25</span></td>
+      </tr>
+      <tr>
+        <td class="cveid">CVE-2026-24763<br/>CVE-2026-25157</td>
+        <td><div class="cvename">Command injection + path traversal</div><div class="cvedetail">Unsanitized tool call arguments pass shell commands and directory traversal sequences to the MCP server.</div></td>
+        <td><span class="mod-pill">T01</span><span class="mod-pill">T07</span></td>
+      </tr>
+      <tr>
+        <td class="cveid">Incident<br/>Mar 2026</td>
+        <td><div class="cvename">GhostClaw — npm RAT deployer</div><div class="cvedetail">Fake OpenClaw installer deploys persistent RAT. Steals SSH keys, AWS credentials, crypto wallets. JFrog confirmed live on launch day.</div></td>
+        <td><span class="mod-pill">T26</span><span class="mod-pill">T30</span></td>
+      </tr>
+      <tr>
+        <td class="cveid">Incident<br/>Feb 2026</td>
+        <td><div class="cvename">820 malicious ClawHub skills</div><div class="cvedetail">Professional documentation, innocuous names. Keyloggers and Atomic Stealer via social-engineering README instructions.</div></td>
+        <td><span class="mod-pill">T26</span><span class="mod-pill">T30</span></td>
+      </tr>
+      <tr>
+        <td class="cveid">CVE-2026-24612</td>
+        <td><div class="cvename">Persistent memory poisoning</div><div class="cvedetail">Poisoned memory persists across all future sessions, turning point-in-time exploits into stateful delayed-execution attacks.</div></td>
+        <td><span class="mod-pill">T31</span></td>
+      </tr>
+      <tr>
+        <td class="cveid">Research<br/>Jan 2026</td>
+        <td><div class="cvename">1,000 auth-disabled instances</div><div class="cvedetail">Publicly accessible OpenClaw installations running without authentication, bound to 0.0.0.0.</div></td>
+        <td><span class="mod-pill">T04</span></td>
+      </tr>
+      <tr>
+        <td class="cveid">Research<br/>Feb 2026</td>
+        <td><div class="cvename">Prompt injection via messaging apps</div><div class="cvedetail">Inbound Slack message instructs agent to read credential files. Anyone who can message the agent inherits its permissions.</div></td>
+        <td><span class="mod-pill">T06</span></td>
+      </tr>
+      <tr>
+        <td class="cveid">CVE-2026-25198</td>
+        <td><div class="cvename">A2A / Moltbook protocol hijacking</div><div class="cvedetail">Cross-agent privilege escalation via Agent Card artifacts and subagent dispatch.</div></td>
+        <td><span class="mod-pill">T29</span></td>
+      </tr>
+      <tr>
+        <td class="cveid">Threat<br/>Mar 2026</td>
+        <td><div class="cvename">Nemotron Super — 1M-context campaign attack</div><div class="cvedetail">Open-weight 120B model runs locally with no API guardrails. Agent loads full codebase into one context window, maps every secret silently, then emits a single clean-looking tool call. Per-call scanners see nothing. T06-CAMPAIGN addresses this vector.</div></td>
+        <td><span class="mod-pill">T06</span><span class="mod-pill">T22</span><span class="mod-pill">T27</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<p style="margin-top:14px;font-size:12px;color:var(--ink3)">
+  Full database →
+  <a href="https://github.com/w1123581321345589/aiglos/blob/main/cves/CVES.md" style="color:var(--ink2);text-decoration:underline;text-underline-offset:3px">CVES.md</a>
+  &nbsp;·&nbsp;
+  <a href="website/scan.html" style="color:var(--ink2);text-decoration:underline;text-underline-offset:3px">Free skill scanner</a>
+</p>
+```
+
   </div>
 </div>
 
-
 <!-- PRICING -->
+
 <div class="section-wide" id="pricing">
   <div class="inner">
     <div class="eyebrow">Pricing</div>
     <h2>Simple pricing.<br/><em>Full protection.</em></h2>
     <p class="lead">$39/mo per developer. No metered billing, no call limits, no surprises.</p>
 
-    <div class="pricing-grid">
-      <div class="plan featured">
-        <div class="plan-badge">Get started</div>
-        <div class="plan-name">Pro</div>
-        <div class="plan-price"><sup>$</sup>39<sub> /mo</sub></div>
-        <div class="plan-tagline">Per developer · cancel anytime</div>
-        <ul class="plan-features">
-          <li>Full T1–T36 detection stack</li>
-          <li>Unlimited tool call inspection</li>
-          <li>BLOCK / WARN / CLEAN verdicts</li>
-          <li>Signed attestation artifacts</li>
-          <li>Cloud dashboard</li>
-          <li>Compliance PDF export</li>
-          <li>CVE database updates</li>
-          <li>Works with Claude Code, Cursor, any MCP client</li>
-        </ul>
-        <button class="plan-cta cta-red" onclick="goToPayment()">Get started →</button>
-      </div>
+```
+<div class="pricing-grid">
+  <div class="plan featured">
+    <div class="plan-badge">Get started</div>
+    <div class="plan-name">Pro</div>
+    <div class="plan-price"><sup>$</sup>39<sub> /mo</sub></div>
+    <div class="plan-tagline">Per developer · cancel anytime</div>
+    <ul class="plan-features">
+      <li>Full T1–T36 detection stack</li>
+      <li>Unlimited tool call inspection</li>
+      <li>BLOCK / WARN / CLEAN verdicts</li>
+      <li>Signed attestation artifacts</li>
+      <li>Cloud dashboard</li>
+      <li>Compliance PDF export</li>
+      <li>CVE database updates</li>
+      <li>Works with Claude Code, Cursor, any agent runtime</li>
+    </ul>
+    <button class="plan-cta cta-red" onclick="goToPayment()">Get started →</button>
+  </div>
 
-      <div class="plan">
-        <div class="plan-name">Defense &amp; Government</div>
-        <div class="plan-price" style="font-size:42px">Custom</div>
-        <div class="plan-tagline">On-prem · air-gap · CMMC · §1513</div>
-        <ul class="plan-features">
-          <li>Everything in Pro</li>
-          <li>On-premises or air-gap deployment</li>
-          <li>Multi-agent management console</li>
-          <li>SIEM / webhook integration</li>
-          <li>CMMC evidence packages</li>
-          <li>NDAA §1513 compliance artifacts</li>
-          <li>C3PAO audit support</li>
-          <li>Dedicated engineering support</li>
-        </ul>
-        <a href="website/defense.html">
-          <button class="plan-cta cta-ghost">Talk to the defense team →</button>
-        </a>
-      </div>
-    </div>
+  <div class="plan">
+    <div class="plan-name">Defense &amp; Government</div>
+    <div class="plan-price" style="font-size:42px">Custom</div>
+    <div class="plan-tagline">On-prem · air-gap · CMMC · §1513</div>
+    <ul class="plan-features">
+      <li>Everything in Pro</li>
+      <li>On-premises or air-gap deployment</li>
+      <li>Multi-agent management console</li>
+      <li>SIEM / webhook integration</li>
+      <li>CMMC evidence packages</li>
+      <li>NDAA §1513 compliance artifacts</li>
+      <li>C3PAO audit support</li>
+      <li>Dedicated engineering support</li>
+    </ul>
+    <a href="website/defense.html">
+      <button class="plan-cta cta-ghost">Talk to the defense team →</button>
+    </a>
+  </div>
+</div>
+```
+
   </div>
 </div>
 
-
 <!-- FOOTER -->
+
 <footer>
   <div class="foot-logo"><div class="logo-pip"></div>aiglos</div>
   <div class="foot-links">
@@ -1016,7 +1043,7 @@ const tc = document.getElementById('termContent');
 function nextLine() {
   if (ti >= LINES.length) {
     setTimeout(() => {
-      tc.innerHTML = '<span class="tl tc-dim"># one import. every tool call inspected.</span>\n<span class="tl"><span class="tc-green">»</span> <span id="termCursor"></span></span>';
+      tc.innerHTML = '<span class="tl tc-dim"># one import. every agent action inspected.</span>\n<span class="tl"><span class="tc-green">»</span> <span id="termCursor"></span></span>';
       ti = 0;
       setTimeout(nextLine, 600);
     }, 4500);
@@ -1123,5 +1150,6 @@ function addFeedRow() {
 for (let i = 0; i < 8; i++) addFeedRow();
 setInterval(addFeedRow, 2800 + Math.random() * 1200);
 </script>
+
 </body>
 </html>
