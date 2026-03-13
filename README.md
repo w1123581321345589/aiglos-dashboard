@@ -409,18 +409,18 @@ Attestation is available on Pro and Teams. [See pricing →](https://aiglos.dev/
 
 ## Open source vs. proprietary
 
-|Component                      |License    |
-|-------------------------------|-----------|
-|T1–T36 detection engine        |MIT        |
-|Python SDK                     |MIT        |
-|TypeScript SDK (Q2 2026)       |MIT        |
-|CVE database + POC code        |MIT        |
-|FastPathScanner (<1ms)         |MIT        |
-|Signed attestation artifacts   |Proprietary|
-|Cloud threat dashboard         |Proprietary|
-|CMMC / §1513 compliance reports|Proprietary|
-|SIEM / webhook integration     |Proprietary|
-|Air-gap DoD container          |Proprietary|
+|Component                            |License    |
+|-------------------------------------|-----------|
+|T1–T36 detection engine              |MIT        |
+|Python SDK                           |MIT        |
+|TypeScript SDK (Q2 2026)             |MIT        |
+|CVE database + POC code              |MIT        |
+|FastPathScanner (<1ms)               |MIT        |
+|Signed attestation artifacts         |Proprietary|
+|Cloud threat dashboard               |Proprietary|
+|CMMC / §1513 signed session artifacts|Proprietary|
+|SIEM / webhook integration           |Proprietary|
+|Air-gap DoD container                |Proprietary|
 
 The detection engine is open. Audit it. Fork it. Contribute to it. The attestation layer funds the research.
 
@@ -446,7 +446,7 @@ Every new CVE filed against an AI agent gets a rule family — regardless of whe
 
 MIT. See <LICENSE>.
 
-The attestation layer, compliance reporting, and cloud dashboard are proprietary. See [aiglos.dev/pricing](https://aiglos.dev/pricing).
+The attestation layer (RSA-2048 signed JSON artifacts, verifiable offline) and cloud dashboard are proprietary. See [aiglos.dev/pricing](https://aiglos.dev/pricing).
 
 -----
 
