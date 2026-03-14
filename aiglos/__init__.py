@@ -38,7 +38,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __author__  = "Aiglos"
 __email__   = "will@aiglos.dev"
 __license__ = "MIT"
@@ -66,6 +66,14 @@ from aiglos.integrations.multi_agent import (  # noqa: F401
     SpawnEvent,
     AgentDefViolation,
 )
+from aiglos.adaptive import (  # noqa: F401
+    AdaptiveEngine,
+    ObservationGraph,
+    InspectionEngine,
+    AmendmentEngine,
+    PolicySerializer,
+    SessionPolicy,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -77,6 +85,7 @@ _subproc_intercept_active: bool = False
 _multi_agent_registry:     Optional["MultiAgentRegistry"] = None
 _agent_def_guard:          Optional["AgentDefGuard"]      = None
 _session_identity:         Optional["SessionIdentityChain"] = None
+_adaptive_engine:          Optional["AdaptiveEngine"]     = None
 
 
 def attach(
@@ -94,6 +103,9 @@ def attach(
     enable_multi_agent:     bool           = True,
     guard_agent_defs:       bool           = True,
     session_id:             Optional[str]  = None,
+    # Adaptive layer (v0.4.0)
+    enable_adaptive:        bool           = True,
+    adaptive_db_path:       Optional[str]  = None,
     **kwargs,
 ) -> "OpenClawGuard":
     """
@@ -170,14 +182,23 @@ def attach(
         except Exception as e:
             log.warning("[Aiglos] Agent def guard failed to init: %s", e)
 
+    # 7. Adaptive engine (v0.4.0)
+    if enable_adaptive:
+        try:
+            _adaptive_engine = AdaptiveEngine(db_path=adaptive_db_path)
+            log.info("[Aiglos] Adaptive engine active: %s", _adaptive_engine.graph._db_path)
+        except Exception as e:
+            log.warning("[Aiglos] Adaptive engine failed to init: %s", e)
+
     log.info(
         "[Aiglos v%s] Attached — agent=%s policy=%s mcp=on http=%s subprocess=%s "
-        "multi_agent=%s agent_def_guard=%s",
+        "multi_agent=%s agent_def_guard=%s adaptive=%s",
         __version__, agent_name, policy,
         "on" if _http_intercept_active else "off",
         "on" if _subproc_intercept_active else "off",
         "on" if _multi_agent_registry else "off",
         "on" if _agent_def_guard else "off",
+        "on" if _adaptive_engine else "off",
     )
     return guard
 
@@ -268,7 +289,41 @@ def close() -> "SessionArtifact":
             identity=identity_header,
         )
 
+    # v0.4.0: auto-ingest into adaptive observation graph
+    if _adaptive_engine and artifact:
+        try:
+            _adaptive_engine.ingest(artifact)
+        except Exception as e:
+            log.debug("[Aiglos] Adaptive ingest (non-fatal): %s", e)
+
     return artifact
+
+
+def adaptive_run() -> dict:
+    """
+    Run a full adaptive cycle: inspect + generate amendment proposals.
+
+    Requires enable_adaptive=True in attach() (default).
+    Returns a report dict with triggers fired and proposals made.
+    """
+    if _adaptive_engine is None:
+        return {"error": "Adaptive engine not initialised. Call attach() first."}
+    return _adaptive_engine.run()
+
+
+def adaptive_stats() -> dict:
+    """Return the current observation graph summary across all sessions."""
+    if _adaptive_engine is None:
+        return {"error": "Adaptive engine not initialised. Call attach() first."}
+    return _adaptive_engine.stats()
+
+
+def derive_child_policy(parent_session_id: str) -> "SessionPolicy":
+    """Derive a policy for a spawned child agent from parent session history."""
+    if _adaptive_engine is None:
+        from aiglos.adaptive.policy import SessionPolicy
+        return SessionPolicy.empty(parent_session_id)
+    return _adaptive_engine.derive_child_policy(parent_session_id)
 
 
 def _collect_http_events() -> list:
@@ -384,6 +439,13 @@ def status() -> dict:
         except Exception:
             pass
 
+    adaptive_status: dict = {}
+    if _adaptive_engine:
+        try:
+            adaptive_status = _adaptive_engine.stats()
+        except Exception:
+            pass
+
     return {
         "version":                 __version__,
         "mcp_layer":               mcp_status,
@@ -397,6 +459,8 @@ def status() -> dict:
         "multi_agent":             multi_agent_status,
         "session_identity_active": _session_identity is not None,
         "session_identity":        identity_status,
+        "adaptive_active":         _adaptive_engine is not None,
+        "adaptive":                adaptive_status,
     }
 
 
@@ -407,6 +471,9 @@ __all__ = [
     "on_heartbeat",
     "close",
     "status",
+    "adaptive_run",
+    "adaptive_stats",
+    "derive_child_policy",
     "OpenClawGuard",
     "HermesGuard",
     "CheckResult",
@@ -417,4 +484,11 @@ __all__ = [
     "SessionIdentityChain",
     "SpawnEvent",
     "AgentDefViolation",
+    # v0.4.0
+    "AdaptiveEngine",
+    "ObservationGraph",
+    "InspectionEngine",
+    "AmendmentEngine",
+    "PolicySerializer",
+    "SessionPolicy",
 ]
