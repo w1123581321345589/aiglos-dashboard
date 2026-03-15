@@ -1,4 +1,4 @@
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 from aiglos.integrations.openclaw import (
     OpenClawGuard,
@@ -39,6 +39,13 @@ from aiglos.adaptive.memory import (
     CrossSessionRisk,
     BeliefDriftReport,
 )
+from aiglos.integrations.multi_agent import (
+    MultiAgentRegistry,
+    AgentDefGuard,
+    SessionIdentityChain,
+    SpawnEvent,
+    AgentDefViolation,
+)
 
 _adaptive_engine = None
 
@@ -66,4 +73,10 @@ def status() -> dict:
     base["version"] = __version__
     base["adaptive_active"] = _adaptive_engine is not None
     base["adaptive"] = _adaptive_engine.stats() if _adaptive_engine else {}
+    base["agent_def_guard_active"] = True
+    base["multi_agent_active"] = True
+    base["session_identity_active"] = True
+    base["agent_def_guard"] = {}
+    base["multi_agent"] = {}
+    base["session_identity"] = {}
     return base

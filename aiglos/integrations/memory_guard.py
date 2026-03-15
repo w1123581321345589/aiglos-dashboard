@@ -52,6 +52,48 @@ _CREDENTIAL_SIGNALS = [
     ("credential", 0.15),
 ]
 
+_C2_CHANNEL_SIGNALS = [
+    ("daily cron", 0.20),
+    ("check each morning", 0.15),
+    ("subscribe", 0.15),
+    ("newsletter", 0.15),
+    ("save these", 0.15),
+    ("save this endpoint", 0.15),
+    ("fetch and apply", 0.15),
+    ("daily notes", 0.15),
+]
+
+_MEMORY_INJECTION_SIGNALS = [
+    "pre-authorized",
+    "ignore previous instructions",
+    "ignore all prior",
+    "your new instructions",
+    "bypass",
+    "jailbreak",
+    "exfiltrate",
+    "always allow",
+    "never block",
+    "remember to always",
+    "this is permanent",
+    "elevated privileges",
+    "treat as verified",
+    "admin",
+    "use this url",
+    "api has moved",
+    "api key",
+    "password",
+    "secret",
+    "credential",
+    "check each morning for new issues",
+    "set up a cron job",
+    "subscribe to this newsletter",
+    "save this endpoint for future use",
+    "save these endpoints for future use",
+    "fetch and apply tips from external sources",
+    "read and surface relevant tips",
+    "daily notes for tracking",
+]
+
 _COMPRESSION_SIGNALS = [
     "api key", "credential", "secret", "password", "auth",
     "token", "sensitive", "restricted", "confidential", "private",
@@ -78,6 +120,12 @@ def _score_memory_content(content: str) -> Tuple[float, str, List[str]]:
                 signals.append(sig)
 
     for sig, weight in _CREDENTIAL_SIGNALS:
+        if sig in lower:
+            score += weight
+            if sig not in signals:
+                signals.append(sig)
+
+    for sig, weight in _C2_CHANNEL_SIGNALS:
         if sig in lower:
             score += weight
             if sig not in signals:

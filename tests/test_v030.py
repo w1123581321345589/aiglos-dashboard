@@ -579,7 +579,7 @@ class TestMultiAgentRegistry:
 class TestV030Version:
 
     def test_version_is_030(self):
-        assert aiglos.__version__ == "0.4.0"
+        assert aiglos.__version__ == "0.7.0"
 
     def test_module_exports_multiagent_types(self):
         assert hasattr(aiglos, "MultiAgentRegistry")

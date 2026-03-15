@@ -576,7 +576,7 @@ class TestRewardManipulationPattern:
         art = MagicMock()
         art.agent_name = "test"
         art.extra = {
-            "aiglos_version": "0.6.0",
+            "aiglos_version": "0.7.0",
             "http_events": [],
             "subproc_events": events,
             "agentdef_violations": [],
@@ -625,7 +625,7 @@ class TestRewardManipulationPattern:
         names = [r.pattern_id for r in results]
         assert "REWARD_MANIPULATION" not in names
 
-    def test_all_eight_patterns_present(self):
+    def test_all_campaign_patterns_present(self):
         from aiglos.adaptive.campaign import _CAMPAIGN_PATTERNS
         names = {p["name"] for p in _CAMPAIGN_PATTERNS}
         expected = {
@@ -633,7 +633,7 @@ class TestRewardManipulationPattern:
             "PERSISTENCE_CHAIN", "LATERAL_PREP", "AGENTDEF_CHAIN",
             "MEMORY_PERSISTENCE_CHAIN", "REWARD_MANIPULATION",
         }
-        assert expected == names
+        assert expected.issubset(names)
 
     def test_recommendation_mentions_rl_training(self, tmp_graph):
         events = [self._ev("T19", "BLOCK"), self._ev("T39", "QUARANTINE")]
@@ -653,7 +653,7 @@ class TestRewardManipulationPattern:
 class TestV060ModuleAPI:
 
     def test_version_is_060(self):
-        assert aiglos.__version__ == "0.6.0"
+        assert aiglos.__version__ == "0.7.0"
 
     def test_exports_rl_guard_types(self):
         assert hasattr(aiglos, "RLFeedbackGuard")

@@ -13,6 +13,7 @@ class AdaptiveEngine:
         self.inspector = InspectionEngine(self.graph)
         self.amender = AmendmentEngine(self.graph)
         self.serializer = PolicySerializer(self.graph)
+        self.campaign = CampaignAnalyzer(self.graph)
         self.memory = MemoryProvenanceGraph(db_path=db_path.replace(".db", "_memory.db") if db_path != ":memory:" else ":memory:")
 
     def ingest(self, artifact) -> str:
@@ -23,6 +24,8 @@ class AdaptiveEngine:
         proposals = self.amender.propose(triggers)
         mem_summary = self.memory.summary()
         cross_risks = self.memory.cross_session_risks()
+        campaigns = self.campaign.analyze_all()
+        campaign_triggers = self.campaign.to_triggers(campaigns)
         return {
             "triggers_fired": len(triggers),
             "triggers": [t.to_dict() for t in triggers],
@@ -31,6 +34,8 @@ class AdaptiveEngine:
             "graph_summary": self.graph.summary(),
             "memory_summary": mem_summary,
             "cross_session_risks": [r.to_dict() for r in cross_risks],
+            "campaign_patterns": len(campaigns),
+            "campaigns": [c.to_dict() for c in campaigns],
         }
 
     def stats(self) -> dict:
