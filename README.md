@@ -663,27 +663,30 @@ Signed attestation artifacts, cloud dashboard, compliance reports, cross-custome
 Predictive intent modeling. `IntentPredictor` — deployment-specific Markov chain trained from the observation graph, no external ML dependencies. `SessionForecaster` — session-scoped threshold elevation proposals based on forecast probability; `effective_tier()` pre-tightens blast radius before predicted high-risk actions fire. `THREAT_FORECAST_ALERT` 10th inspection trigger. `enable_intent_prediction()` on `OpenClawGuard`. `python -m aiglos forecast` CLI with probability bars. 688 tests.
 
 **v0.9.0 — March 2026**
-Session-level causal attribution. `CausalTracer` maintains a rolling context window of inbound content fingerprints, tags every outbound action with a context snapshot at the time of the call, and at session close runs backward attribution to identify which specific injection source caused which specific blocked action. `AttributionResult` with HIGH/MEDIUM/LOW/NONE confidence chains. `CAUSAL_INJECTION_CONFIRMED` 9th inspection trigger. `enable_causal_tracing()` on `OpenClawGuard`. `python -m aiglos trace <session-id>` CLI investigation report. `causal_chains` table in observation graph. 688 tests.
+Session-level causal attribution. `CausalTracer` maintains a rolling context window of inbound content fingerprints, tags every outbound action with a context snapshot at the time of the call, and at session close runs backward attribution to identify which specific injection source caused which specific blocked action. `AttributionResult` with HIGH/MEDIUM/LOW/NONE confidence chains. `CAUSAL_INJECTION_CONFIRMED` 9th inspection trigger. `enable_causal_tracing()` on `OpenClawGuard`. `python -m aiglos trace <session-id>` CLI investigation report. `causal_chains` table in observation graph. 619 tests.
 
 **v0.8.0 — March 2026**
 Indirect prompt injection scanner (`injection_scanner.py`). `InjectionScanner` with two-layer scoring: 50-phrase corpus for instruction-override patterns + encoding anomaly detection (base64 payloads, Unicode homoglyphs, invisible characters, RTL override, mixed scripts). `after_tool_call()` lifecycle hook on `OpenClawGuard`. `REPEATED_INJECTION_ATTEMPT` 10th campaign pattern. `scan_tool_output()`, `scan_document()`, `scan_memory_read()` convenience methods. 571 tests.
 
 **v0.7.0 — March 2026**
-T39 REWARD_POISON. `RLFeedbackGuard` — Binary RL reward scoring and Hindsight OPD semantic inspection with 26-phrase directional corpus. `SecurityAwareReward` — co-training coupling interface, safety as learned objective. `reward_signals` table in observation graph. `REWARD_DRIFT` inspection trigger (8th). `REWARD_MANIPULATION` campaign pattern (8th). 515 tests.
+External instruction channel detection. `scan-message` CLI command. `EXTERNAL_INSTRUCTION_CHANNEL` 9th campaign pattern — cron setup + unapproved external fetch + memory write in session (confidence 0.91). 17 new memory corpus signals for C2 channel setup language. 515 tests.
+
+**v0.6.0 — March 2026**
+T39 REWARD_POISON. `RLFeedbackGuard` — Binary RL reward scoring and Hindsight OPD semantic inspection with 26-phrase directional corpus. `SecurityAwareReward` — co-training coupling interface, safety as learned objective. `reward_signals` table in observation graph. `REWARD_DRIFT` 8th inspection trigger. `REWARD_MANIPULATION` 8th campaign pattern. 489 tests.
 
 **v0.5.0 — March 2026**
-T31 semantic memory write scoring. `MemoryWriteGuard` with 38-phrase corpus. `MemoryProvenanceGraph` — cross-session belief tracking, drift detection, compression loss. `MEMORY_PERSISTENCE_CHAIN` campaign pattern (7th).
+T31 semantic memory write scoring. `MemoryWriteGuard` with 38-phrase corpus. `MemoryProvenanceGraph` — cross-session belief tracking, drift detection, compression loss. `MEMORY_PERSISTENCE_CHAIN` 7th campaign pattern. 416 tests.
 
 **v0.4.0 — March 2026**
-Adaptive layer, T06 campaign-mode (6 patterns), TypeScript SDK, CLI, semantic AgentDefGuard, policy inheritance.
+Adaptive layer, T06 campaign-mode (6 patterns), TypeScript SDK, CLI, semantic `AgentDefGuard`, policy inheritance for spawned agents. `ObservationGraph` SQLite WAL, `InspectionEngine` (7 triggers), `AmendmentEngine`.
 
 **v0.3.0 — March 2026**
-T36_AGENTDEF, T37 FIN_EXEC, T38 AGENT_SPAWN, AgentDefGuard, SessionIdentityChain, MultiAgentRegistry.
+T36_AGENTDEF, T37 FIN_EXEC, T38 AGENT_SPAWN. `AgentDefGuard` with semantic scoring, `SessionIdentityChain`, `MultiAgentRegistry`.
 
 **v0.2.0 — February 2026**
-HTTP/API and subprocess interception, three-tier blast radius, Tier 3 pause mode.
+HTTP/API and subprocess interception, three-tier blast radius, Tier 3 pause mode with webhook approval.
 
-**v0.1.1 — March 2026**
+**v0.1.1 — February 2026**
 Autoresearch two-loop system, adversarial corpus, autoresearch experiment logs.
 
 **v0.1.0 — January 2026**

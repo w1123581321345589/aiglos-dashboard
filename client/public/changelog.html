@@ -301,11 +301,168 @@ footer {
       </div>
     </div>
 
+
+    <div class="entry" data-type="release">
+      <div class="entry-meta">
+        <span class="entry-date">March 2026</span>
+        <span class="entry-tag release">Release</span>
+        <span class="entry-version">v0.10.0</span>
+      </div>
+      <h2>Predictive intent modeling</h2>
+      <p>Deployment-specific Markov chain trained from the observation graph. No external ML dependencies. Predicts likely next threat families and pre-tightens blast radius thresholds before predicted actions fire.</p>
+      <ul class="entry-list">
+        <li class="added"><code>IntentPredictor</code> — per-agent model file, bigram + unigram + co-occurrence scoring</li>
+        <li class="added"><code>SessionForecaster</code> — elevation decay, <code>effective_tier()</code></li>
+        <li class="added"><code>THREAT_FORECAST_ALERT</code> — 10th inspection trigger</li>
+        <li class="added"><code>python -m aiglos forecast</code> with probability bars</li>
+        <li class="added">688 tests</li>
+      </ul>
+    </div>
+
+    <div class="entry" data-type="release">
+      <div class="entry-meta">
+        <span class="entry-date">March 2026</span>
+        <span class="entry-tag release">Release</span>
+        <span class="entry-version">v0.9.0</span>
+      </div>
+      <h2>Session-level causal attribution</h2>
+      <p>Answers the question no other tool does: which specific input caused this specific blocked action?</p>
+      <ul class="entry-list">
+        <li class="added"><code>CausalTracer</code> — rolling context window, outbound action tagging</li>
+        <li class="added"><code>AttributionResult</code> — HIGH/MEDIUM/LOW/NONE confidence chains</li>
+        <li class="added"><code>CAUSAL_INJECTION_CONFIRMED</code> — 9th inspection trigger</li>
+        <li class="added"><code>python -m aiglos trace &lt;session-id&gt;</code> investigation report</li>
+        <li class="added"><code>causal_chains</code> table in observation graph</li>
+        <li class="added">619 tests</li>
+      </ul>
+    </div>
+
+    <div class="entry" data-type="release">
+      <div class="entry-meta">
+        <span class="entry-date">March 2026</span>
+        <span class="entry-tag release">Release</span>
+        <span class="entry-version">v0.8.0</span>
+      </div>
+      <h2>Indirect prompt injection scanner</h2>
+      <p>Closes the inbound data surface — tool outputs, retrieved documents, API responses, memory reads.</p>
+      <ul class="entry-list">
+        <li class="added"><code>InjectionScanner</code> — tiered phrase corpus + encoding anomaly detection</li>
+        <li class="added">Base64, Unicode homoglyphs, invisible characters, RTL override detection</li>
+        <li class="added"><code>after_tool_call()</code> lifecycle hook on <code>OpenClawGuard</code></li>
+        <li class="added"><code>REPEATED_INJECTION_ATTEMPT</code> — 10th campaign pattern</li>
+        <li class="added">571 tests</li>
+      </ul>
+    </div>
+
+    <div class="entry" data-type="release">
+      <div class="entry-meta">
+        <span class="entry-date">March 2026</span>
+        <span class="entry-tag release">Release</span>
+        <span class="entry-version">v0.7.0</span>
+      </div>
+      <h2>External instruction channel detection</h2>
+      <ul class="entry-list">
+        <li class="added"><code>scan-message</code> CLI command</li>
+        <li class="added"><code>EXTERNAL_INSTRUCTION_CHANNEL</code> — 9th campaign pattern (confidence 0.91)</li>
+        <li class="added">17 new memory corpus signals for C2 channel setup language</li>
+        <li class="added">515 tests</li>
+      </ul>
+    </div>
+
+    <div class="entry" data-type="release">
+      <div class="entry-meta">
+        <span class="entry-date">March 2026</span>
+        <span class="entry-tag release">Release</span>
+        <span class="entry-version">v0.6.0</span>
+      </div>
+      <h2>RL training security — T39 REWARD_POISON</h2>
+      <ul class="entry-list">
+        <li class="added"><code>RLFeedbackGuard</code> — Binary RL reward scoring + Hindsight OPD inspection</li>
+        <li class="added"><code>SecurityAwareReward</code> — safety as learned objective</li>
+        <li class="added"><code>REWARD_DRIFT</code> — 8th inspection trigger</li>
+        <li class="added"><code>REWARD_MANIPULATION</code> — 8th campaign pattern</li>
+        <li class="added">489 tests</li>
+      </ul>
+    </div>
+
+    <div class="entry" data-type="release">
+      <div class="entry-meta">
+        <span class="entry-date">March 2026</span>
+        <span class="entry-tag release">Release</span>
+        <span class="entry-version">v0.5.0</span>
+      </div>
+      <h2>Memory security — T31 semantic scoring</h2>
+      <ul class="entry-list">
+        <li class="added"><code>MemoryWriteGuard</code> — 38-phrase corpus on every structured memory write</li>
+        <li class="added"><code>MemoryProvenanceGraph</code> — cross-session belief tracking, drift detection</li>
+        <li class="added"><code>MEMORY_PERSISTENCE_CHAIN</code> — 7th campaign pattern</li>
+        <li class="added">416 tests</li>
+      </ul>
+    </div>
+
+    <div class="entry" data-type="release">
+      <div class="entry-meta">
+        <span class="entry-date">March 2026</span>
+        <span class="entry-tag release">Release</span>
+        <span class="entry-version">v0.4.0</span>
+      </div>
+      <h2>Adaptive layer + campaign mode</h2>
+      <ul class="entry-list">
+        <li class="added">Adaptive layer — observe → inspect → amend → evaluate loop</li>
+        <li class="added">T06 campaign-mode — 6 patterns, RECON_SWEEP through AGENTDEF_CHAIN</li>
+        <li class="added">TypeScript SDK</li>
+        <li class="added">Semantic <code>AgentDefGuard</code>, policy inheritance for spawned agents</li>
+      </ul>
+    </div>
+
+    <div class="entry" data-type="release">
+      <div class="entry-meta">
+        <span class="entry-date">March 2026</span>
+        <span class="entry-tag release">Release</span>
+        <span class="entry-version">v0.3.0</span>
+      </div>
+      <h2>Agent definition + financial + spawn threat coverage</h2>
+      <ul class="entry-list">
+        <li class="added">T36_AGENTDEF — semantic scoring on agent definition writes</li>
+        <li class="added">T37 FIN_EXEC — autonomous financial execution gating</li>
+        <li class="added">T38 AGENT_SPAWN — sub-agent registry with parent verification</li>
+        <li class="added"><code>SessionIdentityChain</code>, <code>MultiAgentRegistry</code></li>
+      </ul>
+    </div>
+
+    <div class="entry" data-type="release">
+      <div class="entry-meta">
+        <span class="entry-date">February 2026</span>
+        <span class="entry-tag release">Release</span>
+        <span class="entry-version">v0.2.0</span>
+      </div>
+      <h2>HTTP/API and subprocess interception</h2>
+      <ul class="entry-list">
+        <li class="added">HTTP surface — patches requests/httpx/aiohttp/fetch</li>
+        <li class="added">Subprocess surface — three-tier blast radius, Tier 3 pause mode</li>
+        <li class="added">Webhook approval integration for Tier 3 actions</li>
+      </ul>
+    </div>
+
+    <div class="entry" data-type="release">
+      <div class="entry-meta">
+        <span class="entry-date">February 2026</span>
+        <span class="entry-tag release">Release</span>
+        <span class="entry-version">v0.1.1</span>
+      </div>
+      <h2>Autoresearch two-loop system</h2>
+      <ul class="entry-list">
+        <li class="added">Research loop — optimizes detection rules against labeled corpus</li>
+        <li class="added">Adversarial loop — generates evasion cases, rules and attacks co-evolve</li>
+        <li class="added">Run logs are compliance audit evidence</li>
+      </ul>
+    </div>
+
     <div class="entry" data-type="release">
       <div class="entry-meta">
         <span class="entry-date">January 2026</span>
         <span class="entry-tag release">Release</span>
-        <span class="entry-version">v1.0.0</span>
+        <span class="entry-version">v0.1.0</span>
       </div>
       <h2>Initial release — T01–T39, 688 tests passing</h2>
       <p>First public release of Aiglos. The T01–T39 rule families cover the full MCP attack surface known at time of release. Detection engine is MIT licensed.</p>
