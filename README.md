@@ -20,7 +20,7 @@ and now traces blocked actions back to their injection source.
 [![MIT](https://img.shields.io/badge/license-MIT-000?style=flat-square&labelColor=000)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-000?style=flat-square&labelColor=000)](https://python.org)
 [![TypeScript](https://img.shields.io/badge/typescript-5.0+-000?style=flat-square&labelColor=000)](sdk/typescript/)
-[![828 tests](https://img.shields.io/badge/tests-828_passing-000?style=flat-square&labelColor=000)](tests/)
+[![571 tests](https://img.shields.io/badge/tests-688_passing-000?style=flat-square&labelColor=000)](tests/)
 
 |  |  |  |  |  |  |
 |---|---|---|---|---|---|
@@ -660,10 +660,10 @@ Signed attestation artifacts, cloud dashboard, compliance reports, cross-custome
 ## Changelog
 
 **v0.10.0 — March 2026**
-Predictive intent modeling. `IntentPredictor` — deployment-specific Markov chain trained from the observation graph, no external ML dependencies. `SessionForecaster` — session-scoped threshold elevation proposals based on forecast probability; `effective_tier()` pre-tightens blast radius before predicted high-risk actions fire. `THREAT_FORECAST_ALERT` 10th inspection trigger. `enable_intent_prediction()` on `OpenClawGuard`. `python -m aiglos forecast` CLI with probability bars. 828 tests.
+Predictive intent modeling. `IntentPredictor` — deployment-specific Markov chain trained from the observation graph, no external ML dependencies. `SessionForecaster` — session-scoped threshold elevation proposals based on forecast probability; `effective_tier()` pre-tightens blast radius before predicted high-risk actions fire. `THREAT_FORECAST_ALERT` 10th inspection trigger. `enable_intent_prediction()` on `OpenClawGuard`. `python -m aiglos forecast` CLI with probability bars. 688 tests.
 
 **v0.9.0 — March 2026**
-Session-level causal attribution. `CausalTracer` maintains a rolling context window of inbound content fingerprints, tags every outbound action with a context snapshot at the time of the call, and at session close runs backward attribution to identify which specific injection source caused which specific blocked action. `AttributionResult` with HIGH/MEDIUM/LOW/NONE confidence chains. `CAUSAL_INJECTION_CONFIRMED` 9th inspection trigger. `enable_causal_tracing()` on `OpenClawGuard`. `python -m aiglos trace <session-id>` CLI investigation report. `causal_chains` table in observation graph. 619 tests.
+Session-level causal attribution. `CausalTracer` maintains a rolling context window of inbound content fingerprints, tags every outbound action with a context snapshot at the time of the call, and at session close runs backward attribution to identify which specific injection source caused which specific blocked action. `AttributionResult` with HIGH/MEDIUM/LOW/NONE confidence chains. `CAUSAL_INJECTION_CONFIRMED` 9th inspection trigger. `enable_causal_tracing()` on `OpenClawGuard`. `python -m aiglos trace <session-id>` CLI investigation report. `causal_chains` table in observation graph. 688 tests.
 
 **v0.8.0 — March 2026**
 Indirect prompt injection scanner (`injection_scanner.py`). `InjectionScanner` with two-layer scoring: 50-phrase corpus for instruction-override patterns + encoding anomaly detection (base64 payloads, Unicode homoglyphs, invisible characters, RTL override, mixed scripts). `after_tool_call()` lifecycle hook on `OpenClawGuard`. `REPEATED_INJECTION_ATTEMPT` 10th campaign pattern. `scan_tool_output()`, `scan_document()`, `scan_memory_read()` convenience methods. 571 tests.

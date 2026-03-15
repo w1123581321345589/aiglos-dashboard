@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Defense &amp; Government — Aiglos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+:root {
+  --bg:    #fafaf9;
+  --ink:   #0a0a0a;
+  --mid:   #525252;
+  --dim:   #a3a3a3;
+  --rule:  #e5e5e5;
+  --rule2: #d4d4d4;
+  --red:   #dc2626;
+  --navy:  #0f1c3f;
+}
+body { background: var(--bg); color: var(--ink); font-family: 'Geist', sans-serif; font-size: 15px; line-height: 1.6; }
+a { color: inherit; text-decoration: none; }
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 56px;
+  background: rgba(250,250,249,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+}
+.nav-logo { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.nav-links { display: flex; gap: 28px; list-style: none; }
+.nav-links a { font-size: 14px; color: var(--mid); transition: color .15s; }
+.nav-links a:hover, .nav-links a.active { color: var(--ink); }
+.nav-right { display: flex; gap: 10px; align-items: center; }
+.btn-ghost { font-size: 13px; color: var(--mid); background: none; border: 1px solid var(--rule); padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all .15s; display: inline-block; }
+.btn-ghost:hover { border-color: #a3a3a3; color: var(--ink); }
+.btn-dark { font-size: 13px; color: #fff; background: var(--ink); border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; display: inline-block; }
+.btn-dark:hover { opacity: .8; }
+
+/* HERO — dark, full-bleed */
+.hero {
+  background: var(--navy);
+  padding: 96px 40px 88px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 39px,
+    rgba(255,255,255,0.025) 39px,
+    rgba(255,255,255,0.025) 40px
+  ),
+  repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 79px,
+    rgba(255,255,255,0.02) 79px,
+    rgba(255,255,255,0.02) 80px
+  );
+  pointer-events: none;
+}
+.hero-inner { max-width: 860px; margin: 0 auto; position: relative; }
+.hero-label {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(255,255,255,0.4); margin-bottom: 28px;
+}
+.hero-label::before {
+  content: '';
+  display: block; width: 20px; height: 1px; background: rgba(255,255,255,0.3);
+}
+.hero h1 {
+  font-size: clamp(32px, 5vw, 56px); font-weight: 600;
+  letter-spacing: -0.035em; line-height: 1.08;
+  color: #fff; margin-bottom: 20px; max-width: 640px;
+}
+.hero-sub {
+  font-size: 17px; line-height: 1.7;
+  color: rgba(255,255,255,0.55);
+  max-width: 520px; margin-bottom: 40px;
+}
+.hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+.cta-primary {
+  font-size: 14px; font-weight: 500; color: var(--navy);
+  background: #fff; border: none; padding: 11px 22px;
+  border-radius: 7px; cursor: pointer; display: inline-block;
+  transition: opacity .15s;
+}
+.cta-primary:hover { opacity: .88; }
+.cta-outline {
+  font-size: 14px; color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.18); padding: 11px 22px;
+  border-radius: 7px; display: inline-block;
+  transition: all .15s;
+}
+.cta-outline:hover { border-color: rgba(255,255,255,0.45); color: #fff; }
+
+/* MANDATE BANNER */
+.mandate {
+  border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  background: #fff; padding: 20px 40px;
+}
+.mandate-inner {
+  max-width: 860px; margin: 0 auto;
+  display: flex; align-items: flex-start; gap: 16px;
+}
+.mandate-flag {
+  flex-shrink: 0; font-family: 'Geist Mono', monospace;
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--red); border: 1px solid currentColor;
+  padding: 3px 8px; border-radius: 3px; margin-top: 2px;
+  white-space: nowrap;
+}
+.mandate-text { font-size: 13px; color: var(--mid); line-height: 1.65; }
+.mandate-text strong { color: var(--ink); }
+
+/* MAIN CONTENT */
+.page { max-width: 860px; margin: 0 auto; padding: 80px 40px 120px; }
+
+/* SECTION HEADER */
+.section-eyebrow {
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 14px;
+}
+.section-h { font-size: clamp(22px, 3vw, 30px); font-weight: 600; letter-spacing: -0.025em; margin-bottom: 14px; }
+.section-sub { font-size: 15px; color: var(--mid); line-height: 1.72; max-width: 560px; margin-bottom: 48px; }
+
+/* THREAT REALITY */
+.threat-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px; background: var(--rule);
+  border: 1px solid var(--rule); border-radius: 12px;
+  overflow: hidden; margin-bottom: 80px;
+}
+.threat-cell { background: #fff; padding: 28px 24px; }
+.threat-cell .t-label {
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--red); margin-bottom: 14px;
+}
+.threat-cell .t-head { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 8px; }
+.threat-cell .t-body { font-size: 13px; color: var(--mid); line-height: 1.65; }
+
+/* COMPLIANCE GRID */
+.compliance-section { margin-bottom: 80px; }
+.compliance-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 24px; margin-top: 0;
+}
+.comp-card {
+  border: 1px solid var(--rule); border-radius: 10px;
+  padding: 28px; background: #fff;
+  transition: border-color .2s;
+}
+.comp-card:hover { border-color: var(--rule2); }
+.comp-badge {
+  display: inline-block;
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  background: var(--bg); border: 1px solid var(--rule);
+  color: var(--mid); padding: 3px 9px; border-radius: 3px;
+  margin-bottom: 14px;
+}
+.comp-card h3 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 8px; }
+.comp-card p { font-size: 13px; color: var(--mid); line-height: 1.65; }
+
+/* CAPABILITIES TABLE */
+.cap-section { margin-bottom: 80px; }
+.cap-table { width: 100%; border-collapse: collapse; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.cap-table th {
+  text-align: left; padding: 14px 20px;
+  font-family: 'Geist Mono', monospace; font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--dim); background: var(--bg);
+  border-bottom: 1px solid var(--rule); font-weight: 400;
+}
+.cap-table td { padding: 15px 20px; font-size: 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.cap-table tr:last-child td { border-bottom: none; }
+.cap-table tr:hover td { background: #fafafa; }
+.cap-table td:first-child { color: var(--ink); font-weight: 500; white-space: nowrap; }
+.cap-table td:nth-child(2) { color: var(--mid); font-size: 13px; line-height: 1.6; }
+.cap-table td:last-child { text-align: center; }
+.dot-yes { color: #16a34a; font-size: 16px; }
+.dot-partial { color: #ca8a04; font-size: 13px; font-family: 'Geist Mono', monospace; }
+
+/* DEPLOYMENT */
+.deploy-section { margin-bottom: 80px; }
+.deploy-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.deploy-card {
+  border: 1px solid var(--rule); border-radius: 10px;
+  padding: 24px; background: #fff;
+}
+.deploy-icon {
+  font-family: 'Geist Mono', monospace; font-size: 20px;
+  color: var(--ink); margin-bottom: 14px;
+}
+.deploy-card h3 { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 8px; }
+.deploy-card p { font-size: 12px; color: var(--mid); line-height: 1.65; }
+
+/* CONTACT BLOCK */
+.contact-block {
+  background: var(--navy); border-radius: 14px;
+  padding: 52px 48px; color: #fff;
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 40px; align-items: center;
+}
+.contact-block h2 {
+  font-size: clamp(22px, 3vw, 30px); font-weight: 600;
+  letter-spacing: -0.025em; margin-bottom: 10px;
+}
+.contact-block p { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.7; max-width: 440px; }
+.contact-ctas { display: flex; flex-direction: column; gap: 10px; min-width: 160px; }
+.cta-w { font-size: 14px; font-weight: 500; color: var(--navy); background: #fff; border: none; padding: 12px 24px; border-radius: 7px; text-align: center; cursor: pointer; display: block; white-space: nowrap; }
+.cta-w:hover { opacity: .88; }
+.cta-w2 { font-size: 14px; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.18); padding: 12px 24px; border-radius: 7px; text-align: center; display: block; white-space: nowrap; transition: all .15s; }
+.cta-w2:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
+
+/* DIVIDER */
+.section-divider { height: 1px; background: var(--rule); margin: 0 0 80px; }
+
+footer { border-top: 1px solid var(--rule); padding: 28px 40px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--dim); }
+.footer-links { display: flex; gap: 22px; list-style: none; }
+.footer-links a { color: var(--dim); transition: color .15s; }
+.footer-links a:hover { color: var(--ink); }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .hero { padding: 64px 20px 56px; }
+  .mandate { padding: 18px 20px; }
+  .mandate-inner { flex-direction: column; gap: 10px; }
+  .page { padding: 56px 20px 80px; }
+  .threat-grid { grid-template-columns: 1fr; }
+  .compliance-grid { grid-template-columns: 1fr; }
+  .deploy-options { grid-template-columns: 1fr; }
+  .contact-block { grid-template-columns: 1fr; padding: 36px 28px; }
+  footer { flex-direction: column; gap: 16px; padding: 24px 20px; }
+}
+
+/* Fade-in on scroll */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .5s ease, transform .5s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Aiglos</a>
+  <ul class="nav-links">
+    <li><a href="/#how">Product</a></li>
+    <li><a href="/threats.html">Threats</a></li>
+    <li><a href="/pricing.html">Pricing</a></li>
+    <li><a href="/docs.html">Docs</a></li>
+    <li><a href="/defense.html" class="active">Defense</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="#" class="btn-ghost">Sign In</a>
+    <a href="/cdn-cgi/l/email-protection#71151417141f0214311018161d1e025f181e" class="btn-dark">Contact Defense Team</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-label">Defense &amp; Government</div>
+    <h1>AI agents are inside your perimeter.<br>What's inspecting their tool calls?</h1>
+    <p class="hero-sub">
+      Aiglos is the only runtime security layer purpose-built for MCP-based AI agents operating in regulated and mission-critical environments. On-prem. Air-gap capable. compliance-ready.
+    </p>
+    <div class="hero-ctas">
+      <a href="/cdn-cgi/l/email-protection#f4909192919a8791b4959d93989b87da9d9b" class="cta-primary">Contact the Defense Team</a>
+      <a href="/docs.html" class="cta-outline">Read the Docs</a>
+    </div>
+  </div>
+</div>
+
+<!-- MANDATE BANNER -->
+<div class="mandate">
+  <div class="mandate-inner">
+    <p class="mandate-text">
+      <strong>The 2025 Compliance attestation mandate requires enterprise deployments to establish governance frameworks for autonomous and agentic AI systems.</strong>
+      Aiglos generates the signed attestation artifacts, audit logs, and compliance evidence packages those frameworks demand.
+    </p>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="page">
+
+  <!-- THREAT REALITY -->
+  <div class="reveal">
+    <div class="section-eyebrow">The Threat Reality</div>
+    <h2 class="section-h">Your agents have root access.<br>Adversaries know it.</h2>
+    <p class="section-sub">
+      Every MCP tool call is an instruction your AI sends to your infrastructure. Without inspection, a single compromised prompt can exfiltrate credentials, pivot across systems, or corrupt data at machine speed — no human in the loop.
+    </p>
+  </div>
+
+  <div class="threat-grid reveal">
+    <div class="threat-cell">
+      <div class="t-label">T-09</div>
+      <div class="t-head">Credential Extraction</div>
+      <div class="t-body">Agents instructed to read <code style="font-family:'Geist Mono',monospace;font-size:11px;background:#f5f5f4;padding:1px 5px;border-radius:3px">.env</code> files, SSH keys, and secrets vaults via file-read tool calls.</div>
+    </div>
+    <div class="threat-cell">
+      <div class="t-label">T-17</div>
+      <div class="t-head">Prompt Injection</div>
+      <div class="t-body">Malicious payloads embedded in documents, emails, or web content that hijack agent behavior mid-task.</div>
+    </div>
+    <div class="threat-cell">
+      <div class="t-label">T-22</div>
+      <div class="t-head">SSRF / Network Pivot</div>
+      <div class="t-body">HTTP tool calls directed at internal services, metadata endpoints, or lateral-movement targets inside a secured network.</div>
+    </div>
+    <div class="threat-cell">
+      <div class="t-label">T-28</div>
+      <div class="t-head">Supply Chain Injection</div>
+      <div class="t-body">Compromised MCP server packages that install malicious rule overrides or exfiltration hooks at runtime.</div>
+    </div>
+    <div class="threat-cell">
+      <div class="t-label">T-31</div>
+      <div class="t-head">Shell Abuse</div>
+      <div class="t-body">Bash and subprocess tool calls used to establish persistence, escalate privileges, or disable monitoring.</div>
+    </div>
+    <div class="threat-cell">
+      <div class="t-label">T-36</div>
+      <div class="t-head">Data Exfiltration</div>
+      <div class="t-body">Outbound tool calls — writes, uploads, API calls — carrying sensitive data to attacker-controlled endpoints.</div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- COMPLIANCE -->
+  <div class="compliance-section reveal">
+    <div class="section-eyebrow">Compliance Coverage</div>
+    <h2 class="section-h">Built for the frameworks<br>that govern your work.</h2>
+    <p class="section-sub">
+      Aiglos generates the evidence artifacts auditors need — signed logs, attestation packages, and compliance PDFs — so your AI deployment doesn't stall your accreditation.
+    </p>
+    <div class="compliance-grid">
+      <div class="comp-card">
+        <div class="comp-badge">Enterprise compliance</div>
+        <h3>Cybersecurity Maturity Model Certification</h3>
+        <p>Aiglos produces auditor-ready audit packages covering access control, system and communications protection, and audit and accountability domains. Every agent decision is logged with tamper-evident signatures.</p>
+      </div>
+      <div class="comp-card">
+        <div class="comp-badge">Compliance attestation</div>
+        <h3>Agentic AI Governance Mandate</h3>
+        <p>The 2025 attestation requires enterprise deployments to govern autonomous AI systems. Aiglos provides the runtime enforcement layer and signed attestation record that governance frameworks require before AI agents operate on sensitive systems.</p>
+      </div>
+      <div class="comp-card">
+        <div class="comp-badge">FedRAMP</div>
+        <h3>Federal Risk and Authorization Management</h3>
+        <p>Cloud deployment on FedRAMP-authorized infrastructure with audit logging to GovCloud. On-premises deployment available for agencies that cannot use cloud-hosted security controls.</p>
+      </div>
+      <div class="comp-card">
+        <div class="comp-badge">NIST AI RMF</div>
+        <h3>AI Risk Management Framework</h3>
+        <p>Aiglos maps directly to NIST AI RMF Govern, Map, Measure, and Manage functions. The continuous monitoring and attestation pipeline satisfies the framework's measurement and monitoring requirements for agentic systems.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- CAPABILITIES TABLE -->
+  <div class="cap-section reveal">
+    <div class="section-eyebrow">Capabilities</div>
+    <h2 class="section-h">What the enterprise deployment includes.</h2>
+    <p class="section-sub" style="margin-bottom:32px">Everything in the Pro tier, plus the deployment, integration, and compliance capabilities defense and government environments require.</p>
+
+    <table class="cap-table">
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Description</th>
+          <th>Included</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>T01–T39 Detection Stack</td>
+          <td>All 36 rule families across credential theft, prompt injection, SSRF, shell abuse, data exfiltration, and supply chain attack vectors.</td>
+          <td><span class="dot-yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>On-Premises Deployment</td>
+          <td>Full stack deployable inside your perimeter. No data leaves the network. No cloud dependencies during runtime.</td>
+          <td><span class="dot-yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>Air-Gap Support</td>
+          <td>Offline rule database with manual sync procedures. Suitable for SCIF and disconnected environments.</td>
+          <td><span class="dot-yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>Signed Attestation Artifacts</td>
+          <td>Every tool call decision logged with cryptographic signature. Tamper-evident audit trail for post-incident review and accreditation.</td>
+          <td><span class="dot-yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>compliance Evidence Packages</td>
+          <td>Auto-generated PDF evidence packages organized by compliance domain for auditor audit submissions.</td>
+          <td><span class="dot-yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>SIEM / Webhook Integration</td>
+          <td>Real-time threat event streaming to Splunk, Elastic, or any webhook endpoint. Structured JSON with severity and rule family tags.</td>
+          <td><span class="dot-yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>Multi-Agent Fleet Management</td>
+          <td>Centralized policy enforcement and monitoring across hundreds of concurrent agent instances from a single dashboard.</td>
+          <td><span class="dot-yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>Dedicated Engineering Support</td>
+          <td>Named engineering contact, custom rule development, and SLA-backed incident response.</td>
+          <td><span class="dot-yes">✓</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- DEPLOYMENT -->
+  <div class="deploy-section reveal">
+    <div class="section-eyebrow">Deployment Options</div>
+    <h2 class="section-h">Runs where your requirements demand.</h2>
+    <p class="section-sub">One codebase, three deployment postures. No architectural tradeoffs.</p>
+
+    <div class="deploy-options">
+      <div class="deploy-card">
+        <div class="deploy-icon">[C]</div>
+        <h3>Cloud-Hosted</h3>
+        <p>FedRAMP-authorized cloud deployment. Dashboard, telemetry, and rule updates fully managed. Fastest time to enforcement.</p>
+      </div>
+      <div class="deploy-card">
+        <div class="deploy-icon">[P]</div>
+        <h3>On-Premises</h3>
+        <p>Full stack inside your perimeter. Policy engine, logging, and dashboard run on your infrastructure. Zero external dependencies.</p>
+      </div>
+      <div class="deploy-card">
+        <div class="deploy-icon">[A]</div>
+        <h3>Air-Gap</h3>
+        <p>Completely disconnected operation. Rule database synced manually. Built for SCIF, classified networks, and physically isolated environments.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="contact-block reveal">
+    <div>
+      <h2>Talk to the defense team.</h2>
+      <p>We work directly with program offices, system integrators, and mission owners to scope deployment, scope evidence packages, and build the integration your environment requires. No sales process. Engineering-led from the first call.</p>
+    </div>
+    <div class="contact-ctas">
+      <a href="/cdn-cgi/l/email-protection#bdd9d8dbd8d3ced8fddcd4dad1d2ce93d4d2" class="cta-w">Send Us a Note</a>
+      <a href="/docs.html" class="cta-w2">Read the Docs</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>Aiglos</span>
+  <ul class="footer-links">
+    <li><a href="/docs.html">Docs</a></li>
+    <li><a href="https://github.com/aiglos">GitHub</a></li>
+    <li><a href="/threats.html">CVEs</a></li>
+    <li><a href="/changelog.html">Changelog</a></li>
+    <li><a href="/cdn-cgi/l/email-protection#ec88898a89829f89ac8d858b80839fc28583">Contact</a></li>
+  </ul>
+  <span>aiglos.io</span>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script
