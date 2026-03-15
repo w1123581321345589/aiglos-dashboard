@@ -19,7 +19,6 @@ Coverage targets:
   - Upgrade prompt rate limiting
 """
 
-from __future__ import annotations
 
 import json
 import os
@@ -32,7 +31,7 @@ from typing import Optional
 from unittest.mock import patch, MagicMock
 import pytest
 
-# ── Path setup ─────────────────────────────────────────────────────────────────
+# --- Path setup ---
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from aiglos_licensing import (
@@ -64,7 +63,7 @@ from aiglos_attest import (
 )
 
 
-# ── Fixtures ───────────────────────────────────────────────────────────────────
+# --- Fixtures ---
 
 @pytest.fixture
 def tmp_state(tmp_path):
@@ -537,7 +536,7 @@ class TestUpgradePrompt:
         )
         _emit_upgrade_prompt(result)
         captured = capsys.readouterr()
-        assert "aiglos.io" in captured.err or "Upgrade" in captured.err
+        assert "aiglos.dev" in captured.err or "Upgrade" in captured.err
 
 
 # ══════════════════════════════════════════════════════════════════════════════

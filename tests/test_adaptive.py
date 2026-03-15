@@ -35,7 +35,7 @@ from aiglos.integrations.multi_agent import AgentDefGuard, _semantic_score
 import aiglos
 
 
-# ── Fixtures ───────────────────────────────────────────────────────────────────
+# --- Fixtures ---
 
 @pytest.fixture
 def tmp_db(tmp_path):

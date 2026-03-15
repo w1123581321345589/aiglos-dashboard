@@ -1,34 +1,7 @@
 """
-aiglos.adaptive.observation
-============================
-Phase 1: Observation graph — SQLite-backed storage of session artifacts,
-rule firing history, and agent definition snapshots.
-
-Everything the adaptive layer needs as input is already in the v0.3.0 session
-artifact. This module structures that output into a queryable graph keyed by
-rule, agent, command pattern, and outcome.
-
-Schema:
-  rules         — one row per rule family (T01-T38)
-  sessions      — one row per session
-  events        — one row per inspected action (MCP, HTTP, subprocess)
-  agentdef_obs  — one row per agent definition observation
-  spawn_events  — one row per T38 spawn
-  amendments    — one row per proposed/applied rule amendment (Phase 4)
-
-Usage:
-    from aiglos.adaptive.observation import ObservationGraph
-
-    graph = ObservationGraph()            # defaults to ~/.aiglos/observations.db
-    graph.ingest(artifact)                # call after aiglos.close()
-
-    stats = graph.rule_stats("T37")
-    # { "fires": 12, "blocks": 9, "warns": 2, "allows": 1,
-    #   "override_rate": 0.08, "trend": "STABLE" }
+SQLite-backed observation graph for session artifacts, rule firing
+history, agent-def snapshots, reward signals and causal chains.
 """
-
-from __future__ import annotations
-
 import hashlib
 import json
 import logging
@@ -43,8 +16,6 @@ from typing import Any, Dict, List, Optional
 log = logging.getLogger("aiglos.adaptive.observation")
 
 DEFAULT_DB_PATH = Path.home() / ".aiglos" / "observations.db"
-
-# ── Schema ────────────────────────────────────────────────────────────────────
 
 _SCHEMA = """
 PRAGMA journal_mode=WAL;
@@ -147,8 +118,6 @@ CREATE INDEX IF NOT EXISTS idx_events_ts      ON events(timestamp);
 """
 
 
-# ── RuleStats dataclass ───────────────────────────────────────────────────────
-
 @dataclass
 class RuleStats:
     rule_id:      str
@@ -199,15 +168,8 @@ class RuleStats:
         }
 
 
-# ── ObservationGraph ──────────────────────────────────────────────────────────
-
 class ObservationGraph:
-    """
-    SQLite-backed observation graph for Aiglos session artifacts.
-
-    Thread-safe. Uses WAL mode for concurrent reads.
-    The database is created automatically on first use.
-    """
+    """SQLite-backed observation graph. WAL mode, thread-safe, auto-created."""
 
     def __init__(self, db_path: Optional[str] = None):
         self._db_path = Path(db_path or os.environ.get("AIGLOS_OBS_DB", str(DEFAULT_DB_PATH)))
@@ -231,15 +193,8 @@ class ObservationGraph:
         with self._conn() as conn:
             conn.executescript(_SCHEMA)
 
-    # ── Ingestion ──────────────────────────────────────────────────────────────
-
     def ingest(self, artifact: Any) -> str:
-        """
-        Ingest a SessionArtifact into the observation graph.
-
-        Returns the session_id stored.
-        Idempotent: ingesting the same artifact twice is a no-op.
-        """
+        """Ingest a SessionArtifact. Idempotent — re-ingesting is a no-op."""
         session_id = self._extract_session_id(artifact)
         if self._session_exists(session_id):
             log.debug("[ObsGraph] Session %s already ingested, skipping.", session_id[:12])
@@ -388,10 +343,7 @@ class ObservationGraph:
                 """, (row["rule_id"], row["fires"], row["blocks"],
                       row["warns"], row["allows"], row["last_seen"], time.time()))
 
-    # ── Query API ──────────────────────────────────────────────────────────────
-
     def rule_stats(self, rule_id: str) -> RuleStats:
-        """Return firing statistics for a specific rule."""
         with self._conn() as conn:
             row = conn.execute(
                 "SELECT * FROM rule_stats_cache WHERE rule_id=?", (rule_id,)
@@ -409,7 +361,6 @@ class ObservationGraph:
         )
 
     def all_rule_stats(self) -> List[RuleStats]:
-        """Return stats for all rules that have fired."""
         with self._conn() as conn:
             rows = conn.execute(
                 "SELECT * FROM rule_stats_cache ORDER BY fires_total DESC"
@@ -467,10 +418,6 @@ class ObservationGraph:
         return [dict(r) for r in rows]
 
     def ingest_reward_signal(self, rl_result, session_id: str) -> None:
-        """
-        Ingest a reward signal result from RLFeedbackGuard or SecurityAwareReward.
-        Accepts the dict form or any object with .to_dict().
-        """
         if hasattr(rl_result, "to_dict"):
             d = rl_result.to_dict()
         else:
@@ -501,7 +448,6 @@ class ObservationGraph:
             ))
 
     def reward_signal_stats(self, session_id: Optional[str] = None) -> dict:
-        """Return reward signal statistics, optionally scoped to a session."""
         with self._conn() as conn:
             if session_id:
                 where, args = "WHERE session_id=?", (session_id,)
@@ -528,7 +474,6 @@ class ObservationGraph:
 
 
     def ingest_causal_result(self, attribution_result, session_id: str) -> None:
-        """Ingest a CausalTracer AttributionResult into the observation graph."""
         if hasattr(attribution_result, "to_dict"):
             d = attribution_result.to_dict()
         else:
@@ -557,7 +502,6 @@ class ObservationGraph:
             ))
 
     def causal_stats(self) -> dict:
-        """Return causal attribution statistics across all sessions."""
         with self._conn() as conn:
             row = conn.execute("""
                 SELECT
@@ -579,7 +523,6 @@ class ObservationGraph:
         }
 
     def get_causal_chain(self, session_id: str) -> Optional[dict]:
-        """Retrieve the causal attribution result for a specific session."""
         import json as _json
         with self._conn() as conn:
             row = conn.execute(
@@ -596,10 +539,6 @@ class ObservationGraph:
         return d
 
     def reward_drift_data(self, window: int = 20) -> dict:
-        """
-        Return reward signal data for the REWARD_DRIFT inspection trigger.
-        Compares recent vs baseline reward patterns for security-relevant ops.
-        """
         with self._conn() as conn:
             # Recent signals for security-sensitive operations
             recent = conn.execute("""
@@ -627,7 +566,6 @@ class ObservationGraph:
         }
 
     def summary(self) -> dict:
-        """High-level summary across all ingested data."""
         with self._conn() as conn:
             sess = conn.execute(
                 "SELECT COUNT(*) as c, SUM(blocked_events) as b FROM sessions"

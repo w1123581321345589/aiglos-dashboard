@@ -29,7 +29,7 @@ from aiglos.integrations.memory_guard import (
 import aiglos
 
 
-# ── Fixtures ──────────────────────────────────────────────────────────────────
+# --- Fixtures ---
 
 @pytest.fixture
 def tmp_graph(tmp_path):

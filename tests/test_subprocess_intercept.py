@@ -4,7 +4,6 @@ Tests for the Aiglos CLI/subprocess interception layer.
 Covers: tier classification, threat rule detection, modes, compensating transactions.
 """
 
-from __future__ import annotations
 import pytest
 
 from aiglos.integrations.subprocess_intercept import (
@@ -24,7 +23,7 @@ def clean():
     clear_session_subprocess_events()
 
 
-# ── _cmd_to_str ───────────────────────────────────────────────────────────────
+# --- _cmd_to_str ---
 
 class TestCmdToStr:
     def test_string_passthrough(self):
@@ -42,7 +41,7 @@ class TestCmdToStr:
         assert "pytest" in result
 
 
-# ── classify_tier ─────────────────────────────────────────────────────────────
+# --- classify_tier ---
 
 class TestClassifyTier:
     # Tier 1: auto-allow
@@ -109,7 +108,7 @@ class TestClassifyTier:
         assert classify_tier("sudo rm -rf /var/lib") == SubprocTier.GATED
 
 
-# ── T07: Shell injection ──────────────────────────────────────────────────────
+# --- T07: Shell injection ---
 
 class TestT07ShellInject:
     def test_command_substitution(self):
@@ -138,7 +137,7 @@ class TestT07ShellInject:
         assert r.rule_id != "T07"
 
 
-# ── T08: Path traversal ───────────────────────────────────────────────────────
+# --- T08: Path traversal ---
 
 class TestT08PathTraversal:
     def test_double_dotdot(self):
@@ -155,7 +154,7 @@ class TestT08PathTraversal:
         assert r.rule_id != "T08"
 
 
-# ── T10: Privilege escalation ─────────────────────────────────────────────────
+# --- T10: Privilege escalation ---
 
 class TestT10PrivEsc:
     def test_sudo_prefix(self):
@@ -176,7 +175,7 @@ class TestT10PrivEsc:
         assert r.rule_id != "T10"
 
 
-# ── T11: Persistence ─────────────────────────────────────────────────────────
+# --- T11: Persistence ---
 
 class TestT11Persistence:
     def test_crontab_edit(self):
@@ -201,7 +200,7 @@ class TestT11Persistence:
         assert r.rule_id in ("T11", "T07")  # bashrc or shell inject
 
 
-# ── T12: Lateral movement ─────────────────────────────────────────────────────
+# --- T12: Lateral movement ---
 
 class TestT12Lateral:
     def test_ssh_to_remote(self):
@@ -213,7 +212,7 @@ class TestT12Lateral:
         assert r.rule_id == "T12"
 
 
-# ── T19: Credential harvest ───────────────────────────────────────────────────
+# --- T19: Credential harvest ---
 
 class TestT19CredHarvest:
     def test_cat_ssh_key(self):
@@ -233,7 +232,7 @@ class TestT19CredHarvest:
         assert r.rule_id in ("T19", "T21")
 
 
-# ── T21: Environment leak ─────────────────────────────────────────────────────
+# --- T21: Environment leak ---
 
 class TestT21EnvLeak:
     def test_env_piped(self):
@@ -248,7 +247,7 @@ class TestT21EnvLeak:
         assert r.rule_id == "T21"
 
 
-# ── T23: Exfil subprocess ─────────────────────────────────────────────────────
+# --- T23: Exfil subprocess ---
 
 class TestT23ExfilSubprocess:
     def test_curl_data_post(self):
@@ -261,7 +260,7 @@ class TestT23ExfilSubprocess:
         assert r.rule_id == "T23"
 
 
-# ── T_DEST: Destructive commands ──────────────────────────────────────────────
+# --- T_DEST: Destructive commands ---
 
 class TestTDest:
     def test_rm_rf_produces_dest_or_gated(self):
@@ -279,7 +278,7 @@ class TestTDest:
         assert r.tier == SubprocTier.GATED
 
 
-# ── Verdict modes ─────────────────────────────────────────────────────────────
+# --- Verdict modes ---
 
 class TestModes:
     def test_block_mode_blocks_tier3(self):
@@ -314,7 +313,7 @@ class TestModes:
         assert r.tier == SubprocTier.AUTONOMOUS
 
 
-# ── Compensating transactions ─────────────────────────────────────────────────
+# --- Compensating transactions ---
 
 class TestCompensatingTransactions:
     def test_git_commit_compensation(self):
@@ -344,7 +343,7 @@ class TestCompensatingTransactions:
         assert comp is not None
 
 
-# ── Exception types ───────────────────────────────────────────────────────────
+# --- Exception types ---
 
 class TestExceptions:
     def test_blocked_subprocess_exception(self):
@@ -368,7 +367,7 @@ class TestExceptions:
         assert len(str(exc)) < 500
 
 
-# ── Result dict structure ─────────────────────────────────────────────────────
+# --- Result dict structure ---
 
 class TestResultDict:
     def test_to_dict_has_required_keys(self):
@@ -386,7 +385,7 @@ class TestResultDict:
         assert isinstance(r.to_dict()["tier"], int)
 
 
-# ── List-form args ────────────────────────────────────────────────────────────
+# --- List-form args ---
 
 class TestListArgs:
     def test_list_git_commit(self):

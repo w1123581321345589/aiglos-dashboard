@@ -18,7 +18,7 @@ from aiglos.adaptive.campaign import CampaignAnalyzer, CampaignResult
 from aiglos.adaptive import AdaptiveEngine
 
 
-# ── Fixtures ──────────────────────────────────────────────────────────────────
+# --- Fixtures ---
 
 @pytest.fixture
 def tmp_db(tmp_path):
@@ -59,7 +59,7 @@ def _ev(rule_id, verdict="BLOCK", surface="subprocess", cmd="test", rulename=Non
     }
 
 
-# ── CampaignAnalyzer basic API ────────────────────────────────────────────────
+# --- CampaignAnalyzer basic API ---
 
 class TestCampaignAnalyzerAPI:
 
@@ -119,7 +119,7 @@ class TestCampaignAnalyzerAPI:
         assert "recommendation" in d
 
 
-# ── Pattern: CREDENTIAL_ACCUMULATE ───────────────────────────────────────────
+# --- Pattern: CREDENTIAL_ACCUMULATE ---
 
 class TestCredentialAccumulate:
 
@@ -159,7 +159,7 @@ class TestCredentialAccumulate:
             assert 0.0 <= results[0].confidence <= 1.0
 
 
-# ── Pattern: PERSISTENCE_CHAIN ────────────────────────────────────────────────
+# --- Pattern: PERSISTENCE_CHAIN ---
 
 class TestPersistenceChain:
 
@@ -195,7 +195,7 @@ class TestPersistenceChain:
             assert results[0].confidence >= 0.70
 
 
-# ── Pattern: EXFIL_SETUP ──────────────────────────────────────────────────────
+# --- Pattern: EXFIL_SETUP ---
 
 class TestExfilSetup:
 
@@ -222,7 +222,7 @@ class TestExfilSetup:
             assert "T23" in results[0].recommendation
 
 
-# ── Pattern: LATERAL_PREP ─────────────────────────────────────────────────────
+# --- Pattern: LATERAL_PREP ---
 
 class TestLateralPrep:
 
@@ -249,7 +249,7 @@ class TestLateralPrep:
         assert "LATERAL_PREP" in names
 
 
-# ── Pattern: AGENTDEF_CHAIN (McKinsey/Lilli pattern) ─────────────────────────
+# --- Pattern: AGENTDEF_CHAIN (McKinsey/Lilli pattern) ---
 
 class TestAgentdefChain:
 
@@ -288,7 +288,7 @@ class TestAgentdefChain:
         assert "AGENTDEF_CHAIN" not in names
 
 
-# ── Clean sessions don't trigger ─────────────────────────────────────────────
+# --- Clean sessions don't trigger ---
 
 class TestCleanSessions:
 
@@ -315,7 +315,7 @@ class TestCleanSessions:
             assert len(r.evidence) >= 2
 
 
-# ── AdaptiveEngine.run() includes campaign results ───────────────────────────
+# --- AdaptiveEngine.run() includes campaign results ---
 
 class TestAdaptiveEngineWithCampaign:
 

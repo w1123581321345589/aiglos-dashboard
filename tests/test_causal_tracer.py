@@ -29,14 +29,14 @@ from aiglos.core.causal_tracer import (
     AttributionResult,
     ContextEntry,
     TaggedAction,
-    _ATTRIBUTION_WINDOW,
+    _LOOKBACK_STEPS,
 )
 from aiglos.adaptive.observation import ObservationGraph
 from aiglos.adaptive.inspect import InspectionEngine
 import aiglos
 
 
-# ── Fixtures ──────────────────────────────────────────────────────────────────
+# --- Fixtures ---
 
 @pytest.fixture
 def tracer():

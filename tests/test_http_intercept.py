@@ -4,7 +4,6 @@ Tests for the Aiglos HTTP/API interception layer.
 Covers: rule detection, allow-listing, verdict modes, patch mechanics.
 """
 
-from __future__ import annotations
 import sys
 import types
 import importlib
@@ -24,14 +23,14 @@ from aiglos.integrations.http_intercept import (
 )
 
 
-# ── Helper ────────────────────────────────────────────────────────────────────
+# --- Helper ---
 
 def clean():
     """Reset session events between tests."""
     clear_session_http_events()
 
 
-# ── _host_is_allowed ──────────────────────────────────────────────────────────
+# --- _host_is_allowed ---
 
 class TestAllowList:
     def test_exact_match(self):
@@ -54,7 +53,7 @@ class TestAllowList:
             "api.stripe.com", "*.openai.com", "api.anthropic.com"])
 
 
-# ── _extract_host ─────────────────────────────────────────────────────────────
+# --- _extract_host ---
 
 class TestExtractHost:
     def test_simple(self):
@@ -67,7 +66,7 @@ class TestExtractHost:
         assert _extract_host("not-a-url") == ""
 
 
-# ── T25: SSRF ─────────────────────────────────────────────────────────────────
+# --- T25: SSRF ---
 
 class TestT25SSRF:
     def test_aws_metadata(self):
@@ -102,7 +101,7 @@ class TestT25SSRF:
         assert r.rule_id == "T25"
 
 
-# ── T22: Recon ────────────────────────────────────────────────────────────────
+# --- T22: Recon ---
 
 class TestT22Recon:
     def test_shodan(self):
@@ -125,7 +124,7 @@ class TestT22Recon:
         assert r.verdict == HttpVerdict.ALLOW
 
 
-# ── T19: Credential harvest ───────────────────────────────────────────────────
+# --- T19: Credential harvest ---
 
 class TestT19CredHarvest:
     def test_ssh_key_in_body(self):
@@ -158,7 +157,7 @@ class TestT19CredHarvest:
         assert r.verdict in (HttpVerdict.BLOCK, HttpVerdict.WARN)
 
 
-# ── T20: Data exfil ───────────────────────────────────────────────────────────
+# --- T20: Data exfil ---
 
 class TestT20DataExfil:
     def test_ssn_in_body_to_exfil_host(self):
@@ -181,7 +180,7 @@ class TestT20DataExfil:
         assert r.verdict == HttpVerdict.ALLOW
 
 
-# ── T35: Model exfil ─────────────────────────────────────────────────────────
+# --- T35: Model exfil ---
 
 class TestT35ModelExfil:
     def test_model_weights_in_url(self):
@@ -196,7 +195,7 @@ class TestT35ModelExfil:
         assert r.rule_id == "T35"
 
 
-# ── T36: Supply chain ────────────────────────────────────────────────────────
+# --- T36: Supply chain ---
 
 class TestT36SupplyChain:
     def test_pypi_push(self):
@@ -210,7 +209,7 @@ class TestT36SupplyChain:
         assert r.rule_id == "T36"
 
 
-# ── Mode handling ─────────────────────────────────────────────────────────────
+# --- Mode handling ---
 
 class TestModes:
     def test_warn_mode_downgrades_block_to_warn(self):
@@ -231,7 +230,7 @@ class TestModes:
         assert r.verdict == HttpVerdict.BLOCK
 
 
-# ── Session event logging ─────────────────────────────────────────────────────
+# --- Session event logging ---
 
 class TestSessionEvents:
     def setup_method(self):
@@ -266,7 +265,7 @@ class TestSessionEvents:
         assert len(get_session_http_events()) == 0
 
 
-# ── AiglosBlockedRequest exception ───────────────────────────────────────────
+# --- AiglosBlockedRequest exception ---
 
 class TestBlockedException:
     def test_exception_carries_result(self):
@@ -282,7 +281,7 @@ class TestBlockedException:
         assert isinstance(exc, RuntimeError)
 
 
-# ── Clean request passthrough ─────────────────────────────────────────────────
+# --- Clean request passthrough ---
 
 class TestCleanPassthrough:
     def test_openai_api_allowed(self):

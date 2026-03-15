@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pytest
 
-# ── path setup ────────────────────────────────────────────────────────────────
+# --- path setup ---
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from aiglos.integrations.subprocess_intercept import (
@@ -44,7 +44,7 @@ import aiglos
 class TestT36AgentDefPoisoning:
     """Writes to agent definition directories should be Tier 3 GATED."""
 
-    # ── Claude Code agents dir ────────────────────────────────────────────────
+    # --- Claude Code agents dir ---
     def test_cp_to_claude_agents_is_gated(self):
         r = inspect_subprocess("cp agency-agents/security-engineer.md ~/.claude/agents/")
         assert r.verdict in (SubprocVerdict.BLOCK, SubprocVerdict.WARN, SubprocVerdict.PAUSE)
@@ -60,31 +60,31 @@ class TestT36AgentDefPoisoning:
         r = inspect_subprocess("./scripts/install.sh --tool claude-code")
         assert r.rule_id == "T38"   # spawn classification takes precedence
 
-    # ── Cursor rules dir ──────────────────────────────────────────────────────
+    # --- Cursor rules dir ---
     def test_cp_to_cursor_rules_is_gated(self):
         r = inspect_subprocess("cp agent.mdc .cursor/rules/agent.mdc")
         assert r.rule_id == "T36_AGENTDEF"
         assert r.tier == SubprocTier.GATED
 
-    # ── OpenClaw dir ──────────────────────────────────────────────────────────
+    # --- OpenClaw dir ---
     def test_cp_to_openclaw_dir_is_gated(self):
         r = inspect_subprocess("cp SOUL.md ~/.openclaw/my-agent/SOUL.md")
         assert r.rule_id == "T36_AGENTDEF"
         assert r.tier == SubprocTier.GATED
 
-    # ── GitHub Copilot agents dir ─────────────────────────────────────────────
+    # --- GitHub Copilot agents dir ---
     def test_cp_to_github_agents_is_gated(self):
         r = inspect_subprocess("cp backend-architect.md ~/.github/agents/backend-architect.md")
         assert r.rule_id == "T36_AGENTDEF"
         assert r.tier == SubprocTier.GATED
 
-    # ── Windsurf rules file ───────────────────────────────────────────────────
+    # --- Windsurf rules file ---
     def test_write_to_windsurfrules_is_gated(self):
         r = inspect_subprocess("cp compiled.rules .windsurfrules")
         assert r.rule_id == "T36_AGENTDEF"
         assert r.tier == SubprocTier.GATED
 
-    # ── SOUL.md direct write ──────────────────────────────────────────────────
+    # --- SOUL.md direct write ---
     def test_write_to_soul_md_is_gated(self):
         r = inspect_subprocess("cp modified-soul.md SOUL.md")
         assert r.rule_id == "T36_AGENTDEF"
@@ -95,7 +95,7 @@ class TestT36AgentDefPoisoning:
         assert r.rule_id == "T36_AGENTDEF"
         assert r.tier == SubprocTier.GATED
 
-    # ── Read access is monitored (not gated) ──────────────────────────────────
+    # --- Read access is monitored (not gated) ---
     def test_ls_claude_agents_is_monitored(self):
         r = inspect_subprocess("ls ~/.claude/agents/")
         assert r.rule_id == "T36_AGENTDEF"
@@ -106,7 +106,7 @@ class TestT36AgentDefPoisoning:
         assert r.rule_id == "T36_AGENTDEF"
         assert r.tier == SubprocTier.MONITORED
 
-    # ── Unrelated writes are not flagged ─────────────────────────────────────
+    # --- Unrelated writes are not flagged ---
     def test_cp_regular_file_not_flagged(self):
         r = inspect_subprocess("cp main.py backup/main.py")
         assert r.rule_id != "T36_AGENTDEF"
@@ -174,7 +174,7 @@ class TestT38AgentSpawn:
 class TestT37FinancialExecution:
     """Financial API calls should be blocked by the HTTP layer."""
 
-    # ── Stripe ────────────────────────────────────────────────────────────────
+    # --- Stripe ---
     def test_stripe_charge_blocked(self):
         r = inspect_request(
             method="POST",
@@ -214,7 +214,7 @@ class TestT37FinancialExecution:
         )
         assert r.rule_id != "T37"
 
-    # ── PayPal ────────────────────────────────────────────────────────────────
+    # --- PayPal ---
     def test_paypal_payment_blocked(self):
         r = inspect_request(
             method="POST",
@@ -224,7 +224,7 @@ class TestT37FinancialExecution:
         )
         assert r.rule_id == "T37"
 
-    # ── Ethereum sendTransaction ───────────────────────────────────────────────
+    # --- Ethereum sendTransaction ---
     def test_eth_send_transaction_blocked(self):
         r = inspect_request(
             method="POST",
@@ -254,7 +254,7 @@ class TestT37FinancialExecution:
         )
         assert r.rule_id != "T37"
 
-    # ── Coinbase ──────────────────────────────────────────────────────────────
+    # --- Coinbase ---
     def test_coinbase_transaction_blocked(self):
         r = inspect_request(
             method="POST",
@@ -264,7 +264,7 @@ class TestT37FinancialExecution:
         )
         assert r.rule_id == "T37"
 
-    # ── Generic large-amount body ─────────────────────────────────────────────
+    # --- Generic large-amount body ---
     def test_large_amount_body_on_financial_host_blocked(self):
         r = inspect_request(
             method="POST",
@@ -274,7 +274,7 @@ class TestT37FinancialExecution:
         )
         assert r.rule_id == "T37"
 
-    # ── SSRF still takes priority over T37 ───────────────────────────────────
+    # --- SSRF still takes priority over T37 ---
     def test_ssrf_to_metadata_still_t25(self):
         r = inspect_request(
             method="POST",

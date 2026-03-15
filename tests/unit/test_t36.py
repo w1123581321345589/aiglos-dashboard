@@ -10,7 +10,6 @@ Covers:
   - Integration: end-to-end tool call flow through all layers
 """
 
-from __future__ import annotations
 
 import asyncio
 import os

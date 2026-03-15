@@ -1,34 +1,8 @@
 """
-aiglos.adaptive.inspect
-========================
-Phase 2: Inspection triggers — automated conditions that surface rules,
-agent definitions, and deployment patterns that need attention.
-
-An inspection trigger fires when the observation graph contains enough
-evidence that something is wrong, degrading, or needs calibration.
-Triggers are non-blocking: they surface findings, they do not change anything.
-The amendment engine (Phase 4) acts on trigger findings.
-
-Trigger types:
-  RATE_DROP        — rule firing rate dropped >40% from 30-session baseline
-  ZERO_FIRE        — rule has gone silent after being active
-  HIGH_OVERRIDE    — T3 operations being consistently webhook-approved
-  AGENTDEF_REPEAT  — same agent def path modified across multiple sessions
-  SPAWN_NO_POLICY  — child agents spawning with no inherited policy
-  FIN_EXEC_BYPASS  — T37 overrides accumulating on specific hosts
-  FALSE_POSITIVE   — rule firing but consistently not blocking (high warn rate)
-
-Usage:
-    from aiglos.adaptive.inspect import InspectionEngine
-
-    engine = InspectionEngine(graph)
-    triggers = engine.run()
-    for t in triggers:
-        print(t.trigger_type, t.rule_id, t.evidence_summary)
+Inspection triggers — fire when the observation graph has enough evidence
+that a rule, agent def, or deployment pattern needs attention.  Non-blocking;
+the amendment engine (Phase 4) acts on the findings.
 """
-
-from __future__ import annotations
-
 import logging
 import time
 from dataclasses import dataclass, field
@@ -60,12 +34,6 @@ class InspectionTrigger:
 
 
 class InspectionEngine:
-    """
-    Runs all inspection trigger checks against an ObservationGraph.
-
-    Designed to run at session close or on a periodic schedule.
-    Each check is independent and safe to run in any order.
-    """
 
     # Thresholds — tunable via constructor kwargs
     RATE_DROP_THRESHOLD    = 0.40   # 40% drop triggers RATE_DROP
@@ -95,10 +63,7 @@ class InspectionEngine:
         log.info("[InspectionEngine] %d trigger(s) fired.", len(triggers))
         return triggers
 
-    # ── Rate drop ──────────────────────────────────────────────────────────────
-
     def _check_rate_drops(self) -> List[InspectionTrigger]:
-        """Detect rules whose firing rate has dropped significantly."""
         triggers = []
         all_stats = self._graph.all_rule_stats()
         total_sessions = self._graph.session_count()
@@ -156,7 +121,6 @@ class InspectionEngine:
         return triggers
 
     def _recent_rule_rate(self, rule_id: str, window: int = 5) -> Optional[float]:
-        """Average firing rate in the most recent N sessions."""
         try:
             events = self._graph.events_for_rule(rule_id, limit=window * 10)
             recent_sessions = {e["session_id"] for e in events[:window * 5]}
@@ -168,13 +132,7 @@ class InspectionEngine:
         except Exception:
             return None
 
-    # ── High override rate ─────────────────────────────────────────────────────
-
     def _check_high_overrides(self) -> List[InspectionTrigger]:
-        """
-        Detect Tier 3 operations that are consistently being approved via webhook.
-        Candidate for Tier 2 reclassification in this deployment.
-        """
         triggers = []
         try:
             warn_rules = [
@@ -204,14 +162,7 @@ class InspectionEngine:
             log.debug("[InspectionEngine] high_override check error: %s", e)
         return triggers
 
-    # ── Agent def repeat violations ────────────────────────────────────────────
-
     def _check_agentdef_repeat(self) -> List[InspectionTrigger]:
-        """
-        Detect agent definition paths that have been modified across multiple sessions.
-        Repeated cross-session violations on the same path indicate a persistent
-        adversarial modification pattern or an unreviewed supply chain change.
-        """
         triggers = []
         try:
             violations = self._graph.agentdef_violations_for_path.__func__ if False else None
@@ -251,14 +202,7 @@ class InspectionEngine:
             log.debug("[InspectionEngine] agentdef_repeat check error: %s", e)
         return triggers
 
-    # ── Spawn without policy propagation ──────────────────────────────────────
-
     def _check_spawn_no_policy(self) -> List[InspectionTrigger]:
-        """
-        Detect child agents that have spawned without inheriting the parent's policy.
-        These children start from global defaults and may permit operations the
-        parent fleet has learned to restrict.
-        """
         triggers = []
         try:
             with self._graph._conn() as conn:
@@ -287,14 +231,7 @@ class InspectionEngine:
             log.debug("[InspectionEngine] spawn_no_policy check error: %s", e)
         return triggers
 
-    # ── T37 FIN_EXEC bypass accumulation ──────────────────────────────────────
-
     def _check_fin_exec_bypass(self) -> List[InspectionTrigger]:
-        """
-        Detect T37 financial execution blocks that are being repeatedly allowed
-        via the allow_http list. Indicates the deployment legitimately needs
-        certain financial endpoints and should have a targeted amendment.
-        """
         triggers = []
         try:
             stats = self._graph.rule_stats("T37")
@@ -319,14 +256,7 @@ class InspectionEngine:
             log.debug("[InspectionEngine] fin_exec_bypass check error: %s", e)
         return triggers
 
-    # ── False positive detection ───────────────────────────────────────────────
-
     def _check_false_positives(self) -> List[InspectionTrigger]:
-        """
-        Detect rules with high warn rates relative to block rates.
-        High warn rate = the rule fires but rarely results in a hard block,
-        suggesting it may be over-triggering on legitimate operations.
-        """
         triggers = []
         all_stats = self._graph.all_rule_stats()
         for stats in all_stats:
@@ -353,21 +283,10 @@ class InspectionEngine:
                 ))
         return triggers
 
-    # ── Reward drift ───────────────────────────────────────────────────────────
-
-    REWARD_DRIFT_MIN_SIGNALS = 5    # need at least N signals to check drift
-    REWARD_DRIFT_THRESHOLD   = 0.40 # positive reward for blocked ops above this rate
+    REWARD_DRIFT_MIN_SIGNALS = 5
+    REWARD_DRIFT_THRESHOLD   = 0.40
 
     def _check_reward_drift(self) -> List[InspectionTrigger]:
-        """
-        Detect when reward signals for security-relevant operations shift
-        toward positive — indicating possible reward poisoning in an RL loop.
-
-        Fires REWARD_DRIFT when:
-        - Claimed rewards for operations Aiglos blocked are trending positive
-        - T39 fires are accumulating (OPD injection in feedback text)
-        - Reward signal quarantine rate exceeds threshold
-        """
         triggers = []
         try:
             stats = self._graph.reward_signal_stats()
@@ -400,21 +319,10 @@ class InspectionEngine:
             log.debug("[InspectionEngine] reward_drift check error: %s", e)
         return triggers
 
-    # ── Causal injection confirmed ─────────────────────────────────────────────
-
-    CAUSAL_MIN_SESSIONS = 2    # need at least N sessions with tracing data
-    CAUSAL_CONF_THRESHOLD = 1  # fire if ANY session has a confirmed high-conf attribution
+    CAUSAL_MIN_SESSIONS = 2
+    CAUSAL_CONF_THRESHOLD = 1
 
     def _check_causal_injection_confirmed(self) -> List[InspectionTrigger]:
-        """
-        Fire when causal attribution has confirmed a HIGH-confidence
-        injection-to-action chain in one or more sessions.
-
-        This is the highest-severity trigger — it means the observation graph
-        contains evidence that a specific blocked action was caused by a
-        specific injection source. This is not a suspicion; it is a traced
-        attack chain.
-        """
         triggers = []
         try:
             stats = self._graph.causal_stats()

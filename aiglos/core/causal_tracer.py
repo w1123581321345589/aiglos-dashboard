@@ -1,82 +1,8 @@
 """
-aiglos.core.causal_tracer
-==========================
-Session-level causal attribution for AI agent security.
-
-The question every existing security tool fails to answer:
-  "Why did the agent try to do this, and where did that instruction come from?"
-
-Aiglos blocks what agents do (outbound interceptors) and now scans what
-agents read (injection scanner). Causal attribution connects them — walking
-backward from every blocked or warned action to identify which inbound content
-was in the agent's context when it made that decision.
-
-Architecture:
-
-  ContextWindow
-    A rolling register of inbound content fingerprints currently loaded into
-    the agent's context. Updated on every scan_tool_output() call. Each entry
-    carries: tool name, content hash, injection score, risk level, source URL,
-    and the step number in the session when it was ingested.
-
-  CausalTracer
-    Maintains the ContextWindow and tags every outbound action with a snapshot
-    of the context at the moment the action was attempted. Post-session, runs
-    backward attribution: for each blocked/warned action, identifies which
-    context entries were present, ranks them by injection score, and produces
-    a CausalChain with confidence scoring.
-
-  CausalChain
-    One per blocked/warned action. Contains:
-      - The action details (tool, verdict, rule)
-      - The ranked list of context entries present at the time
-      - The highest-confidence attributed source
-      - A narrative explanation suitable for inclusion in an audit report
-
-  AttributionResult
-    Session-level summary: list of CausalChains, overall attribution
-    confidence, and a verdict on whether this session shows evidence of
-    a coordinated injection-to-action attack.
-
-Confidence scoring:
-  Attribution confidence is HIGH when:
-  - A HIGH-risk injection event preceded the blocked action by ≤ 10 steps
-  - The injection content is still in the context window at action time
-  - No user instruction in the session explicitly authorizes the action
-
-  Attribution confidence is MEDIUM when:
-  - A MEDIUM-risk injection event preceded the action
-  - Or a HIGH-risk event preceded by > 10 steps (may have scrolled out)
-
-  Attribution confidence is LOW when:
-  - Only LOW-risk content was in context
-  - The action appears to have been triggered by a user instruction
-
-Usage:
-    from aiglos.core.causal_tracer import CausalTracer
-
-    tracer = CausalTracer(session_id="sess-abc")
-
-    # After each inbound scan, register the content
-    scan_result = scanner.scan_tool_output("web_search", content)
-    tracer.register_inbound(scan_result, step=7)
-
-    # Before/after each outbound action, tag with context snapshot
-    tracer.tag_outbound_action(
-        step=12,
-        tool_name="subprocess.run",
-        verdict="BLOCK",
-        rule_id="T19",
-        details={"cmd": "cat ~/.ssh/id_rsa"},
-    )
-
-    # At session close, run attribution
-    result = tracer.attribute()
-    # AttributionResult with CausalChains for each flagged action
+Session-level causal attribution — walks backward from blocked/warned
+actions to identify which inbound content was in the agent's context
+when the decision was made.
 """
-
-from __future__ import annotations
-
 import hashlib
 import json
 import logging
@@ -86,18 +12,12 @@ from typing import Any, Dict, List, Optional
 
 log = logging.getLogger("aiglos.causal_tracer")
 
-# How many steps back to look for attribution sources
-_ATTRIBUTION_WINDOW = 15
+_LOOKBACK_STEPS = 15       # how far back to search for attribution sources
+_SUSPICION_FLOOR = 0.20    # min injection score to be a candidate cause
 
-# Score above which an inbound event is considered a candidate cause
-_MIN_ATTRIBUTION_SCORE = 0.20
-
-
-# ── Context window entry ───────────────────────────────────────────────────────
 
 @dataclass
 class ContextEntry:
-    """A single inbound content item currently in the agent's context window."""
     step:           int
     tool_name:      str
     content_hash:   str
@@ -111,7 +31,7 @@ class ContextEntry:
 
     @property
     def is_suspicious(self) -> bool:
-        return self.injection_score >= _MIN_ATTRIBUTION_SCORE
+        return self.injection_score >= _SUSPICION_FLOOR
 
     def to_dict(self) -> dict:
         return {
@@ -127,11 +47,8 @@ class ContextEntry:
         }
 
 
-# ── Tagged outbound action ─────────────────────────────────────────────────────
-
 @dataclass
 class TaggedAction:
-    """An outbound action tagged with the context snapshot at the time it occurred."""
     step:            int
     tool_name:       str
     verdict:         str          # ALLOW | WARN | BLOCK
@@ -157,13 +74,8 @@ class TaggedAction:
         }
 
 
-# ── Causal chain ───────────────────────────────────────────────────────────────
-
 @dataclass
 class CausalChain:
-    """
-    Attribution of a single blocked/warned action to its most likely cause.
-    """
     action:              TaggedAction
     attributed_sources:  List[ContextEntry]   # ranked by injection score, desc
     confidence:          str                  # HIGH | MEDIUM | LOW | NONE
@@ -186,13 +98,8 @@ class CausalChain:
         }
 
 
-# ── Attribution result ─────────────────────────────────────────────────────────
-
 @dataclass
 class AttributionResult:
-    """
-    Session-level causal attribution summary.
-    """
     session_id:          str
     agent_name:          str
     total_actions:       int
@@ -278,16 +185,10 @@ class AttributionResult:
         return "\n".join(lines)
 
 
-# ── CausalTracer ──────────────────────────────────────────────────────────────
-
 class CausalTracer:
-    """
-    Maintains a rolling context window and tags outbound actions with
-    context snapshots. Runs backward attribution at session close.
-
-    Designed to be wired into both the injection scanner (register_inbound)
-    and the outbound action interceptors (tag_outbound_action).
-    """
+    """Rolling context window + outbound action tagging. Runs backward
+    attribution at session close to connect flagged actions to injection
+    sources."""
 
     def __init__(
         self,
@@ -303,15 +204,7 @@ class CausalTracer:
         self._actions:   List[TaggedAction]  = []   # all tagged actions
         self._result:    Optional[AttributionResult] = None
 
-    # ── Inbound registration ──────────────────────────────────────────────────
-
     def register_inbound(self, scan_result, step: Optional[int] = None) -> None:
-        """
-        Register an inbound content scan result into the context window.
-        Call this after every scan_tool_output() returns.
-
-        Accepts an InjectionScanResult (dataclass or dict).
-        """
         if hasattr(scan_result, "to_dict"):
             d = scan_result.to_dict()
         else:
@@ -333,7 +226,7 @@ class CausalTracer:
 
         self._context.append(entry)
 
-        # Trim to window size — oldest entries fall out of context
+        # oldest entries fall off the end
         if len(self._context) > self.window_size:
             self._context = self._context[-self.window_size:]
 
@@ -344,8 +237,6 @@ class CausalTracer:
                 self._step, entry.tool_name, entry.injection_score, entry.risk,
             )
 
-    # ── Outbound action tagging ───────────────────────────────────────────────
-
     def tag_outbound_action(
         self,
         tool_name: str,
@@ -355,12 +246,6 @@ class CausalTracer:
         details:   Optional[Dict[str, Any]] = None,
         step:      Optional[int] = None,
     ) -> TaggedAction:
-        """
-        Tag an outbound action with a snapshot of the current context window.
-        Call this on every before_tool_call() and outbound interceptor event.
-
-        Returns the TaggedAction for optional immediate use.
-        """
         self._step = step if step is not None else self._step + 1
 
         action = TaggedAction(
@@ -375,14 +260,10 @@ class CausalTracer:
         self._actions.append(action)
         return action
 
-    # ── Attribution ───────────────────────────────────────────────────────────
-
     def attribute(self) -> AttributionResult:
-        """
-        Run backward attribution across all flagged actions in this session.
-        Returns an AttributionResult with CausalChains for each blocked/warned action.
-        """
-        if self._result is not None:
+        """Run backward attribution across all flagged actions. Cached after
+        the first call — attribute() is idempotent."""
+        if self._result is not None:    # belt-and-suspenders, attribute() caches
             return self._result
 
         flagged    = [a for a in self._actions if a.is_flagged]
@@ -439,14 +320,13 @@ class CausalTracer:
         top = candidates[0]
         steps_since = action.step - top.step
 
-        # Confidence scoring
-        if top.risk == "HIGH" and steps_since <= _ATTRIBUTION_WINDOW:
+        if top.risk == "HIGH" and steps_since <= _LOOKBACK_STEPS:
             conf = "HIGH"
             conf_score = min(
-                top.injection_score * (1.0 - steps_since / (_ATTRIBUTION_WINDOW * 2)),
+                top.injection_score * (1.0 - steps_since / (_LOOKBACK_STEPS * 2)),
                 0.99,
             )
-        elif top.risk in ("HIGH", "MEDIUM") and steps_since <= _ATTRIBUTION_WINDOW * 2:
+        elif top.risk in ("HIGH", "MEDIUM") and steps_since <= _LOOKBACK_STEPS * 2:
             conf = "MEDIUM"
             conf_score = min(top.injection_score * 0.6, 0.70)
         else:
@@ -536,14 +416,10 @@ class CausalTracer:
 
         return verdict, narrative
 
-    # ── State access ──────────────────────────────────────────────────────────
-
     def current_context(self) -> List[ContextEntry]:
-        """Return a copy of the current context window."""
         return list(self._context)
 
     def suspicious_in_context(self) -> List[ContextEntry]:
-        """Return suspicious entries currently in the context window."""
         return [e for e in self._context if e.is_suspicious]
 
     def to_artifact_section(self) -> dict:

@@ -37,7 +37,7 @@ from aiglos.adaptive.campaign import CampaignAnalyzer
 import aiglos
 
 
-# ── Fixtures ──────────────────────────────────────────────────────────────────
+# --- Fixtures ---
 
 @pytest.fixture
 def guard():

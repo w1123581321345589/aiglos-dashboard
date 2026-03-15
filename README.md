@@ -9,11 +9,11 @@
 ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚══════╝
 ```
 
-### We don't care what protocol your agent uses. We watch what your agent actually does.
+### Every surface. Every session. Every belief.
 
-The first AI agent security platform that covers every surface, learns from every session,
-improves its own rules through adversarial co-evolution, secures persistent memory at the
-belief layer, and makes safety a learned objective — not just an enforced constraint.
+The first AI agent security platform that covers every surface your agent operates on,
+learns from every session it runs, secures persistent memory at the belief layer,
+and now traces blocked actions back to their injection source.
 
 [![PyPI](https://img.shields.io/pypi/v/aiglos?style=flat-square&color=000&labelColor=000&label=aiglos)](https://pypi.org/project/aiglos/)
 [![npm](https://img.shields.io/npm/v/aiglos?style=flat-square&color=000&labelColor=000&label=aiglos)](https://npmjs.com/package/aiglos)
@@ -26,7 +26,7 @@ belief layer, and makes safety a learned objective — not just an enforced cons
 |---|---|---|---|---|---|
 | **39** threat families | **3** execution surfaces | **10** campaign patterns | **Self-improving rules** | **Belief-layer + RL security** | **Signed attestation artifacts** |
 
-[The moment](#the-moment) · [What we built](#what-we-built) · [The white space](#the-white-space) · [Quickstart](#quickstart) · [Surfaces](#three-execution-surfaces) · [Threat engine](#threat-engine) · [Adaptive layer](#adaptive-layer) · [Autoresearch](#autoresearch) · [Campaign-mode](#t06-campaign-mode) · [Memory security](#persistent-memory-security) · [RL security](#live-rl-training-security) · [Multi-agent](#multi-agent-security) · [Causal tracing](#causal-attribution-tracing) · [Skill scanner](#skill-scanner) · [CLI](#cli) · [TypeScript](#typescript-sdk) · [Attestation](#attestation) · [Pricing](#pricing)
+[The moment](#the-moment) · [What we built](#what-we-built) · [The white space](#the-white-space) · [Quickstart](#quickstart) · [Surfaces](#three-execution-surfaces) · [Threat engine](#threat-engine) · [Adaptive layer](#adaptive-layer) · [Autoresearch](#autoresearch) · [Campaign-mode](#t06-campaign-mode) · [Memory security](#persistent-memory-security) · [RL security](#live-rl-training-security) · [Multi-agent](#multi-agent-security) · [Skill scanner](#skill-scanner) · [CLI](#cli) · [TypeScript](#typescript-sdk) · [Attestation](#attestation) · [Pricing](#pricing)
 
 </div>
 
@@ -80,8 +80,6 @@ The complete inventory of what exists and ships today:
 
 **Indirect prompt injection scanner (T27 extended).** `InjectionScanner` closes the inbound data surface — tool outputs, retrieved documents, API responses, memory reads. Two-layer scoring: 50-phrase instruction-override corpus plus encoding anomaly detection for base64 payloads, Unicode homoglyphs, invisible characters, and RTL override attacks. The `after_tool_call()` lifecycle hook slots into existing agent code with one line. The `REPEATED_INJECTION_ATTEMPT` campaign pattern correlates injection attempts across distinct tool sources in a session.
 
-**Causal attribution tracing.** `CausalTracer` connects the inbound injection surface to outbound actions. For every blocked action, the tracer walks backward through the agent's context window and identifies which inbound content caused it. Produces HIGH/MEDIUM/LOW confidence chains, session-level ATTACK_CONFIRMED/SUSPICIOUS/CLEAN verdicts, and a human-readable investigation report. The `CAUSAL_INJECTION_CONFIRMED` inspection trigger fires when traced attack chains accumulate across sessions.
-
 **Live RL training security (T39).** `RLFeedbackGuard` intercepts Binary RL reward signals and Hindsight OPD feedback before they reach the training loop. Blocked operations that receive positive reward are quarantined as T39 REWARD_POISON and adjusted to -1.0. OPD feedback containing directional language toward unsafe operations is scored against a 26-phrase OPD-specific corpus and blocked before reaching weight updates.
 
 **SecurityAwareReward co-training interface.** Wires Aiglos security verdicts directly into any RL reward function. BLOCK/PAUSE operations receive -1.0 hard override regardless of user feedback. After N training sessions, the agent learns that safe behavior produces positive reward — safety becomes a trained objective, not just an enforced constraint. This capability cannot be replicated by adding Aiglos after training.
@@ -90,11 +88,13 @@ The complete inventory of what exists and ships today:
 
 **Session identity chain.** Every event HMAC-SHA256 countersigned. Every artifact tamper-evident.
 
-**Adaptive layer.** Observation graph, eight inspection triggers, amendment engine, policy serializer. Every session auto-ingested. Nothing changes without human approval.
+**Adaptive layer.** Observation graph, nine inspection triggers, amendment engine, policy serializer. Every session auto-ingested. Nothing changes without human approval.
 
 **Autoresearch.** Two-loop self-improving detection. Research loop optimizes rules against labeled corpus. Adversarial loop generates evasion cases. Rules and attacks co-evolve. Run logs are compliance evidence.
 
 **Free skill scanner.** `aiglos scan-skill <n>` — 8 signals, 2 seconds, catches what VirusTotal cannot.
+
+**Session-level causal attribution.** `CausalTracer` answers the question no other tool does: which specific input caused this specific action? Tracks which tool outputs are in the agent's context at every moment, tags every outbound action with a context snapshot, then walks backward from each blocked event to identify the injection source with confidence scoring. `CAUSAL_INJECTION_CONFIRMED` inspection trigger fires when the observation graph contains a traced attack chain. `python -m aiglos trace <session-id>` renders the full investigation report.
 
 **RL training trajectory signing.** `sign_trajectory()` prevents unsafe tool calls from entering training pipelines.
 
@@ -298,7 +298,7 @@ observe ──► inspect ──► amend ──► evaluate
              (auto-ingested at close())
 ```
 
-Eight inspection triggers fire automatically when the observation graph has evidence of drift, degradation, or manipulation:
+Nine inspection triggers fire automatically when the observation graph has evidence of drift, degradation, or manipulation:
 
 | Trigger | Fires when |
 |---------|-----------|
@@ -310,6 +310,7 @@ Eight inspection triggers fire automatically when the observation graph has evid
 | `FIN_EXEC_BYPASS` | T37 overrides accumulating on specific hosts |
 | `FALSE_POSITIVE` | Rule fires but >60% result in WARNs, not BLOCKs |
 | `REWARD_DRIFT` | RL reward signals for security-relevant ops trending positive — T39 quarantine rate exceeds threshold |
+| `CAUSAL_INJECTION_CONFIRMED` | Causal attribution has confirmed a HIGH-confidence injection-to-action chain in the observation graph — a specific blocked action has been traced to a specific injection source |
 
 Amendment proposals require human approval. Nothing changes automatically.
 
@@ -484,39 +485,6 @@ Child agents inherit parent's learned policy. 34 sessions of calibration = 34 se
 
 ---
 
-## Causal attribution tracing
-
-Every existing tool tells you *what* the agent did. Nobody tells you *why*.
-
-Causal attribution connects the inbound injection surface (what the agent read) to the outbound action surface (what the agent tried to do). For every blocked or warned action, the tracer walks backward through the agent's context window and identifies which inbound content was present when the agent made that decision.
-
-```python
-guard = aiglos.attach("my-agent", policy="enterprise")
-tracer = guard.enable_causal_tracing()
-
-# ... agent runs tools, guard.after_tool_call() scans inbound content ...
-# ... guard.before_tool_call() intercepts outbound actions ...
-
-result = guard.trace()
-print(result.render())
-#   [!] Step  12  BLOCK    http.post  [T37]
-#       Attribution: HIGH confidence (87%)
-#       Source:      step 7  web_search  [score 0.90 · HIGH]
-#       Phrases:     ['ignore previous instructions', 'exfiltrate']
-#       Gap:         5 steps between injection and action
-
-print(result.session_verdict)
-# ATTACK_CONFIRMED — two HIGH-confidence chains traced
-```
-
-**Confidence scoring:** HIGH when a HIGH-risk injection preceded the action by ≤ 15 steps and was still in context. MEDIUM for older or lower-risk sources. LOW when the connection is plausible but uncertain.
-
-**Session verdicts:** `CLEAN` (no flagged actions), `SUSPICIOUS` (flagged actions with partial attribution), `ATTACK_CONFIRMED` (≥ 2 HIGH-confidence injection-to-action chains).
-
-**Adaptive integration:** The `CAUSAL_INJECTION_CONFIRMED` inspection trigger fires when the observation graph accumulates confirmed attack chains across multiple sessions. This is the highest-severity trigger — it means traced evidence, not suspicion.
-
----
-
 ## Skill scanner
 
 ```bash
@@ -574,6 +542,9 @@ python -m aiglos sessions --n 20
 python -m aiglos policy <session-id>
 python -m aiglos autoresearch --category CRED_ACCESS --rounds 20 --adversarial
 python -m aiglos scan-skill <n>
+python -m aiglos trace <session-id>    # causal investigation report
+python -m aiglos trace --latest        # most recent traced session
+python -m aiglos trace --all           # session-level summary
 python -m aiglos scan-message <text>  # scan a user message before forwarding to an agent
 ```
 
@@ -660,6 +631,9 @@ Signed attestation artifacts, cloud dashboard, compliance reports, cross-custome
 ---
 
 ## Changelog
+
+**v0.9.0 — March 2026**
+Session-level causal attribution. `CausalTracer` maintains a rolling context window of inbound content fingerprints, tags every outbound action with a context snapshot at the time of the call, and at session close runs backward attribution to identify which specific injection source caused which specific blocked action. `AttributionResult` with HIGH/MEDIUM/LOW/NONE confidence chains. `CAUSAL_INJECTION_CONFIRMED` 9th inspection trigger. `enable_causal_tracing()` on `OpenClawGuard`. `python -m aiglos trace <session-id>` CLI investigation report. `causal_chains` table in observation graph. 784 tests.
 
 **v0.8.0 — March 2026**
 Indirect prompt injection scanner (`injection_scanner.py`). `InjectionScanner` with two-layer scoring: 50-phrase corpus for instruction-override patterns + encoding anomaly detection (base64 payloads, Unicode homoglyphs, invisible characters, RTL override, mixed scripts). `after_tool_call()` lifecycle hook on `OpenClawGuard`. `REPEATED_INJECTION_ATTEMPT` 10th campaign pattern. `scan_tool_output()`, `scan_document()`, `scan_memory_read()` convenience methods. 571 tests.

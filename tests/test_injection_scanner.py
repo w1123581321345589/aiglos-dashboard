@@ -37,7 +37,7 @@ from aiglos.adaptive.observation import ObservationGraph
 import aiglos
 
 
-# ── Fixtures ──────────────────────────────────────────────────────────────────
+# --- Fixtures ---
 
 @pytest.fixture
 def scanner():
