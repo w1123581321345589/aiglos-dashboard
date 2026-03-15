@@ -542,6 +542,8 @@ class InjectionScanner:
 
     def _log_result(self, result: InjectionScanResult) -> None:
         self._results.append(result)
+        if hasattr(self, "_tracer") and self._tracer is not None:
+            self._tracer.register_inbound(result)
         if result.verdict == "BLOCK":
             self._block_count += 1
             log.warning(
@@ -576,6 +578,10 @@ class InjectionScanner:
             "phrase_injections": sum(1 for r in self._results if r.phrase_hits),
             "encoding_anomalies": sum(1 for r in self._results if r.encoding_anomalies),
         }
+
+    def set_tracer(self, tracer) -> None:
+        """Wire a CausalTracer to auto-register every scan result."""
+        self._tracer = tracer
 
     def to_artifact_section(self) -> dict:
         return {

@@ -576,7 +576,7 @@ class TestRewardManipulationPattern:
         art = MagicMock()
         art.agent_name = "test"
         art.extra = {
-            "aiglos_version": "0.8.0",
+            "aiglos_version": "0.9.0",
             "http_events": [],
             "subproc_events": events,
             "agentdef_violations": [],
@@ -653,7 +653,7 @@ class TestRewardManipulationPattern:
 class TestV060ModuleAPI:
 
     def test_version_is_060(self):
-        assert aiglos.__version__ == "0.8.0"
+        assert aiglos.__version__ == "0.9.0"
 
     def test_exports_rl_guard_types(self):
         assert hasattr(aiglos, "RLFeedbackGuard")

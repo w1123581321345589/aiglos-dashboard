@@ -472,7 +472,7 @@ class TestRepeatedInjectionAttempt:
         art = MagicMock()
         art.agent_name = "test"
         art.extra = {
-            "aiglos_version": "0.8.0",
+            "aiglos_version": "0.9.0",
             "http_events": [],
             "subproc_events": events,
             "agentdef_violations": [],
@@ -538,7 +538,7 @@ class TestRepeatedInjectionAttempt:
 class TestV080ModuleAPI:
 
     def test_version_is_080(self):
-        assert aiglos.__version__ == "0.8.0"
+        assert aiglos.__version__ == "0.9.0"
 
     def test_exports_injection_scanner_types(self):
         assert hasattr(aiglos, "InjectionScanner")

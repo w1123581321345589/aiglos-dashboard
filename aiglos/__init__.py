@@ -1,4 +1,4 @@
-__version__ = "0.8.0"
+__version__ = "0.9.0"
 
 from aiglos.integrations.openclaw import (
     OpenClawGuard,
@@ -52,6 +52,13 @@ from aiglos.integrations.multi_agent import (
     SessionIdentityChain,
     SpawnEvent,
     AgentDefViolation,
+)
+from aiglos.core.causal_tracer import (
+    CausalTracer,
+    CausalChain,
+    AttributionResult,
+    ContextEntry,
+    TaggedAction,
 )
 
 _adaptive_engine = None

@@ -90,7 +90,7 @@ class CampaignAnalyzer:
     def _get_session_events(self, session_id: str) -> List[Dict]:
         with self._graph._conn() as conn:
             rows = conn.execute(
-                "SELECT rule_id, rule_name, verdict, surface, tier, cmd, url, "
+                "SELECT rule_id, rule_name, verdict, surface, tier, cmd_hash, cmd_preview, "
                 "latency_ms, timestamp FROM events WHERE session_id=?",
                 (session_id,),
             ).fetchall()

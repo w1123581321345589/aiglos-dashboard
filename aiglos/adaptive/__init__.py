@@ -92,11 +92,14 @@ class AdaptiveEngine:
         cross_session_risks = [r.to_dict() for r in self.memory.cross_session_risks()]
         drift = self.memory.detect_belief_drift()
 
+        causal_stats = self.graph.causal_stats()
+
         report = {
             "graph_summary": summary,
             "memory_summary": memory_summary,
             "cross_session_risks": cross_session_risks,
             "belief_drift": drift.to_dict() if drift else None,
+            "causal_stats": causal_stats,
             "triggers_fired": len(all_triggers),
             "triggers": [t.to_dict() for t in all_triggers],
             "campaign_patterns": len(campaign_results),
@@ -119,4 +122,5 @@ class AdaptiveEngine:
     def stats(self) -> dict:
         s = self.graph.summary()
         s["memory"] = self.memory.summary()
+        s["causal"] = self.graph.causal_stats()
         return s

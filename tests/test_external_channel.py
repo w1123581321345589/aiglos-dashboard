@@ -40,7 +40,7 @@ def _make_art(session_id, events):
     art = MagicMock()
     art.agent_name = "test"
     art.extra = {
-        "aiglos_version": "0.8.0",
+        "aiglos_version": "0.9.0",
         "http_events": [],
         "subproc_events": events,
         "agentdef_violations": [],
@@ -300,7 +300,7 @@ class TestScanMessage:
 class TestV070ModuleAPI:
 
     def test_version_is_070(self):
-        assert aiglos.__version__ == "0.8.0"
+        assert aiglos.__version__ == "0.9.0"
 
     def test_nine_campaign_patterns(self):
         names = {p["name"] for p in _CAMPAIGN_PATTERNS}

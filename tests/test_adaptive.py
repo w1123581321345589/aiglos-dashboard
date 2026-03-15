@@ -756,7 +756,7 @@ class TestAgentDefGuardSemantic:
 class TestV040ModuleAPI:
 
     def test_version_is_040(self):
-        assert aiglos.__version__ == "0.8.0"
+        assert aiglos.__version__ == "0.9.0"
 
     def test_adaptive_run_without_init(self):
         # Reset global state

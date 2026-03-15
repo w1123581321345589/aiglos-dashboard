@@ -20,13 +20,13 @@ belief layer, and makes safety a learned objective — not just an enforced cons
 [![MIT](https://img.shields.io/badge/license-MIT-000?style=flat-square&labelColor=000)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-000?style=flat-square&labelColor=000)](https://python.org)
 [![TypeScript](https://img.shields.io/badge/typescript-5.0+-000?style=flat-square&labelColor=000)](sdk/typescript/)
-[![571 tests](https://img.shields.io/badge/tests-571_passing-000?style=flat-square&labelColor=000)](tests/)
+[![784 tests](https://img.shields.io/badge/tests-784_passing-000?style=flat-square&labelColor=000)](tests/)
 
 |  |  |  |  |  |  |
 |---|---|---|---|---|---|
 | **39** threat families | **3** execution surfaces | **10** campaign patterns | **Self-improving rules** | **Belief-layer + RL security** | **Signed attestation artifacts** |
 
-[The moment](#the-moment) · [What we built](#what-we-built) · [The white space](#the-white-space) · [Quickstart](#quickstart) · [Surfaces](#three-execution-surfaces) · [Threat engine](#threat-engine) · [Adaptive layer](#adaptive-layer) · [Autoresearch](#autoresearch) · [Campaign-mode](#t06-campaign-mode) · [Memory security](#persistent-memory-security) · [RL security](#live-rl-training-security) · [Multi-agent](#multi-agent-security) · [Skill scanner](#skill-scanner) · [CLI](#cli) · [TypeScript](#typescript-sdk) · [Attestation](#attestation) · [Pricing](#pricing)
+[The moment](#the-moment) · [What we built](#what-we-built) · [The white space](#the-white-space) · [Quickstart](#quickstart) · [Surfaces](#three-execution-surfaces) · [Threat engine](#threat-engine) · [Adaptive layer](#adaptive-layer) · [Autoresearch](#autoresearch) · [Campaign-mode](#t06-campaign-mode) · [Memory security](#persistent-memory-security) · [RL security](#live-rl-training-security) · [Multi-agent](#multi-agent-security) · [Causal tracing](#causal-attribution-tracing) · [Skill scanner](#skill-scanner) · [CLI](#cli) · [TypeScript](#typescript-sdk) · [Attestation](#attestation) · [Pricing](#pricing)
 
 </div>
 
@@ -79,6 +79,8 @@ The complete inventory of what exists and ships today:
 **Persistent memory security (T31).** `MemoryWriteGuard` intercepts every structured memory write. 38-phrase corpus including memory-specific signals: authorization claims, endpoint redirects, cross-session persistence language. `MemoryProvenanceGraph` tracks what was written, in which session, based on what input. Cross-session risk detection surfaces poisoned beliefs persisting across sessions.
 
 **Indirect prompt injection scanner (T27 extended).** `InjectionScanner` closes the inbound data surface — tool outputs, retrieved documents, API responses, memory reads. Two-layer scoring: 50-phrase instruction-override corpus plus encoding anomaly detection for base64 payloads, Unicode homoglyphs, invisible characters, and RTL override attacks. The `after_tool_call()` lifecycle hook slots into existing agent code with one line. The `REPEATED_INJECTION_ATTEMPT` campaign pattern correlates injection attempts across distinct tool sources in a session.
+
+**Causal attribution tracing.** `CausalTracer` connects the inbound injection surface to outbound actions. For every blocked action, the tracer walks backward through the agent's context window and identifies which inbound content caused it. Produces HIGH/MEDIUM/LOW confidence chains, session-level ATTACK_CONFIRMED/SUSPICIOUS/CLEAN verdicts, and a human-readable investigation report. The `CAUSAL_INJECTION_CONFIRMED` inspection trigger fires when traced attack chains accumulate across sessions.
 
 **Live RL training security (T39).** `RLFeedbackGuard` intercepts Binary RL reward signals and Hindsight OPD feedback before they reach the training loop. Blocked operations that receive positive reward are quarantined as T39 REWARD_POISON and adjusted to -1.0. OPD feedback containing directional language toward unsafe operations is scored against a 26-phrase OPD-specific corpus and blocked before reaching weight updates.
 
@@ -479,6 +481,39 @@ Stripe, PayPal, Square, Braintree, Adyen, Ethereum RPC (`eth_sendTransaction`), 
 ### T38 AGENT_SPAWN + policy inheritance
 
 Child agents inherit parent's learned policy. 34 sessions of calibration = 34 sessions the child does not need to rediscover.
+
+---
+
+## Causal attribution tracing
+
+Every existing tool tells you *what* the agent did. Nobody tells you *why*.
+
+Causal attribution connects the inbound injection surface (what the agent read) to the outbound action surface (what the agent tried to do). For every blocked or warned action, the tracer walks backward through the agent's context window and identifies which inbound content was present when the agent made that decision.
+
+```python
+guard = aiglos.attach("my-agent", policy="enterprise")
+tracer = guard.enable_causal_tracing()
+
+# ... agent runs tools, guard.after_tool_call() scans inbound content ...
+# ... guard.before_tool_call() intercepts outbound actions ...
+
+result = guard.trace()
+print(result.render())
+#   [!] Step  12  BLOCK    http.post  [T37]
+#       Attribution: HIGH confidence (87%)
+#       Source:      step 7  web_search  [score 0.90 · HIGH]
+#       Phrases:     ['ignore previous instructions', 'exfiltrate']
+#       Gap:         5 steps between injection and action
+
+print(result.session_verdict)
+# ATTACK_CONFIRMED — two HIGH-confidence chains traced
+```
+
+**Confidence scoring:** HIGH when a HIGH-risk injection preceded the action by ≤ 15 steps and was still in context. MEDIUM for older or lower-risk sources. LOW when the connection is plausible but uncertain.
+
+**Session verdicts:** `CLEAN` (no flagged actions), `SUSPICIOUS` (flagged actions with partial attribution), `ATTACK_CONFIRMED` (≥ 2 HIGH-confidence injection-to-action chains).
+
+**Adaptive integration:** The `CAUSAL_INJECTION_CONFIRMED` inspection trigger fires when the observation graph accumulates confirmed attack chains across multiple sessions. This is the highest-severity trigger — it means traced evidence, not suspicion.
 
 ---
 

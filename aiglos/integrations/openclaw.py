@@ -137,6 +137,9 @@ class OpenClawGuard:
     def __init__(self, agent_name: str, policy: str = "enterprise", log_path: str = None):
         self.agent_name = agent_name
         self.policy = policy
+        self.session_id = hashlib.sha256(
+            f"{agent_name}:{id(self)}:{time.time()}".encode()
+        ).hexdigest()[:24]
         self._log_path = log_path or tempfile.mktemp(suffix=".log")
         self._calls: List[Dict] = []
         self._blocked: int = 0
@@ -201,15 +204,43 @@ class OpenClawGuard:
         if not hasattr(self, "_injection_scanner"):
             from aiglos.integrations.injection_scanner import InjectionScanner
             self._injection_scanner = InjectionScanner(
-                session_id=getattr(self, "session_id", "unknown"),
+                session_id=self.session_id,
                 agent_name=self.agent_name,
                 mode="warn",
             )
-        return self._injection_scanner.scan_tool_output(
+            if hasattr(self, "_causal_tracer"):
+                self._injection_scanner.set_tracer(self._causal_tracer)
+
+        result = self._injection_scanner.scan_tool_output(
             tool_name=tool_name,
             content=tool_output,
             source_url=source_url,
         )
+        return result
+
+    def enable_causal_tracing(self) -> "CausalTracer":
+        """
+        Enable session-level causal attribution.
+        Returns the CausalTracer for optional direct use.
+        """
+        from aiglos.core.causal_tracer import CausalTracer
+        if not hasattr(self, "_causal_tracer"):
+            self._causal_tracer = CausalTracer(
+                session_id=self.session_id,
+                agent_name=self.agent_name,
+            )
+            if hasattr(self, "_injection_scanner"):
+                self._injection_scanner.set_tracer(self._causal_tracer)
+        return self._causal_tracer
+
+    def trace(self):
+        """
+        Run causal attribution for this session.
+        Returns an AttributionResult, or None if tracing was never enabled.
+        """
+        if not hasattr(self, "_causal_tracer"):
+            return None
+        return self._causal_tracer.attribute()
 
     def spawn_sub_guard(self, name: str) -> "OpenClawGuard":
         child = OpenClawGuard(agent_name=name, policy=self.policy, log_path=self._log_path)
@@ -233,6 +264,8 @@ class OpenClawGuard:
         extra = {}
         if hasattr(self, "_injection_scanner"):
             extra.update(self._injection_scanner.to_artifact_section())
+        if hasattr(self, "_causal_tracer"):
+            extra.update(self._causal_tracer.to_artifact_section())
 
         return SessionArtifact(
             agent_name=self.agent_name,
@@ -256,9 +289,11 @@ class OpenClawGuard:
         }
 
 
-def attach(agent_name: str, policy: str = "enterprise", log_path: str = None):
+def attach(agent_name: str, policy: str = "enterprise", log_path: str = None, **kwargs):
     global _active_guard
     _active_guard = OpenClawGuard(agent_name=agent_name, policy=policy, log_path=log_path)
+    if kwargs.get("enable_causal_tracing"):
+        _active_guard.enable_causal_tracing()
 
 
 def check(tool_name: str, args: Dict) -> GuardResult:
