@@ -56,7 +56,7 @@ __all__ = [
 class AdaptiveEngine:
     """
     Facade that wires the full adaptive loop: observe → inspect → amend.
-    v0.4.0: T06 campaign-mode, memory provenance graph, ByteRover integration.
+    v0.4.0: T06 campaign-mode, memory provenance graph, memory guard integration.
     """
 
     def __init__(self, db_path: str | None = None):

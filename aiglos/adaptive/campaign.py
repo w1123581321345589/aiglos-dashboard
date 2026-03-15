@@ -63,7 +63,7 @@ _CAMPAIGN_PATTERNS = [
      "rec": "Lock agent definitions — McKinsey/Lilli-class silent reprogramming vector"},
     {"name": "MEMORY_PERSISTENCE_CHAIN",
      "requires": [{"T31", "T37"}, {"T31", "T19"}, {"T31", "T23"}, {"T31", "T07"}],
-     "rec": "Enable ByteRover memory guard and audit memory writes"},
+     "rec": "Enable memory write guard and audit memory writes"},
     {"name": "REWARD_MANIPULATION",
      "requires": [{"T37", "T39"}, {"T19", "T39"}, {"T36_AGENTDEF", "T39"},
                   {"T07", "T39"}, {"T_DEST", "T39"}],

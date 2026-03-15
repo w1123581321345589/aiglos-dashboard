@@ -642,7 +642,7 @@ class OpenClawGuard:
         )
         sid = session_id or self.session_id
 
-        # ByteRover memory tool interception (T31 semantic scoring)
+        # Memory tool interception (T31 semantic scoring)
         try:
             from aiglos.integrations.memory_guard import is_memory_tool, MemoryWriteGuard
             if is_memory_tool(tool_name):

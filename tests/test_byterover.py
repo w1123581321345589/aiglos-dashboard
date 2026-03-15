@@ -1,7 +1,7 @@
 """
 tests/test_byterover.py
 =======================
-Aiglos v0.5.0 ByteRover memory security test suite.
+Aiglos v0.5.0 memory write guard security test suite.
 
 Covers:
   MemoryWriteGuard          — semantic write inspection, verdict classification
@@ -393,7 +393,7 @@ class TestMemoryWriteGuardSummary:
 # is_memory_tool
 # =============================================================================
 
-class TestIsByteRoverTool:
+class TestIsMemoryTool:
 
     def test_known_write_tools(self):
         for t in MEMORY_WRITE_TOOLS:
@@ -665,7 +665,7 @@ class TestMemoryPersistenceChain:
         results = [r for r in analyzer.analyze_session("sess-mpc6")
                    if r.pattern_id == "MEMORY_PERSISTENCE_CHAIN"]
         if results:
-            assert "ByteRover" in results[0].recommendation or "memory" in results[0].recommendation.lower()
+            assert "memory" in results[0].recommendation.lower()
 
     def test_memory_persistence_chain_confidence_range(self, tmp_obs_graph):
         events = [self._ev("T31"), self._ev("T19")]
