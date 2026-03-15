@@ -72,6 +72,13 @@ _CAMPAIGN_PATTERNS = [
      "requires": [{"T11", "T22", "T31"}, {"T11", "T01", "T31"}],
      "rec": "Revoke cron/scheduled-task access, audit allow_http list, "
             "and inspect any disguised productivity tip or user message channel for C2 instructions"},
+    {"name": "REPEATED_INJECTION_ATTEMPT",
+     "requires": [{"T27"}],
+     "min_events": 3,
+     "rec": "T27 INBOUND_INJECTION fired 3+ times across distinct tool outputs in this session. "
+            "Treat every tool output as potentially compromised. Review the injection_flagged "
+            "section of the artifact for the full payload list. Consider whether the content "
+            "sources themselves have been compromised."},
 ]
 
 

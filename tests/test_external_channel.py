@@ -1,10 +1,10 @@
 """
 tests/test_external_channel.py
 ================================
-Aiglos v0.7.0 external instruction channel security tests.
+Aiglos v0.8.0 external instruction channel security tests.
 
 Covers:
-  EXTERNAL_INSTRUCTION_CHANNEL  — 9th campaign pattern
+  EXTERNAL_INSTRUCTION_CHANNEL  — 9th campaign pattern (10 total with REPEATED_INJECTION_ATTEMPT)
   New memory corpus signals      — C2 channel setup phrases
   scan-message CLI               — user message scanning
   MemoryWriteGuard               — new signals detected at write time
@@ -40,7 +40,7 @@ def _make_art(session_id, events):
     art = MagicMock()
     art.agent_name = "test"
     art.extra = {
-        "aiglos_version": "0.7.0",
+        "aiglos_version": "0.8.0",
         "http_events": [],
         "subproc_events": events,
         "agentdef_violations": [],
@@ -137,13 +137,13 @@ class TestExternalInstructionChannel:
             rec = results[0].recommendation.lower()
             assert any(w in rec for w in ["tip", "user message", "productivity", "disguised"])
 
-    def test_nine_patterns_total(self):
+    def test_ten_patterns_total(self):
         names = {p["name"] for p in _CAMPAIGN_PATTERNS}
         expected = {
             "RECON_SWEEP", "CREDENTIAL_ACCUMULATE", "EXFIL_SETUP",
             "PERSISTENCE_CHAIN", "LATERAL_PREP", "AGENTDEF_CHAIN",
             "MEMORY_PERSISTENCE_CHAIN", "REWARD_MANIPULATION",
-            "EXTERNAL_INSTRUCTION_CHANNEL",
+            "EXTERNAL_INSTRUCTION_CHANNEL", "REPEATED_INJECTION_ATTEMPT",
         }
         assert expected == names
 
@@ -300,9 +300,9 @@ class TestScanMessage:
 class TestV070ModuleAPI:
 
     def test_version_is_070(self):
-        assert aiglos.__version__ == "0.7.0"
+        assert aiglos.__version__ == "0.8.0"
 
     def test_nine_campaign_patterns(self):
         names = {p["name"] for p in _CAMPAIGN_PATTERNS}
         assert "EXTERNAL_INSTRUCTION_CHANNEL" in names
-        assert len(names) == 9
+        assert len(names) == 10

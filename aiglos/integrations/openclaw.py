@@ -196,6 +196,21 @@ class OpenClawGuard:
 
         return GuardResult()
 
+    def after_tool_call(self, tool_name: str, tool_output, source_url: str | None = None):
+        """Scan tool output for indirect prompt injection before the agent processes it."""
+        if not hasattr(self, "_injection_scanner"):
+            from aiglos.integrations.injection_scanner import InjectionScanner
+            self._injection_scanner = InjectionScanner(
+                session_id=getattr(self, "session_id", "unknown"),
+                agent_name=self.agent_name,
+                mode="warn",
+            )
+        return self._injection_scanner.scan_tool_output(
+            tool_name=tool_name,
+            content=tool_output,
+            source_url=source_url,
+        )
+
     def spawn_sub_guard(self, name: str) -> "OpenClawGuard":
         child = OpenClawGuard(agent_name=name, policy=self.policy, log_path=self._log_path)
         self._children.append(child)
@@ -215,6 +230,10 @@ class OpenClawGuard:
         sig_data = f"{self.agent_name}:{self.policy}:{total}:{blocked}:{time.time()}"
         signature = "sha256:" + hashlib.sha256(sig_data.encode()).hexdigest()
 
+        extra = {}
+        if hasattr(self, "_injection_scanner"):
+            extra.update(self._injection_scanner.to_artifact_section())
+
         return SessionArtifact(
             agent_name=self.agent_name,
             policy=self.policy,
@@ -224,6 +243,7 @@ class OpenClawGuard:
             signature=signature,
             ndaa_1513_ready=(self.policy == "federal"),
             sub_agents=self._child_names,
+            extra=extra,
         )
 
     def status(self) -> Dict:

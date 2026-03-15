@@ -586,7 +586,7 @@ class TestMemoryPersistenceChain:
         art = MagicMock()
         art.agent_name = "test"
         art.extra = {
-            "aiglos_version": "0.7.0",
+            "aiglos_version": "0.8.0",
             "http_events": [],
             "subproc_events": events,
             "agentdef_violations": [],
@@ -701,7 +701,7 @@ class TestMemoryPersistenceChain:
 class TestV050ModuleAPI:
 
     def test_version_is_050(self):
-        assert aiglos.__version__ == "0.7.0"
+        assert aiglos.__version__ == "0.8.0"
 
     def test_exports_byterover_types(self):
         assert hasattr(aiglos, "MemoryWriteGuard")

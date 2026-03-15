@@ -1,4 +1,4 @@
-__version__ = "0.7.0"
+__version__ = "0.8.0"
 
 from aiglos.integrations.openclaw import (
     OpenClawGuard,
@@ -16,6 +16,13 @@ from aiglos.integrations.memory_guard import (
     MemoryWriteResult,
     inspect_memory_write,
     is_memory_tool,
+)
+from aiglos.integrations.injection_scanner import (
+    InjectionScanner,
+    InjectionScanResult,
+    scan_tool_output,
+    score_content,
+    is_injection,
 )
 from aiglos.integrations.rl_guard import (
     RLFeedbackGuard,

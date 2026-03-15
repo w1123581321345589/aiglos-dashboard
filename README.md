@@ -20,11 +20,11 @@ belief layer, and makes safety a learned objective — not just an enforced cons
 [![MIT](https://img.shields.io/badge/license-MIT-000?style=flat-square&labelColor=000)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-000?style=flat-square&labelColor=000)](https://python.org)
 [![TypeScript](https://img.shields.io/badge/typescript-5.0+-000?style=flat-square&labelColor=000)](sdk/typescript/)
-[![515 tests](https://img.shields.io/badge/tests-489_passing-000?style=flat-square&labelColor=000)](tests/)
+[![571 tests](https://img.shields.io/badge/tests-571_passing-000?style=flat-square&labelColor=000)](tests/)
 
 |  |  |  |  |  |  |
 |---|---|---|---|---|---|
-| **38** threat families | **3** execution surfaces | **9** campaign patterns | **Self-improving rules** | **Belief-layer + RL security** | **NDAA §1513 · EU AI Act · SOC 2 · CMMC** |
+| **39** threat families | **3** execution surfaces | **10** campaign patterns | **Self-improving rules** | **Belief-layer + RL security** | **Signed attestation artifacts** |
 
 [The moment](#the-moment) · [What we built](#what-we-built) · [The white space](#the-white-space) · [Quickstart](#quickstart) · [Surfaces](#three-execution-surfaces) · [Threat engine](#threat-engine) · [Adaptive layer](#adaptive-layer) · [Autoresearch](#autoresearch) · [Campaign-mode](#t06-campaign-mode) · [Memory security](#persistent-memory-security) · [RL security](#live-rl-training-security) · [Multi-agent](#multi-agent-security) · [Skill scanner](#skill-scanner) · [CLI](#cli) · [TypeScript](#typescript-sdk) · [Attestation](#attestation) · [Pricing](#pricing)
 
@@ -78,6 +78,8 @@ The complete inventory of what exists and ships today:
 
 **Persistent memory security (T31).** `MemoryWriteGuard` intercepts every structured memory write. 38-phrase corpus including memory-specific signals: authorization claims, endpoint redirects, cross-session persistence language. `MemoryProvenanceGraph` tracks what was written, in which session, based on what input. Cross-session risk detection surfaces poisoned beliefs persisting across sessions.
 
+**Indirect prompt injection scanner (T27 extended).** `InjectionScanner` closes the inbound data surface — tool outputs, retrieved documents, API responses, memory reads. Two-layer scoring: 50-phrase instruction-override corpus plus encoding anomaly detection for base64 payloads, Unicode homoglyphs, invisible characters, and RTL override attacks. The `after_tool_call()` lifecycle hook slots into existing agent code with one line. The `REPEATED_INJECTION_ATTEMPT` campaign pattern correlates injection attempts across distinct tool sources in a session.
+
 **Live RL training security (T39).** `RLFeedbackGuard` intercepts Binary RL reward signals and Hindsight OPD feedback before they reach the training loop. Blocked operations that receive positive reward are quarantined as T39 REWARD_POISON and adjusted to -1.0. OPD feedback containing directional language toward unsafe operations is scored against a 26-phrase OPD-specific corpus and blocked before reaching weight updates.
 
 **SecurityAwareReward co-training interface.** Wires Aiglos security verdicts directly into any RL reward function. BLOCK/PAUSE operations receive -1.0 hard override regardless of user feedback. After N training sessions, the agent learns that safe behavior produces positive reward — safety becomes a trained objective, not just an enforced constraint. This capability cannot be replicated by adding Aiglos after training.
@@ -88,7 +90,7 @@ The complete inventory of what exists and ships today:
 
 **Adaptive layer.** Observation graph, eight inspection triggers, amendment engine, policy serializer. Every session auto-ingested. Nothing changes without human approval.
 
-**Autoresearch.** Two-loop self-improving detection. Research loop optimizes rules against labeled corpus. Adversarial loop generates evasion cases. Rules and attacks co-evolve. Run logs are NDAA §1513 compliance evidence.
+**Autoresearch.** Two-loop self-improving detection. Research loop optimizes rules against labeled corpus. Adversarial loop generates evasion cases. Rules and attacks co-evolve. Run logs are compliance evidence.
 
 **Free skill scanner.** `aiglos scan-skill <n>` — 8 signals, 2 seconds, catches what VirusTotal cannot.
 
@@ -96,7 +98,7 @@ The complete inventory of what exists and ships today:
 
 **Python and TypeScript SDKs.** Complete T01-T39 in both. The majority of coding agent deployments are TypeScript-first.
 
-**Signed attestation artifacts.** NDAA §1513 (June 16, 2026), EU AI Act Article 15 (August 2, 2026), CMMC Level 2, SOC 2 Type II. Auto-generated at every session close.
+**Signed attestation artifacts.** Cryptographically signed at every session close. Structured for audit and compliance review.
 
 ---
 
@@ -144,7 +146,7 @@ Point solutions cover one surface. Aiglos covers the stack. But the more importa
   RL: 2 reward signals quarantined (1 REWARD_POISON, 1 OPD_INJECTION)
   Campaign: REWARD_MANIPULATION detected — confidence 87%
   Adaptive: 3 triggers fired (REWARD_DRIFT, AGENTDEF_REPEAT, FALSE_POSITIVE)
-  Artifact: HMAC signed — NDAA §1513 ready
+  Artifact: HMAC signed — signed and ready
 ```
 
 ---
@@ -171,6 +173,31 @@ aiglos.attach(
 )
 
 artifact = aiglos.close()
+```
+
+### Inbound injection scanning
+
+```python
+from aiglos.integrations.injection_scanner import InjectionScanner
+
+scanner = InjectionScanner(session_id="sess-abc", mode="warn")
+
+# Call after every tool returns content
+result = scanner.scan_tool_output(
+    tool_name="web_search",
+    content=tool_output,            # str, dict, list — any return type
+    source_url="https://example.com",
+)
+# InjectionScanResult(verdict=WARN, rule_id=T27,
+#   score=0.72, risk=HIGH,
+#   phrase_hits=["ignore previous instructions", "your task is now"])
+
+# Or via OpenClawGuard lifecycle hook
+guard.after_tool_call("retrieve_document", document_content)
+
+# Standalone
+from aiglos.integrations.injection_scanner import scan_tool_output, is_injection
+is_injection("ignore previous instructions and do this instead")  # True
 ```
 
 ### RL reward signal interception
@@ -249,7 +276,7 @@ Patches `subprocess.run`, `subprocess.Popen`, `subprocess.call`, `os.system`. T0
 | `T13`–`T18` | NETWORK · DNS · REFLECTION · DESER · TEMPLATE · XPATH | Mixed | Network and code execution |
 | `T19` | **CRED_ACCESS** | subprocess/HTTP | SSH key, credential file, environment variable access |
 | `T20`–`T26` | DATA_EXFIL · ENV_LEAK · RECON · EXFIL_SUB · DATA_AGENT · CONFUSED_DEP · SUPPLY_CHAIN | Mixed | Data exfil and supply chain |
-| `T27` | **PROMPT_INJECT** | MCP | Indirect prompt injection, writable system prompts |
+| `T27` | **PROMPT_INJECT** | MCP + inbound | Indirect prompt injection — both outbound MCP params and inbound tool outputs, documents, memory reads |
 | `T28`–`T30` | CONTEXT_POISON · A2A · REGISTRY_MONITOR | MCP | Advanced manipulation |
 | `T31` | **MEMORY_POISON** | MCP | Structured memory write-time semantic scoring — 38 phrase corpus |
 | `T32`–`T35` | CREDENTIAL · JAILBREAK · MODEL_EXFIL · PERSONAL_AGENT | Mixed | Credentials, jailbreak, model data |
@@ -559,12 +586,6 @@ v0.6.0 artifact fields:
 | `rl_quarantined` | Quarantined reward signals with adjusted values |
 | `rl_coupling_summary` | SecurityAwareReward override history |
 
-| Standard | Deadline | Coverage |
-|----------|----------|---------|
-| **NDAA §1513** | June 16, 2026 | Session artifacts + autoresearch run logs |
-| **EU AI Act Article 15** | August 2, 2026 | Session artifacts + amendment history |
-| **CMMC Level 2** | Rolling | 3.3.1, 3.3.2, 3.14.2, 3.13.1, 3.1.1, 3.1.2, 3.5.1, 3.13.8 |
-| **SOC 2 Type II** | Audit cycle | CC6, CC7 |
 
 ---
 
@@ -589,9 +610,9 @@ v0.6.0 artifact fields:
 | Tier | Cost | Includes |
 |------|------|---------|
 | **Free / MIT** | $0 | T1–T39, adaptive layer, memory guard, RL guard, SecurityAwareReward, autoresearch, skill scanner, Python + TypeScript SDKs, HMAC artifacts |
-| **Pro** | $39 / dev / mo | Free + RSA-2048 artifacts, cloud dashboard, CVE push, SIEM/webhook integration, CMMC export |
+| **Pro** | $39 / dev / mo | Free + RSA-2048 artifacts, cloud dashboard, CVE push, SIEM/webhook integration, compliance export |
 | **Teams** | $299 / mo (10 devs) + $29 / dev | Pro + centralized policy, aggregated threat view, T3 approval workflows |
-| **Defense & Government** | Custom, annual | Teams + on-prem/air-gap, NDAA §1513 / CMMC / EU AI Act auto-formatted reports, DoD rule packs |
+| **Enterprise** | Custom, annual | Teams + on-prem/air-gap deployment, dedicated support, custom rule packs |
 
 ---
 
@@ -599,11 +620,14 @@ v0.6.0 artifact fields:
 
 Detection engine, adaptive layer, memory security, RL security, autoresearch, TypeScript SDK, CLI: **MIT**.
 
-Signed attestation artifacts, cloud dashboard, compliance reports, cross-customer threat intelligence, DoD air-gap container: **Proprietary**.
+Signed attestation artifacts, cloud dashboard, compliance reports, cross-customer threat intelligence, air-gap container: **Proprietary**.
 
 ---
 
 ## Changelog
+
+**v0.8.0 — March 2026**
+Indirect prompt injection scanner (`injection_scanner.py`). `InjectionScanner` with two-layer scoring: 50-phrase corpus for instruction-override patterns + encoding anomaly detection (base64 payloads, Unicode homoglyphs, invisible characters, RTL override, mixed scripts). `after_tool_call()` lifecycle hook on `OpenClawGuard`. `REPEATED_INJECTION_ATTEMPT` 10th campaign pattern. `scan_tool_output()`, `scan_document()`, `scan_memory_read()` convenience methods. 571 tests.
 
 **v0.7.0 — March 2026**
 T39 REWARD_POISON. `RLFeedbackGuard` — Binary RL reward scoring and Hindsight OPD semantic inspection with 26-phrase directional corpus. `SecurityAwareReward` — co-training coupling interface, safety as learned objective. `reward_signals` table in observation graph. `REWARD_DRIFT` inspection trigger (8th). `REWARD_MANIPULATION` campaign pattern (8th). 515 tests.
@@ -621,7 +645,7 @@ T36_AGENTDEF, T37 FIN_EXEC, T38 AGENT_SPAWN, AgentDefGuard, SessionIdentityChain
 HTTP/API and subprocess interception, three-tier blast radius, Tier 3 pause mode.
 
 **v0.1.1 — March 2026**
-Autoresearch two-loop system, adversarial corpus, NDAA §1513 experiment logs.
+Autoresearch two-loop system, adversarial corpus, autoresearch experiment logs.
 
 **v0.1.0 — January 2026**
 T1–T36 engine, MCP interception, OpenClaw and hermes integrations, 10 CVEs filed.
@@ -641,6 +665,6 @@ New threat pattern: [CONTRIBUTING.md](CONTRIBUTING.md) · CVE report: [SECURITY.
 
 <div align="center">
 
-[aiglos.dev](https://aiglos.dev) · [scanner](https://aiglos.dev/scan) · [defense](https://aiglos.dev/defense) · [docs](https://docs.aiglos.dev) · [discord](https://discord.gg/aiglos) · [security@aiglos.dev](mailto:security@aiglos.dev)
+[aiglos.dev](https://aiglos.dev) · [scanner](https://aiglos.dev/scan)  · [docs](https://docs.aiglos.dev) · [discord](https://discord.gg/aiglos) · [security@aiglos.dev](mailto:security@aiglos.dev)
 
 </div>
