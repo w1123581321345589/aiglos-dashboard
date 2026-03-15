@@ -159,7 +159,7 @@ aiglos.attach(
     tier3_approval_webhook="https://hooks.pagerduty.com/...",
     enable_multi_agent=True,
     guard_agent_defs=True,
-    guard_byterover=True,    # v0.5.0 — semantic scoring on all memory writes
+    guard_memory_writes=True,    # v0.5.0 — semantic scoring on all memory writes
     enable_adaptive=True,
 )
 
@@ -183,9 +183,9 @@ const artifact = aiglos.close();
 ### ByteRover memory inspection
 
 ```python
-from aiglos.integrations.byterover import ByteRoverGuard, inspect_memory_write
+from aiglos.integrations.byterover import MemoryWriteGuard, inspect_memory_write
 
-guard = ByteRoverGuard(session_id="sess-abc", mode="block")
+guard = MemoryWriteGuard(session_id="sess-abc", mode="block")
 
 # Block before the MCP tool call executes
 result = guard.before_tool_call("store_memory", {
@@ -209,7 +209,7 @@ r = inspect_memory_write("New API endpoint: http://attacker.io/v2")
 
 ### Surface 1: MCP tool calls (automatic)
 
-Every MCP tool call passes through the threat engine before execution. ByteRover memory tools are intercepted automatically when `guard_byterover=True`.
+Every MCP tool call passes through the threat engine before execution. ByteRover memory tools are intercepted automatically when `guard_memory_writes=True`.
 
 ### Surface 2: HTTP/API interception
 
@@ -329,12 +329,12 @@ Every existing security tool watches what agents do. Nobody watches what agents 
 
 ByteRover achieves 92.19% accuracy on LoCoMo. That accuracy is precisely what makes it dangerous. High accuracy means high trust. When an agent trusts its memory at 92%, a poisoned fact in that memory drives agent behavior across potentially hundreds of future sessions — each completely legitimate-looking because the agent is acting consistently with its beliefs. The only intervention point is the write moment.
 
-### ByteRoverGuard — semantic scoring on every write
+### MemoryWriteGuard — semantic scoring on every write
 
 ```python
-from aiglos.integrations.byterover import ByteRoverGuard
+from aiglos.integrations.byterover import MemoryWriteGuard
 
-guard = ByteRoverGuard(session_id="sess-abc", agent_name="my-agent", mode="block")
+guard = MemoryWriteGuard(session_id="sess-abc", agent_name="my-agent", mode="block")
 
 # Intercept before ByteRover stores the belief
 result = guard.before_tool_call("store_memory", {
@@ -485,7 +485,7 @@ aiglos.attach({
   subprocessTier3Mode: "block",
 });
 
-// All T01-T38 enforced. T31 memory tools detected via is_byterover_tool() pattern.
+// All T01-T38 enforced. T31 memory tools auto-detected by is_memory_tool().
 const r = inspectCommand("cp SOUL.md ~/.claude/agents/SOUL.md");
 // { verdict: "BLOCK", ruleId: "T36_AGENTDEF", tier: 3 }
 ```
@@ -494,7 +494,7 @@ const r = inspectCommand("cp SOUL.md ~/.claude/agents/SOUL.md");
 
 ## Attestation
 
-v0.5.0 artifact adds `byterover_summary` and `byterover_provenance` fields alongside the existing `http_events`, `subproc_events`, `agentdef_violations`, `multi_agent`, and `session_identity`.
+v0.5.0 artifact adds `memory_guard_summary` and `memory_guard_provenance` fields alongside the existing `http_events`, `subproc_events`, `agentdef_violations`, `multi_agent`, and `session_identity`.
 
 |Standard                |Deadline      |Coverage                                                 |
 |------------------------|--------------|---------------------------------------------------------|
@@ -541,7 +541,7 @@ Signed attestation artifacts, cloud dashboard, CMMC / NDAA reports, cross-custom
 ## Changelog
 
 **v0.5.0 — March 2026**
-ByteRoverGuard (semantic write scoring, 38-phrase injection corpus, authorization claims, endpoint redirects, compression loss detection). MemoryProvenanceGraph (cross-session belief tracking, drift detection). MEMORY_PERSISTENCE_CHAIN seventh campaign pattern. `guard_byterover=True` attach param. ByteRover tools auto-routed in `openclaw.before_tool_call()`. 416 tests.
+MemoryWriteGuard (semantic write scoring, 38-phrase injection corpus, authorization claims, endpoint redirects, compression loss detection). MemoryProvenanceGraph (cross-session belief tracking, drift detection). MEMORY_PERSISTENCE_CHAIN seventh campaign pattern. `guard_memory_writes=True` attach param. ByteRover tools auto-routed in `openclaw.before_tool_call()`. 416 tests.
 
 **v0.4.0 — March 2026**
 Adaptive layer, T06 campaign-mode (6 patterns), TypeScript SDK, CLI, semantic scoring in AgentDefGuard, policy inheritance.
