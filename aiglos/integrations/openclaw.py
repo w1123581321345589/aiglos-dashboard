@@ -88,6 +88,7 @@ T36  Memory poisoning (writes to SOUL.md, MEMORY.md, agent index files)
 Full T1-T36 library: https://github.com/aiglos/aiglos-cves
 """
 
+
 import hashlib
 import json
 import logging
@@ -598,7 +599,7 @@ class OpenClawGuard:
             f"session={self.session_id}"
         )
 
-    # --- Heartbeat support ---
+    # ── Heartbeat support ─────────────────────────────────────────────────────
 
     def on_heartbeat(self) -> None:
         """
@@ -612,7 +613,7 @@ class OpenClawGuard:
         )
         self._log_line(f"[HEARTBEAT] cycle={self._heartbeat_n}  trust={self._trust_score:.2f}")
 
-    # --- Tool call interception ---
+    # ── Tool call interception ────────────────────────────────────────────────
 
     def before_tool_call(
         self,
@@ -664,12 +665,18 @@ class OpenClawGuard:
                         "BLOCKED  tool=%s  class=%s  score=%.2f  agent=%s  (T31 memory guard)",
                         tool_name, threat_class, score, self.agent_name,
                     )
-                    return GuardResult(
-                        blocked=True, warned=False, allowed=False,
-                        verdict="BLOCK", threat_class=threat_class,
-                        score=score, reason=reason,
-                        artifact_id=self.session_id,
+                    result = GuardResult(
+                        verdict=Verdict.BLOCK,
+                        tool_name=tool_name,
+                        tool_args=args_dict,
+                        threat_class=threat_class,
+                        score=score,
+                        reason=reason,
+                        session_id=self.session_id,
                     )
+                    self._results.append(result)
+                    self._log_line(result.to_log_line())
+                    return result
         except Exception as _br_err:
             logger.debug("[OpenClawGuard] Memory guard check skipped: %s", _br_err)
 
@@ -760,7 +767,7 @@ class OpenClawGuard:
 
         return result
 
-    # --- Sub-agent delegation ---
+    # ── Sub-agent delegation ──────────────────────────────────────────────────
 
     def after_tool_call(
         self,
@@ -891,7 +898,7 @@ class OpenClawGuard:
         )
         return child
 
-    # --- Session close & artifact ---
+    # ── Session close & artifact ──────────────────────────────────────────────
 
     def close_session(self) -> SessionArtifact:
         """
@@ -939,27 +946,36 @@ class OpenClawGuard:
             signature     = signature,
         )
 
-        # Attach injection scanner section if any inbound content was scanned
-        ext_data: dict = {}
-        if hasattr(self, "_injection_scanner"):
-            ext_data.update(self._injection_scanner.to_artifact_section())
+        # Attach v0.8.0+ extension sections via typed ArtifactExtensions
+        ext = ArtifactExtensions()
+        has_extensions = False
 
-        # Attach causal attribution if tracing was enabled
+        if hasattr(self, "_injection_scanner"):
+            try:
+                inj = self._injection_scanner.to_artifact_section()
+                ext.injection = inj
+                has_extensions = True
+            except Exception as e:
+                logger.debug("[close_session] injection section error: %s", e)
+
         if hasattr(self, "_causal_tracer"):
             try:
-                ext_data.update(self._causal_tracer.to_artifact_section())
-            except Exception:
-                pass
+                causal = self._causal_tracer.to_artifact_section()
+                ext.causal = causal.get("causal_attribution")
+                has_extensions = True
+            except Exception as e:
+                logger.debug("[close_session] causal section error: %s", e)
 
-        # Attach forecast section if intent prediction was enabled
         if hasattr(self, "_session_forecaster"):
             try:
-                ext_data.update(self._session_forecaster.to_artifact_section())
-            except Exception:
-                pass
+                fc = self._session_forecaster.to_artifact_section()
+                ext.forecast = fc
+                has_extensions = True
+            except Exception as e:
+                logger.debug("[close_session] forecast section error: %s", e)
 
-        if ext_data:
-            artifact.extra = ext_data
+        if has_extensions:
+            artifact.extensions = ext
 
         if self.log_path:
             artifact.write(self.log_path)
@@ -973,7 +989,7 @@ class OpenClawGuard:
 
         return artifact
 
-    # --- Status ---
+    # ── Status ────────────────────────────────────────────────────────────────
 
     def status(self) -> dict:
         """Current guard status as a dict. Useful for Telegram/Discord bot output."""

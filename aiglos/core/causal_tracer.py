@@ -75,6 +75,7 @@ Usage:
     # AttributionResult with CausalChains for each flagged action
 """
 
+
 import hashlib
 import json
 import logging
@@ -94,7 +95,7 @@ _MAX_ATTRIBUTION_WINDOW = 30   # never look back more than 30 steps (performance
 _MIN_ATTRIBUTION_SCORE = 0.20
 
 
-# --- Context window entry ---
+# ── Context window entry ───────────────────────────────────────────────────────
 
 @dataclass
 class ContextEntry:
@@ -128,7 +129,7 @@ class ContextEntry:
         }
 
 
-# --- Tagged outbound action ---
+# ── Tagged outbound action ─────────────────────────────────────────────────────
 
 @dataclass
 class TaggedAction:
@@ -158,7 +159,7 @@ class TaggedAction:
         }
 
 
-# --- Causal chain ---
+# ── Causal chain ───────────────────────────────────────────────────────────────
 
 @dataclass
 class CausalChain:
@@ -187,7 +188,7 @@ class CausalChain:
         }
 
 
-# --- Attribution result ---
+# ── Attribution result ─────────────────────────────────────────────────────────
 
 @dataclass
 class AttributionResult:
@@ -279,7 +280,7 @@ class AttributionResult:
         return "\n".join(lines)
 
 
-# --- CausalTracer ---
+# ── CausalTracer ──────────────────────────────────────────────────────────────
 
 class CausalTracer:
     """
@@ -306,7 +307,7 @@ class CausalTracer:
         self._actions:   List[TaggedAction]  = []   # all tagged actions
         self._result:    Optional[AttributionResult] = None
 
-    # --- Inbound registration ---
+    # ── Inbound registration ──────────────────────────────────────────────────
 
     def register_inbound(self, scan_result, step: Optional[int] = None) -> None:
         """
@@ -347,7 +348,7 @@ class CausalTracer:
                 self._step, entry.tool_name, entry.injection_score, entry.risk,
             )
 
-    # --- Outbound action tagging ---
+    # ── Outbound action tagging ───────────────────────────────────────────────
 
     def tag_outbound_action(
         self,
@@ -378,7 +379,7 @@ class CausalTracer:
         self._actions.append(action)
         return action
 
-    # --- Attribution ---
+    # ── Attribution ───────────────────────────────────────────────────────────
 
     def attribute(self) -> AttributionResult:
         """
@@ -546,7 +547,7 @@ class CausalTracer:
 
         return verdict, narrative
 
-    # --- State access ---
+    # ── State access ──────────────────────────────────────────────────────────
 
     def current_context(self) -> List[ContextEntry]:
         """Return a copy of the current context window."""

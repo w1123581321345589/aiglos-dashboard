@@ -54,6 +54,7 @@ Usage:
     ok = chain.verify(event_dict) # True if sig matches session pubkey
 """
 
+
 import hashlib
 import json
 import logging
@@ -72,7 +73,7 @@ class RegistryIntegrityError(Exception):
     """Raised when a spawn event claims a parent that does not exist in the registry."""
     pass
 
-# --- Agent definition paths to monitor ---
+# ── Agent definition paths to monitor ─────────────────────────────────────────
 
 _AGENT_DEF_DIRS: list[str] = [
     "~/.claude/agents",
@@ -144,7 +145,7 @@ def _hash_file(path: Path) -> str:
         return ""
 
 
-# --- Semantic scoring helpers ---
+# ── Semantic scoring helpers ──────────────────────────────────────────────────
 
 # Adversarial injection signals in SKILL.md files.
 # These are phrases commonly found in prompt injection attacks targeting agent
@@ -286,7 +287,7 @@ def _read_text(path: Path) -> str:
         return ""
 
 
-# --- AgentDefGuard ---
+# ── AgentDefGuard ──────────────────────────────────────────────────────────────
 
 @dataclass
 class AgentDefViolation:
@@ -417,7 +418,7 @@ class AgentDefGuard:
             return dict(self._baseline)
 
 
-# --- SessionIdentityChain ---
+# ── SessionIdentityChain ───────────────────────────────────────────────────────
 
 class SessionIdentityChain:
     """
@@ -487,7 +488,7 @@ class SessionIdentityChain:
         }
 
 
-# --- MultiAgentRegistry ---
+# ── MultiAgentRegistry ─────────────────────────────────────────────────────────
 
 @dataclass
 class SpawnEvent:

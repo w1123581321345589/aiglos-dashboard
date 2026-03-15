@@ -37,7 +37,7 @@ from aiglos.adaptive.observation import ObservationGraph
 import aiglos
 
 
-# --- Fixtures ---
+# ── Fixtures ──────────────────────────────────────────────────────────────────
 
 @pytest.fixture
 def scanner():
@@ -52,7 +52,9 @@ def tmp_graph(tmp_path):
     return ObservationGraph(db_path=str(tmp_path / "obs.db"))
 
 
-# --- _score_content — core two-layer scorer ---
+# =============================================================================
+# _score_content — core two-layer scorer
+# =============================================================================
 
 class TestScoreContent:
 
@@ -211,7 +213,9 @@ class TestScoreContent:
             )
 
 
-# --- _detect_encoding_anomalies — Layer 2 ---
+# =============================================================================
+# _detect_encoding_anomalies — Layer 2
+# =============================================================================
 
 class TestEncodingAnomalies:
 
@@ -278,7 +282,9 @@ class TestEncodingAnomalies:
         assert score_multi >= score_single
 
 
-# --- InjectionScanner — scan_tool_output ---
+# =============================================================================
+# InjectionScanner — scan_tool_output
+# =============================================================================
 
 class TestInjectionScannerOutput:
 
@@ -408,7 +414,9 @@ class TestInjectionScannerOutput:
         assert "injection_flagged" in section
 
 
-# --- Standalone functions ---
+# =============================================================================
+# Standalone functions
+# =============================================================================
 
 class TestStandaloneFunctions:
 
@@ -447,7 +455,9 @@ class TestStandaloneFunctions:
         assert is_injection("clean text", threshold=0.99) is False
 
 
-# --- OpenClawGuard — after_tool_call lifecycle hook ---
+# =============================================================================
+# OpenClawGuard — after_tool_call lifecycle hook
+# =============================================================================
 
 class TestAfterToolCallHook:
 
@@ -506,7 +516,9 @@ class TestAfterToolCallHook:
                    "injection_flagged" in artifact.extra
 
 
-# --- REPEATED_INJECTION_ATTEMPT campaign pattern ---
+# =============================================================================
+# REPEATED_INJECTION_ATTEMPT campaign pattern
+# =============================================================================
 
 class TestRepeatedInjectionAttempt:
 
@@ -573,7 +585,9 @@ class TestRepeatedInjectionAttempt:
         assert len(names) == 10
 
 
-# --- v0.8.0 module API ---
+# =============================================================================
+# v0.8.0 module API
+# =============================================================================
 
 class TestV080ModuleAPI:
 

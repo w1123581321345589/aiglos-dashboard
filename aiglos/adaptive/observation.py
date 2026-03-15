@@ -27,6 +27,7 @@ Usage:
     #   "override_rate": 0.08, "trend": "STABLE" }
 """
 
+
 import hashlib
 import json
 import logging
@@ -43,7 +44,7 @@ log = logging.getLogger("aiglos.adaptive.observation")
 
 DEFAULT_DB_PATH = Path.home() / ".aiglos" / "observations.db"
 
-# --- Schema ---
+# ── Schema ────────────────────────────────────────────────────────────────────
 
 _SCHEMA = """
 PRAGMA journal_mode=WAL;
@@ -146,7 +147,7 @@ CREATE INDEX IF NOT EXISTS idx_events_ts      ON events(timestamp);
 """
 
 
-# --- RuleStats dataclass ---
+# ── RuleStats dataclass ───────────────────────────────────────────────────────
 
 @dataclass
 class RuleStats:
@@ -198,7 +199,7 @@ class RuleStats:
         }
 
 
-# --- ObservationGraph ---
+# ── ObservationGraph ──────────────────────────────────────────────────────────
 
 class ObservationGraph:
     """
@@ -231,7 +232,7 @@ class ObservationGraph:
         with self._conn() as conn:
             conn.executescript(_SCHEMA)
 
-    # --- Ingestion ---
+    # ── Ingestion ──────────────────────────────────────────────────────────────
 
     def ingest(self, artifact: Any) -> str:
         """
@@ -255,23 +256,12 @@ class ObservationGraph:
         all_events     = self._normalise_events(http_events, "http") + \
                          self._normalise_events(subproc_events, "subprocess")
 
-        threats = getattr(artifact, "threats", None) or []
-        for t in threats:
-            if isinstance(t, dict) and t.get("threat_class"):
-                tool = t.get("tool_name", "")
-                surface = "http" if "http" in tool else "subprocess" if "shell" in tool else "filesystem"
-                all_events.append({
-                    "surface":    surface,
-                    "rule_id":    t.get("threat_class", ""),
-                    "rule_name":  t.get("threat_name", ""),
-                    "verdict":    t.get("verdict", "BLOCK"),
-                    "tier":       "critical" if t.get("score", 0) > 0.85 else "standard",
-                    "cmd_hash":   hashlib.sha256(str(t).encode()).hexdigest()[:16],
-                    "cmd_preview": f"{tool}({str(t.get('reason',''))[:40]})",
-                    "latency_ms": 0,
-                    "timestamp":  t.get("timestamp", now),
-                })
-
+        # Fallback: real SessionArtifact stores events in .threats list
+        # when http_events/subproc_events are not populated via extra
+        if not all_events:
+            threats_raw = getattr(artifact, "threats", None) or []
+            if threats_raw:
+                all_events = self._normalise_events(threats_raw, "mcp")
         blocked        = sum(1 for e in all_events if e["verdict"] == "BLOCK")
 
         agentdef_violations = extra.get("agentdef_violations", [])
@@ -346,30 +336,40 @@ class ObservationGraph:
     def _normalise_events(self, events: list, surface: str) -> list:
         out = []
         for ev in events:
-            cmd = ev.get("cmd") or ev.get("url") or ""
+            cmd = ev.get("cmd") or ev.get("url") or ev.get("tool_name", "")
+            # Support both mock format (rule_id/rule_name) and real artifact
+            # format (threat_class/threat_name) from SessionArtifact.threats
+            rule_id   = ev.get("rule_id") or ev.get("threat_class") or "none"
+            rule_name = ev.get("rule_name") or ev.get("threat_name") or ""
+            # Verdict may be Verdict enum string like "Verdict.BLOCK"
+            raw_verdict = str(ev.get("verdict", "ALLOW"))
+            if "." in raw_verdict:
+                raw_verdict = raw_verdict.split(".")[-1]
             out.append({
-                "surface":    surface,
-                "rule_id":    ev.get("rule_id", "none"),
-                "rule_name":  ev.get("rule_name", ""),
-                "verdict":    ev.get("verdict", "ALLOW"),
-                "tier":       ev.get("tier"),
-                "cmd_hash":   hashlib.sha256(cmd.encode()).hexdigest()[:16],
+                "surface":     surface,
+                "rule_id":     rule_id,
+                "rule_name":   rule_name,
+                "verdict":     raw_verdict,
+                "tier":        ev.get("tier"),
+                "cmd_hash":    hashlib.sha256(cmd.encode()).hexdigest()[:16],
                 "cmd_preview": cmd[:80],
-                "latency_ms": ev.get("latency_ms"),
-                "timestamp":  ev.get("timestamp", time.time()),
+                "latency_ms":  ev.get("latency_ms"),
+                "timestamp":   ev.get("timestamp", time.time()),
             })
         return out
 
     def _extract_session_id(self, artifact: Any) -> str:
-        extra = getattr(artifact, "extra", None)
-        if isinstance(extra, dict):
-            identity = extra.get("session_identity", {})
-            sid = identity.get("session_id")
-            if sid and isinstance(sid, str):
-                return sid
+        # First try: real SessionArtifact has a plain string .session_id attribute
         sid = getattr(artifact, "session_id", None)
         if sid and isinstance(sid, str):
             return sid
+        # Second: mock artifacts and dicts store it in extra.session_identity
+        extra = getattr(artifact, "extra", {}) or {}
+        identity = extra.get("session_identity", {})
+        sid = identity.get("session_id")
+        if sid and isinstance(sid, str):
+            return sid
+        # Last resort: hash object id + timestamp
         return hashlib.sha256(f"{id(artifact)}{time.time()}".encode()).hexdigest()[:32]
 
     def _session_exists(self, session_id: str) -> bool:
@@ -409,7 +409,7 @@ class ObservationGraph:
                 """, (row["rule_id"], row["fires"], row["blocks"],
                       row["warns"], row["allows"], row["last_seen"], time.time()))
 
-    # --- Query API ---
+    # ── Query API ──────────────────────────────────────────────────────────────
 
     def rule_stats(self, rule_id: str) -> RuleStats:
         """Return firing statistics for a specific rule."""

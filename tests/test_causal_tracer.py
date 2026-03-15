@@ -38,7 +38,7 @@ from aiglos.adaptive.inspect import InspectionEngine
 import aiglos
 
 
-# --- Fixtures ---
+# ── Fixtures ──────────────────────────────────────────────────────────────────
 
 @pytest.fixture
 def tracer():
@@ -69,7 +69,9 @@ def _mock_scan_result(
     }
 
 
-# --- CausalTracer — context window management ---
+# =============================================================================
+# CausalTracer — context window management
+# =============================================================================
 
 class TestContextWindow:
 
@@ -115,7 +117,9 @@ class TestContextWindow:
         assert tracer.current_context()[0].step == 42
 
 
-# --- CausalTracer — outbound action tagging ---
+# =============================================================================
+# CausalTracer — outbound action tagging
+# =============================================================================
 
 class TestActionTagging:
 
@@ -148,7 +152,9 @@ class TestActionTagging:
         assert tracer._actions[0].is_flagged
 
 
-# --- CausalTracer — attribution ---
+# =============================================================================
+# CausalTracer — attribution
+# =============================================================================
 
 class TestAttribution:
 
@@ -272,7 +278,9 @@ class TestAttribution:
         assert "causal_attribution" in section
 
 
-# --- InjectionScanner ↔ CausalTracer integration ---
+# =============================================================================
+# InjectionScanner ↔ CausalTracer integration
+# =============================================================================
 
 class TestInjectionScannerTracerIntegration:
 
@@ -306,7 +314,9 @@ class TestInjectionScannerTracerIntegration:
         assert result.verdict == "ALLOW"
 
 
-# --- OpenClawGuard — causal tracing lifecycle ---
+# =============================================================================
+# OpenClawGuard — causal tracing lifecycle
+# =============================================================================
 
 class TestOpenClawGuardCausalTracing:
 
@@ -358,7 +368,9 @@ class TestOpenClawGuardCausalTracing:
             assert "causal_attribution" in artifact.extra
 
 
-# --- ObservationGraph — causal chain table ---
+# =============================================================================
+# ObservationGraph — causal chain table
+# =============================================================================
 
 class TestObservationGraphCausalChains:
 
@@ -419,7 +431,9 @@ class TestObservationGraphCausalChains:
         assert retrieved["session_verdict"] in ("ATTACK_CONFIRMED", "SUSPICIOUS")
 
 
-# --- InspectionEngine — CAUSAL_INJECTION_CONFIRMED trigger ---
+# =============================================================================
+# InspectionEngine — CAUSAL_INJECTION_CONFIRMED trigger
+# =============================================================================
 
 class TestCausalInjectionConfirmedTrigger:
 
@@ -486,7 +500,9 @@ class TestCausalInjectionConfirmedTrigger:
         assert triggers == []
 
 
-# --- v0.9.0 module API ---
+# =============================================================================
+# v0.9.0 module API
+# =============================================================================
 
 class TestV090ModuleAPI:
 

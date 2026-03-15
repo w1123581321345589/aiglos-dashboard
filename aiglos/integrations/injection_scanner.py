@@ -65,6 +65,7 @@ Usage:
     result = scan_tool_output("retrieve_document", "document content here...")
 """
 
+
 import base64
 import hashlib
 import logging
@@ -77,7 +78,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 log = logging.getLogger("aiglos.injection_scanner")
 
 
-# --- Phrase corpus (Layer 1) ---
+# ── Phrase corpus (Layer 1) ────────────────────────────────────────────────────
 
 # High-confidence injection signals — phrases that are adversarial in data
 # contexts. Each appears in the content the agent is *reading*, not in a
@@ -85,7 +86,7 @@ log = logging.getLogger("aiglos.injection_scanner")
 
 import re as _re
 
-# --- Injection phrase corpus ---
+# ── Injection phrase corpus ────────────────────────────────────────────────────
 #
 # Three tiers of scoring weight:
 #   STRONG  (0.50 each) — high specificity, very unlikely in legitimate content
@@ -97,7 +98,7 @@ import re as _re
 
 # (pattern_string, weight, use_word_boundary)
 _INJECTION_CORPUS: List[tuple] = [
-    # --- STRONG (0.50) — direct override, unambiguous ---
+    # ── STRONG (0.50) — direct override, unambiguous ──────────────────────────
     ("ignore previous instructions",       0.50, True),
     ("ignore all previous",                0.50, True),
     ("ignore your previous",               0.50, True),
@@ -160,7 +161,7 @@ _INJECTION_CORPUS: List[tuple] = [
     ("<<SYS>>",                            0.50, False),
     ("[/INST]",                            0.50, False),
 
-    # --- MEDIUM (0.25) — role switching, task redirection ---
+    # ── MEDIUM (0.25) — role switching, task redirection ─────────────────────
     # "you are now X" — requires the phrase to be followed by a role/noun,
     # not "you are now free to go". We check for word boundary + optional space.
     ("you are now",                        0.25, True),
@@ -173,7 +174,7 @@ _INJECTION_CORPUS: List[tuple] = [
     ("jailbreak",                          0.25, True),
     ("developer mode",                     0.25, True),
 
-    # --- WEAK (0.10) — only meaningful with corroborating signals ---
+    # ── WEAK (0.10) — only meaningful with corroborating signals ─────────────
     # These phrases are common in legitimate content; they raise score only
     # when combined with another phrase hit or encoding anomaly
     ("before doing anything",             0.10, True),
@@ -207,7 +208,7 @@ _INJECTION_PHRASES: List[str] = [p for p, _, _ in _INJECTION_CORPUS]
 _PHRASE_SET_LOWER: Set[str] = {p.lower() for p in _INJECTION_PHRASES}
 
 
-# --- Encoding anomaly detection (Layer 2) ---
+# ── Encoding anomaly detection (Layer 2) ──────────────────────────────────────
 
 # Invisible and zero-width Unicode codepoints used to hide injections
 _INVISIBLE_CODEPOINTS: Set[int] = {
@@ -326,7 +327,7 @@ def _detect_encoding_anomalies(text: str) -> Tuple[List[str], float]:
     return anomalies, score
 
 
-# --- Result type ---
+# ── Result type ────────────────────────────────────────────────────────────────
 
 @dataclass
 class InjectionScanResult:
@@ -372,7 +373,7 @@ class InjectionScanResult:
         }
 
 
-# --- Core scorer ---
+# ── Core scorer ────────────────────────────────────────────────────────────────
 
 def _score_content(text: str) -> Tuple[float, str, List[str], List[str]]:
     """
@@ -439,7 +440,7 @@ def _score_content(text: str) -> Tuple[float, str, List[str], List[str]]:
     return composite, risk, phrase_hits, encoding_anomalies
 
 
-# --- InjectionScanner ---
+# ── InjectionScanner ───────────────────────────────────────────────────────────
 
 class InjectionScanner:
     """
@@ -638,7 +639,7 @@ class InjectionScanner:
                 result.tool_name, result.risk, result.score,
             )
 
-    # --- Summary and provenance ---
+    # ── Summary and provenance ─────────────────────────────────────────────────
 
     def flagged(self) -> List[InjectionScanResult]:
         return [r for r in self._results if r.injected]
@@ -666,7 +667,7 @@ class InjectionScanner:
         }
 
 
-# --- Standalone functions ---
+# ── Standalone functions ───────────────────────────────────────────────────────
 
 def scan_tool_output(
     tool_name:  str,

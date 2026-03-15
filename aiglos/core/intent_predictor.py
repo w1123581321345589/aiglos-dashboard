@@ -49,6 +49,7 @@ Usage:
     # )
 """
 
+
 import json
 import re as _re
 import logging
@@ -88,7 +89,7 @@ _MIN_TRAINING_SESSIONS = 5
 DEFAULT_HORIZON = 5
 
 
-# --- Prediction result ---
+# ── Prediction result ──────────────────────────────────────────────────────────
 
 @dataclass
 class PredictionResult:
@@ -128,7 +129,7 @@ class PredictionResult:
         }
 
 
-# --- Markov transition model ---
+# ── Markov transition model ────────────────────────────────────────────────────
 
 class MarkovTransitionModel:
     """
@@ -292,7 +293,7 @@ class MarkovTransitionModel:
         self._trained_at = d.get("trained_at")
 
 
-# --- IntentPredictor ---
+# ── IntentPredictor ────────────────────────────────────────────────────────────
 
 class IntentPredictor:
     """
@@ -331,7 +332,7 @@ class IntentPredictor:
         self._last_prediction: Optional[PredictionResult] = None
         self._retrain_threshold = 10   # retrain after N new sessions
 
-    # --- Training ---
+    # ── Training ───────────────────────────────────────────────────────────────
 
     def train(self, force: bool = False) -> bool:
         """
@@ -406,7 +407,7 @@ class IntentPredictor:
         except Exception as e:
             log.debug("[IntentPredictor] Model save failed: %s", e)
 
-    # --- Live session interface ---
+    # ── Live session interface ─────────────────────────────────────────────────
 
     def observe(self, rule_id: str, verdict: str = "BLOCK") -> None:
         """
