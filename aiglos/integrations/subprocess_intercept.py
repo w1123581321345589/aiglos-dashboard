@@ -1,60 +1,52 @@
 from __future__ import annotations
 
-import functools
-import json
 import logging
 import os
 import re
-import subprocess
-import threading
 import time
-import urllib.request
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, List, Optional, Sequence, Union
+from typing import List, Optional, Sequence, Union
 
 log = logging.getLogger("aiglos.subprocess_intercept")
-
-_LOCK    = threading.Lock()
-_PATCHED: set[str] = set()
 
 APPROVAL_TIMEOUT = int(os.environ.get("AIGLOS_APPROVAL_TIMEOUT", "300"))
 
 
 class SubprocVerdict(str, Enum):
     ALLOW = "ALLOW"
-    WARN  = "WARN"
+    WARN = "WARN"
     BLOCK = "BLOCK"
     PAUSE = "PAUSE"
 
 
 class SubprocTier(int, Enum):
     AUTONOMOUS = 1
-    MONITORED  = 2
-    GATED      = 3
+    MONITORED = 2
+    GATED = 3
 
 
 @dataclass
 class SubprocScanResult:
-    verdict:     SubprocVerdict
-    tier:        SubprocTier
-    rule_id:     str
-    rule_name:   str
-    reason:      str
-    cmd:         str        = ""
-    matched_val: str        = ""
-    latency_ms:  float      = 0.0
-    timestamp:   float      = field(default_factory=time.time)
+    verdict: SubprocVerdict
+    tier: SubprocTier
+    rule_id: str
+    rule_name: str
+    reason: str
+    cmd: str = ""
+    matched_val: str = ""
+    latency_ms: float = 0.0
+    timestamp: float = field(default_factory=time.time)
 
     def to_dict(self) -> dict:
         return {
-            "type":       "subprocess",
-            "verdict":    self.verdict.value,
-            "tier":       self.tier.value,
-            "rule_id":    self.rule_id,
-            "rule_name":  self.rule_name,
-            "reason":     self.reason,
-            "cmd":        self.cmd[:256],
+            "type": "subprocess",
+            "verdict": self.verdict.value,
+            "tier": self.tier.value,
+            "rule_id": self.rule_id,
+            "rule_name": self.rule_name,
+            "reason": self.reason,
+            "cmd": self.cmd[:256],
             "latency_ms": round(self.latency_ms, 3),
         }
 
@@ -300,6 +292,7 @@ def inspect_subprocess(
         return _result("T08", "PATH_TRAVERSAL", "Directory traversal sequence in command argument", m.group())
 
     if _T10_PRIV_ESC.search(cmd_str) or _T10_PRIV_ESC_INLINE.search(cmd_str):
+        log.warning("T10 priv-esc in: %s", cmd_str[:80])
         return _result("T10", "PRIV_ESC", "Privilege escalation command detected",
                         force_tier=SubprocTier.GATED)
 

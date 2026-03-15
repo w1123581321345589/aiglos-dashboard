@@ -24,6 +24,9 @@ class GuardResult:
     def quarantined(self):
         return self.verdict == "QUARANTINE"
 
+    def __repr__(self):
+        return f"GuardResult({self.verdict}, rule={self.rule_id})"
+
 
 @dataclass
 class SessionArtifact:
@@ -64,7 +67,9 @@ class SessionArtifact:
         )
 
 
-Verdict = type("Verdict", (), {"BLOCK": "BLOCK", "ALLOW": "ALLOW", "WARN": "WARN"})()
+VERDICT_BLOCK = "BLOCK"
+VERDICT_ALLOW = "ALLOW"
+VERDICT_WARN = "WARN"
 
 _SHELL_DANGER = [
     re.compile(r"curl\s+.*\|\s*(ba)?sh", re.I),

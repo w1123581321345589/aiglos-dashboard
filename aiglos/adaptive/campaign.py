@@ -38,6 +38,8 @@ class CampaignResult:
         }
 
 
+# Each pattern is a set of rule_id combos that indicate coordinated attack behavior.
+# The analyzer checks every ingested session for matches against these.
 _CAMPAIGN_PATTERNS = [
     {"name": "RECON_SWEEP",
      "requires": [{"T01", "T02"}, {"T01", "T03"}, {"T08", "T22"}],

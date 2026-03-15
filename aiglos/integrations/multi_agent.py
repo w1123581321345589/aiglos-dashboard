@@ -62,6 +62,7 @@ def _collect_agent_def_paths(cwd: str) -> List[str]:
 
 
 def _semantic_score(original: str, current: str) -> Tuple[float, str]:
+    """Rough heuristic score for how suspicious a file modification looks."""
     if not original and not current:
         return 0.0, "LOW"
     if original and not current:

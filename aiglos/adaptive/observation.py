@@ -93,6 +93,7 @@ class ObservationGraph:
             """)
 
     def ingest(self, artifact) -> str:
+        """Pull events, agentdef violations, and spawn history out of a SessionArtifact."""
         extra = artifact.extra
         sid = extra.get("session_identity", {}).get("session_id", "unknown")
         with self._conn() as conn:

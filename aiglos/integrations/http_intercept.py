@@ -10,34 +10,34 @@ from urllib.parse import urlparse
 
 class HttpVerdict(str, Enum):
     ALLOW = "ALLOW"
-    WARN  = "WARN"
+    WARN = "WARN"
     BLOCK = "BLOCK"
 
 
 @dataclass
 class HttpScanResult:
-    verdict:     HttpVerdict
-    rule_id:     str
-    rule_name:   str
-    reason:      str
-    url:         str = ""
-    method:      str = ""
+    verdict: HttpVerdict
+    rule_id: str
+    rule_name: str
+    reason: str
+    url: str = ""
+    method: str = ""
     allow_listed: bool = False
-    latency_ms:  float = 0.0
-    timestamp:   float = field(default_factory=time.time)
-    matched:     str = ""
+    latency_ms: float = 0.0
+    timestamp: float = field(default_factory=time.time)
+    matched: str = ""
 
     def to_dict(self) -> dict:
         return {
-            "type":        "http_request",
-            "verdict":     self.verdict.value,
-            "rule_id":     self.rule_id,
-            "rule_name":   self.rule_name,
-            "reason":      self.reason,
-            "url":         self.url,
-            "method":      self.method,
+            "type": "http_request",
+            "verdict": self.verdict.value,
+            "rule_id": self.rule_id,
+            "rule_name": self.rule_name,
+            "reason": self.reason,
+            "url": self.url,
+            "method": self.method,
             "allow_listed": self.allow_listed,
-            "latency_ms":  round(self.latency_ms, 3),
+            "latency_ms": round(self.latency_ms, 3),
         }
 
 
@@ -74,6 +74,7 @@ def _host_is_allowed(host: str, allow_list: List[str]) -> bool:
     return False
 
 
+# AWS IMDS, GCP metadata, loopback, RFC-1918, Alibaba IMDS, ULA IPv6
 _SSRF_HOSTS = re.compile(
     r"^("
     r"169\.254\.169\.254"

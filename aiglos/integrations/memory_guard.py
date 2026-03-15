@@ -22,45 +22,47 @@ _ALL_MEMORY_TOOLS = set(MEMORY_WRITE_TOOLS + MEMORY_READ_TOOLS + MEMORY_MUTATE_T
 
 _INJECTION_SIGNALS = [
     ("pre-authorized", 0.50),
-    ("ignore previous instructions", 0.35),
-    ("ignore all prior", 0.30),
+    ("ignore previous instructions", 0.40),
+    ("ignore all prior", 0.35),
     ("your new instructions", 0.30),
     ("bypass", 0.25),
-    ("jailbreak", 0.30),
+    ("jailbreak", 0.35),
     ("exfiltrate", 0.30),
     ("always allow", 0.25),
     ("never block", 0.25),
-    ("remember to always", 0.25),
-    ("this is permanent", 0.20),
-    ("elevated privileges", 0.25),
-    ("treat as verified", 0.25),
-    ("admin", 0.20),
+    ("remember to always", 0.20),
+    ("this is permanent", 0.18),
+    ("elevated privileges", 0.22),
+    ("treat as verified", 0.28),
+    ("admin", 0.12),
 ]
 
 _ENDPOINT_SIGNALS = [
-    ("http://", 0.15),
-    ("https://", 0.10),
-    ("use this url", 0.20),
-    ("api has moved", 0.15),
+    ("http://", 0.08),
+    ("https://", 0.05),
+    ("use this url", 0.22),
+    ("api has moved", 0.18),
 ]
 
 _CREDENTIAL_SIGNALS = [
-    ("api key", 0.15),
-    ("password", 0.15),
-    ("sk-live-", 0.20),
-    ("secret", 0.10),
-    ("credential", 0.15),
+    ("api key", 0.12),
+    ("password", 0.10),
+    ("sk-live-", 0.25),
+    ("secret", 0.08),
+    ("credential", 0.12),
 ]
 
+# C2 channel signals — trigger on content that tries to set up recurring
+# external fetch patterns (cron, newsletters, endpoint persistence).
 _C2_CHANNEL_SIGNALS = [
-    ("daily cron", 0.20),
-    ("check each morning", 0.15),
-    ("subscribe", 0.15),
-    ("newsletter", 0.15),
-    ("save these", 0.15),
-    ("save this endpoint", 0.15),
-    ("fetch and apply", 0.15),
-    ("daily notes", 0.15),
+    ("daily cron", 0.22),
+    ("check each morning", 0.18),
+    ("subscribe", 0.12),
+    ("newsletter", 0.12),
+    ("save these", 0.14),
+    ("save this endpoint", 0.16),
+    ("fetch and apply", 0.20),
+    ("daily notes", 0.10),
 ]
 
 _MEMORY_INJECTION_SIGNALS = [
@@ -245,7 +247,7 @@ class MemoryWriteGuard:
             rule_name = "MEMORY_POISON"
             self._block_count += 1
         elif risk == "MEDIUM":
-            verdict = "WARN" if self.mode == "block" else "WARN"
+            verdict = "WARN"
             rule_id = "T31"
             rule_name = "MEMORY_WARN"
         else:

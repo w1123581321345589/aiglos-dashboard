@@ -63,13 +63,13 @@ class AdaptiveEngine:
 
     def __init__(self, db_path: Optional[str] = None):
         effective_path = db_path or ":memory:"
-        self.graph    = ObservationGraph(db_path=effective_path)
+        self.graph = ObservationGraph(db_path=effective_path)
         self.inspector = InspectionEngine(self.graph)
-        self.amender   = AmendmentEngine(self.graph)
-        self.policy    = PolicySerializer(self.graph)
-        self.campaign  = CampaignAnalyzer(self.graph)
+        self.amender = AmendmentEngine(self.graph)
+        self.policy = PolicySerializer(self.graph)
+        self.campaign = CampaignAnalyzer(self.graph)
         mem_path = effective_path.replace(".db", "_memory.db") if effective_path != ":memory:" else ":memory:"
-        self.memory    = MemoryProvenanceGraph(db_path=mem_path)
+        self.memory = MemoryProvenanceGraph(db_path=mem_path)
 
     def ingest(self, artifact: Any) -> str:
         """Ingest a SessionArtifact. Returns session_id."""
@@ -84,28 +84,28 @@ class AdaptiveEngine:
         """
         Full adaptive cycle: inspect + T06 campaign + memory drift + propose.
         """
-        triggers  = self.inspector.run()
-        campaign_results   = self.campaign.analyze_recent(hours=24)
-        campaign_triggers  = self.campaign.to_triggers(campaign_results)
-        all_triggers       = triggers + campaign_triggers
-        proposals          = self.amender.propose(all_triggers)
-        summary            = self.graph.summary()
-        memory_summary     = self.memory.summary()
+        triggers = self.inspector.run()
+        campaign_results = self.campaign.analyze_recent(hours=24)
+        campaign_triggers = self.campaign.to_triggers(campaign_results)
+        all_triggers = triggers + campaign_triggers
+        proposals = self.amender.propose(all_triggers)
+        summary = self.graph.summary()
+        memory_summary = self.memory.summary()
         cross_session_risks = [r.to_dict() for r in self.memory.cross_session_risks()]
-        drift              = self.memory.detect_belief_drift()
+        drift = self.memory.detect_belief_drift()
 
         report = {
-            "graph_summary":         summary,
-            "memory_summary":        memory_summary,
-            "cross_session_risks":   cross_session_risks,
-            "belief_drift":          drift.to_dict() if drift else None,
-            "triggers_fired":        len(all_triggers),
-            "triggers":              [t.to_dict() for t in all_triggers],
-            "campaign_patterns":     len(campaign_results),
-            "campaigns":             [r.to_dict() for r in campaign_results],
-            "proposals_made":        len(proposals),
-            "proposals":             [p.to_dict() for p in proposals],
-            "pending_amendments":    len(self.amender.pending()),
+            "graph_summary": summary,
+            "memory_summary": memory_summary,
+            "cross_session_risks": cross_session_risks,
+            "belief_drift": drift.to_dict() if drift else None,
+            "triggers_fired": len(all_triggers),
+            "triggers": [t.to_dict() for t in all_triggers],
+            "campaign_patterns": len(campaign_results),
+            "campaigns": [r.to_dict() for r in campaign_results],
+            "proposals_made": len(proposals),
+            "proposals": [p.to_dict() for p in proposals],
+            "pending_amendments": len(self.amender.pending()),
         }
         if all_triggers or cross_session_risks:
             log.warning(

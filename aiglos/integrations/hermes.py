@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from typing import Optional, Dict, List
 
 from aiglos.integrations.openclaw import (
-    OpenClawGuard, GuardResult, SessionArtifact, Verdict,
+    OpenClawGuard, GuardResult, SessionArtifact,
     _SHELL_DANGER, _SSRF_PATTERNS, _CRED_PATHS, _HEARTBEAT_PATHS,
     _SUPPLY_CHAIN, _MEMORY_PATHS, _MEMORY_POISON_SIGNALS,
 )
